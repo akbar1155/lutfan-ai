@@ -1,0 +1,1898 @@
+ТЕХНИЧЕСКОЕ ЗАДАНИЕ
+Lutfan AI
+Веб-платформа генерации премиальных цифровых пригласительных с использованием AI
+Версия документа: 1.0
+Уровень детализации: Senior-ready
+Скоуп: веб-платформа (MVP)
+Ориентировочный срок разработки: 4 недели
+1. Обзор проекта
+1.1. Что мы строим
+Lutfan AI — веб-платформа для создания цифровых пригласительных на события узбекской и центральноазиатской культуры. Пользователь заполняет форму (данные события), выбирает вариант дизайна (готовый JPG-шаблон или AI-генерация с нуля), получает готовое приглашение в HD и скачивает его.
+Ключевая техническая особенность: весь визуальный рендеринг (фон + размещение текста) выполняется одной моделью Google Gemini 2.5 Flash Image (кодовое имя Nano Banana). Программного наложения текста через canvas — НЕТ. Модель принимает JPG-заготовку или пустой промпт и возвращает финальное изображение с текстом.
+1.2. Роли в системе
+User — конечный пользователь, авторизуется через Telegram Login Widget, создаёт приглашения.
+Admin — управляет контентом (мероприятия, шаблонные тексты, JPG-заготовки, теги стилистики, пользователи).
+Роли различаются только полем users.role. Отдельных таблиц или систем нет.
+1.3. Границы MVP
+Включено в MVP:
+Веб-платформа (адаптивный дизайн, mobile-first)
+6 типов мероприятий: nikoh, aqiqa, sunnat, birthday, hudoyi, hayit
+3 языка интерфейса и генерации: uz-cyrl, uz-latn, ru
+Два пути генерации: JPG-шаблон + AI, AI с нуля по стилистике
+Библиотека шаблонных текстов (пользователь выбирает или пишет свой)
+Личный кабинет с историей
+Админ-панель для управления контентом
+Бесплатное использование (без биллинга)
+Аналитика продуктовых событий
+Исключено из MVP:
+Telegram Mini App (отдельный проект после веб-запуска)
+Оплата (Click, Payme, Telegram Payments) — добавляется позже
+Реферальная программа и промо-коды
+Программный рендеринг текста через canvas
+Мобильные приложения iOS/Android
+2. Стек и инфраструктура
+2.1. Выбор стека
+Выбор конкретных технологий оставлен на разработчика при соблюдении следующих требований:
+Фронтенд: SPA или SSR framework с TypeScript (рекомендуется Next.js 14+ App Router или SvelteKit)
+Бэкенд: REST API + фоновая очередь задач. Возможные варианты: Next.js API routes + BullMQ, NestJS, FastAPI
+База данных: PostgreSQL 15+
+Кэш и очередь: Redis 7+
+Файловое хранилище: S3-совместимое (AWS S3, Cloudflare R2, Backblaze B2 или Yandex Object Storage)
+CDN перед хранилищем: обязателен (Cloudflare CDN — рекомендуется)
+AI-модель: Google Gemini 2.5 Flash Image (Nano Banana) через Google AI Studio / Vertex AI
+Авторизация: Telegram Login Widget + JWT (access 15 мин + refresh 30 дней)
+Разработчик обязан документально зафиксировать выбранный стек и обосновать выбор в первый спринт (README + ADR-документ) до старта разработки.
+2.2. Окружения
+local — локальная разработка (Docker Compose с PostgreSQL, Redis, MinIO)
+staging — предпродакшн для внутреннего тестирования
+production — рабочая среда
+2.3. Схема окружения
+Все конфиденциальные значения (API-ключи, токены, пароли БД, S3-credentials) хранятся в переменных окружения. Пример .env файла с полным перечнем переменных — обязателен в репозитории.
+# База данных
+
+DATABASE_URL=postgresql://user:pass@host:5432/lutfan
+
+REDIS_URL=redis://host:6379/0
+
+
+
+# JWT
+
+JWT_ACCESS_SECRET=<random 64 char>
+
+JWT_REFRESH_SECRET=<random 64 char>
+
+JWT_ACCESS_TTL=15m
+
+JWT_REFRESH_TTL=30d
+
+
+
+# Telegram
+
+TELEGRAM_BOT_TOKEN=<from BotFather>
+
+TELEGRAM_BOT_USERNAME=lutfan_ai_bot
+
+
+
+# AI
+
+GOOGLE_AI_API_KEY=<from Google AI Studio>
+
+NANO_BANANA_MODEL=gemini-2.5-flash-image
+
+
+
+# S3
+
+S3_ENDPOINT=<endpoint>
+
+S3_REGION=<region>
+
+S3_BUCKET_PUBLIC=lutfan-public
+
+S3_BUCKET_PRIVATE=lutfan-private
+
+S3_ACCESS_KEY=<key>
+
+S3_SECRET_KEY=<secret>
+
+CDN_BASE_URL=https://cdn.lutfan.uz
+
+
+
+# Приложение
+
+APP_BASE_URL=https://lutfan.uz
+
+NODE_ENV=production
+
+LOG_LEVEL=info
+
+
+
+# Rate limiting
+
+RATE_LIMIT_GENERATIONS_PER_HOUR=3
+
+RATE_LIMIT_GENERATIONS_PER_DAY=10
+2.4. Инфраструктура и деплой
+Хостинг фронтенда: Vercel / Netlify / Cloudflare Pages
+Хостинг бэкенда: любой (VPS с Docker, Railway, Render, Fly.io) — на усмотрение разработчика
+CI/CD: GitHub Actions или GitLab CI. Обязательно: линт → тесты → сборка → деплой
+Мониторинг ошибок: Sentry
+Логирование: структурированное JSON (Pino/Winston), с уровнями info/warn/error
+Бэкапы БД: ежедневные, retention 30 дней
+3. Архитектура системы
+3.1. Компонентная диаграмма
+┌─────────────────────────────────────────────────────────────┐
+
+│                       Клиент (Browser)                       │
+
+│                Web SPA/SSR (React/Vue/Svelte)                │
+
+└──────────────┬───────────────────────────┬──────────────────┘
+
+               │ HTTPS/REST                │ WebSocket/SSE
+
+               ▼                           ▼
+
+┌─────────────────────────────────────────────────────────────┐
+
+│                        API Gateway                           │
+
+│   Auth · Rate Limit · Validation · Routing · CORS · Logs    │
+
+└──────┬────────────┬──────────────┬─────────────┬────────────┘
+
+       ▼            ▼              ▼             ▼
+
+   ┌───────┐   ┌────────┐    ┌──────────┐   ┌─────────┐
+
+   │ Auth  │   │  User  │    │  Event   │   │  Admin  │
+
+   │Service│   │Service │    │ Service  │   │ Service │
+
+   └───┬───┘   └───┬────┘    └────┬─────┘   └────┬────┘
+
+       │           │              │              │
+
+       └───────────┴──────┬───────┴──────────────┘
+
+                          ▼
+
+                 ┌─────────────────┐
+
+                 │    Invitation   │
+
+                 │     Service     │
+
+                 └────────┬────────┘
+
+                          │
+
+              ┌───────────┼──────────┐
+
+              ▼           ▼          ▼
+
+       ┌──────────┐ ┌──────────┐ ┌─────────┐
+
+       │Text Tmpl │ │AI Router │ │Templates│
+
+       │ Service  │ │(Nano Bnn)│ │ Service │
+
+       └──────────┘ └────┬─────┘ └─────────┘
+
+                         │
+
+                         ▼
+
+                  ┌─────────────┐
+
+                  │ Redis Queue │
+
+                  │ (generation │
+
+                  │   worker)   │
+
+                  └──────┬──────┘
+
+                         ▼
+
+              ┌──────────────────────┐
+
+              │  Google Gemini API   │
+
+              │  (Nano Banana)       │
+
+              └──────┬───────────────┘
+
+                     ▼
+
+              ┌──────────────┐
+
+              │  S3 + CDN    │
+
+              └──────────────┘
+
+
+
+  Cross-cutting: PostgreSQL · Sentry · Analytics · Cron Jobs
+3.2. Слои приложения
+Presentation (Frontend)
+SPA/SSR со всеми пользовательскими экранами
+Мультиязычность через i18n (uz-cyrl / uz-latn / ru)
+Автосохранение черновиков (debounce 3 сек)
+WebSocket или SSE для live-обновлений генерации
+Application (Backend)
+REST API с версионированием (/api/v1/...)
+Сервисный слой с бизнес-логикой
+Валидация входных данных на уровне контроллеров
+Domain
+Модели: User, Invitation, Event, Template, TextTemplate, MoodTag, AIGeneration
+Enum-типы для статусов, ролей, языков
+Infrastructure
+Prisma / TypeORM / Drizzle — ORM для PostgreSQL
+BullMQ / Celery — очередь задач Redis
+AWS SDK / MinIO SDK — работа с S3
+Официальный Google GenAI SDK — Nano Banana
+3.3. Асинхронная обработка
+AI-генерация занимает 5–40 секунд и НЕ должна блокировать HTTP-запрос.
+Схема работы:
+Клиент отправляет POST /api/v1/invitations/:id/generate
+API валидирует, создаёт задачу в Redis-очереди, возвращает 202 Accepted с job_id
+Worker подхватывает задачу, вызывает Nano Banana, сохраняет результат в S3
+Worker публикует событие generation:complete в Redis pub/sub
+API-сервер, слушающий pub/sub, транслирует событие клиенту через WebSocket/SSE
+Клиент показывает результат, обновляет UI
+Fallback: клиент дополнительно опрашивает GET /api/v1/invitations/:id/status каждые 3 сек как страховку от разрыва WebSocket.
+4. Схема базы данных
+PostgreSQL 15+. Все таблицы имеют id (UUID v4, primary key), created_at, updated_at (timestamp with timezone). Мягкое удаление через deleted_at где применимо. Все внешние ключи — с ON DELETE поведением, задокументированным в миграциях.
+4.1. users
+Единая запись пользователя. Идентификация — по telegram_id.
+Индексы: unique(telegram_id), btree(role), btree(created_at).
+4.2. user_sessions
+Индексы: btree(user_id), btree(refresh_token_hash), btree(expires_at).
+4.3. events_config
+Справочник мероприятий. Управляется админом.
+Пример subtypes для nikoh:
+[
+
+  { "slug": "nahorgi_osh",  "names": { "uz-cyrl": "Наҳорги ош", "uz-latn": "Nahorgi osh", "ru": "Утренний плов" } },
+
+  { "slug": "kechki_toy",   "names": { "uz-cyrl": "Кечки тўй",  "uz-latn": "Kechki toʻy", "ru": "Вечерний банкет" } },
+
+  { "slug": "fatiha",       "names": { "uz-cyrl": "Фатиҳа тўйи","uz-latn": "Fotiha toʻyi","ru": "Фатиха" } },
+
+  { "slug": "qiz_oshi",     "names": { "uz-cyrl": "Қиз оши",    "uz-latn": "Qiz oshi",    "ru": "Кыз аши" } },
+
+  { "slug": "plov_banquet", "names": { "uz-cyrl": "Плов + Банкет","uz-latn":"Plov + Banket","ru":"Плов + Банкет" } }
+
+]
+Пример fields_schema для aqiqa:
+{
+
+  "required": [
+
+    { "key": "child_gender",    "type": "enum", "options": ["boy","girl"] },
+
+    { "key": "inviter",         "type": "enum", "options": ["parents","grandparents","family"] },
+
+    { "key": "event_date",      "type": "date", "min": "today" },
+
+    { "key": "event_time",      "type": "time" },
+
+    { "key": "venue_name",      "type": "string", "maxLength": 100 },
+
+    { "key": "venue_address",   "type": "string", "maxLength": 200 },
+
+    { "key": "family_signature","type": "string", "maxLength": 60 }
+
+  ],
+
+  "optional": [
+
+    { "key": "child_name",      "type": "string", "maxLength": 50 },
+
+    { "key": "personal_message","type": "text",   "maxLength": 200 }
+
+  ]
+
+}
+4.4. text_templates
+Библиотека шаблонных текстов. Пользователь может выбрать один из вариантов, отредактировать его или написать свой с нуля.
+Индексы: btree(event_slug, language, is_active), btree(usage_count DESC).
+4.5. templates
+JPG-заготовки для Пути 1 (AI вписывает текст в готовый фон).
+4.6. mood_tags
+Теги стилистики для Пути 2 (AI генерирует с нуля).
+4.7. ai_prompt_presets
+Базовые промпт-шаблоны для генерации по стилистикам. Управляются админом, версионируются.
+4.8. invitations
+Ядро продукта — созданные приглашения.
+Индексы: btree(user_id, created_at DESC), btree(status), btree(event_slug), btree(expires_at) WHERE deleted_at IS NULL.
+Пример event_data (aqiqa):
+{
+
+  "structured_fields": {
+
+    "child_gender": "girl",
+
+    "child_name": "Азиза",
+
+    "event_date": "2026-06-20",
+
+    "event_time": "12:00",
+
+    "venue_name": "Ресторан Малика",
+
+    "venue_address": "Ташкент, Юнусабад-4, 25",
+
+    "family_signature": "Хайитбоевлар оиласи",
+
+    "personal_message": null
+
+  },
+
+  "text_source": "template",
+
+  "text_template_id": "uuid-of-selected-template",
+
+  "final_text_blocks": {
+
+    "header":    "Ассалому алайкум!",
+
+    "body":      "Азиз меҳмонларимизни севимли қизимиз Азизанинг ақиқа маросимига таклиф этамиз",
+
+    "date_time": "20 июн 2026 йил, соат 12:00",
+
+    "address":   "Ресторан Малика, Юнусабад-4, 25",
+
+    "footer":    "Хайитбоевлар оиласи"
+
+  }
+
+}
+4.9. invitation_history
+4.10. ai_generations
+Лог всех вызовов Nano Banana. Используется для отладки, аналитики и биллинга AI-провайдера.
+Индексы: btree(invitation_id, created_at DESC), btree(user_id), btree(status), btree(model, created_at).
+4.11. ai_generation_cache
+Кэш повторяющихся генераций. При совпадении cache_key результат переиспользуется без вызова Nano Banana.
+4.12. rendered_files
+4.13. notifications
+На MVP отправляются через Telegram-бота (потому что пользователь авторизуется через Telegram → мы знаем его telegram_id).
+4.14. share_events
+Трекинг виральности.
+4.15. analytics_events
+Продуктовая аналитика. Таблица растёт быстро — партиционировать по месяцам.
+Индексы: btree(user_id, created_at DESC), btree(event_name, created_at), btree(session_id).
+4.16. daily_metrics
+Обновляется ежедневным cron-джобом в 04:00 UTC.
+4.17. system_logs
+4.18. admin_actions
+5. Аутентификация
+5.1. Обзор
+Единственный способ входа — Telegram Login Widget. Никаких email/password. Причина: единый аккаунт с будущей Telegram Mini App будет синхронизироваться по telegram_id.
+5.2. Регистрация Telegram-бота
+Через @BotFather создать бота с username lutfan_ai_bot (или согласованным именем)
+Через /setdomain привязать домен lutfan.uz
+Сохранить bot token в переменную TELEGRAM_BOT_TOKEN
+5.3. Флоу авторизации
+Пользователь на лендинге нажимает "Войти через Telegram"
+Открывается Telegram Login Widget (iframe от Telegram)
+Пользователь подтверждает вход, Telegram отправляет POST на callback-URL с параметрами: id, first_name, last_name, username, photo_url, auth_date, hash
+Backend валидирует hash по формуле Telegram (HMAC-SHA-256 от отсортированных полей с секретом = SHA-256(bot_token))
+Проверяет что auth_date не старше 86400 сек (сутки)
+Ищет или создаёт запись в users по telegram_id
+Генерирует пару JWT: access (15 мин) + refresh (30 дней)
+Access — в Authorization: Bearer header, refresh — в httpOnly Secure SameSite=Strict cookie
+Возвращает пользователю его профиль + access token
+5.4. Middleware защиты
+Все /api/v1/... endpoints кроме /auth/*, /health, /public/* требуют валидного access token.
+При истечении access — фронт вызывает POST /auth/refresh с cookie
+При истечении refresh — редирект на логин
+Endpoints с префиксом /admin/* дополнительно проверяют users.role = admin
+Все запросы логируются с request_id для трейсинга
+5.5. Логика ban
+При каждом запросе middleware проверяет users.is_banned. Если true — 403 Forbidden с описанием причины из ban_reason.
+6. API спецификация
+6.1. Общие правила
+Base URL: /api/v1
+Content-Type: application/json (кроме загрузки файлов — multipart/form-data)
+Все timestamps в ISO 8601 UTC
+Пагинация: query params ?page=1&limit=20 (max limit = 100)
+Ошибки — единый формат:
+{
+
+  "error": {
+
+    "code": "VALIDATION_ERROR",
+
+    "message": "Invalid event_date",
+
+    "details": { "field": "event_date", "reason": "must_be_in_future" },
+
+    "request_id": "req_abc123"
+
+  }
+
+}
+6.2. Rate limiting
+Реализация через Redis. Ключ = user_id (или IP для гостей).
+Anonymous: 30 req/min
+Authenticated: 120 req/min
+AI-генерация: 3 req/hour, 10 req/day на пользователя
+Admin endpoints: 300 req/min
+При превышении — 429 Too Many Requests с заголовком Retry-After.
+6.3. Endpoints — Authentication
+6.4. Endpoints — User
+6.5. Endpoints — Events & Content
+6.6. Endpoints — Invitations
+6.7. Endpoints — Analytics (client-side)
+6.8. Endpoints — Admin
+Все требуют role = admin.
+6.9. WebSocket / SSE канал
+Endpoint: /ws (WebSocket) или /events (SSE). Авторизация — через access token в query string при подключении.
+События сервер → клиент:
+generation:queued — {invitation_id, job_id, position_in_queue}
+generation:started — {invitation_id, job_id}
+generation:progress — {invitation_id, progress_percent} (опционально)
+generation:complete — {invitation_id, image_url}
+generation:failed — {invitation_id, error_code, message}
+7. Интеграция с Nano Banana (Gemini 2.5 Flash Image)
+7.1. SDK и конфигурация
+Использовать официальный @google/generative-ai (Node.js) или google-generativeai (Python)
+Модель: gemini-2.5-flash-image
+API-ключ в переменной GOOGLE_AI_API_KEY
+Все вызовы через backend-worker, никогда с фронта
+7.2. Путь 1: JPG-шаблон + AI впиcывает текст
+Worker получает job из очереди:
+Загружает templates.bg_url (JPG-заготовку) в память
+Собирает промпт из templates.ai_composition_prompt + текстовых блоков пользователя из invitations.event_data.final_text_blocks
+Отправляет multimodal-запрос в Nano Banana: image + text prompt
+Модель возвращает изображение с вписанным текстом
+Worker сохраняет результат в S3 (bucket: lutfan-public, path: /invitations/{invitation_id}/hd_4_5.jpg)
+Публикует событие generation:complete
+Пример структуры промпта:
+You are given a premium invitation card background. Your task is to place
+
+the following text on the card in an elegant, well-composed manner.
+
+
+
+Text blocks (in Uzbek Cyrillic):
+
+- HEADER (elegant script, top center): "Ассалому алайкум!"
+
+- BODY (refined serif, center, may span 2-3 lines): "Азиз меҳмонларимизни севимли қизимиз Азизанинг ақиқа маросимига таклиф этамиз"
+
+- DATE_TIME (bold serif, below body): "20 июн 2026 йил, соат 12:00"
+
+- ADDRESS (smaller serif, below date): "Ресторан Малика, Юнусабад-4, 25"
+
+- FOOTER (elegant script, bottom center): "Хайитбоевлар оиласи"
+
+
+
+Composition rules:
+
+- Preserve the entire existing background design
+
+- 200px minimum margin from all edges
+
+- Text must be highly legible against the background
+
+- Use dark text if background is light, light text if background is dark
+
+- Maintain elegant vertical spacing between blocks
+
+- Perfect Uzbek Cyrillic character rendering required (Ҳ, Қ, Ў, Ғ)
+
+
+
+Output: single image, same dimensions and quality as input.
+7.3. Путь 2: AI генерирует всё с нуля
+Worker получает job:
+Загружает ai_prompt_presets.base_prompt по ai_preset_id
+Собирает mood_tags.prompt_snippet из выбранных пользователем тегов
+Формирует финальный промпт: base_prompt + " " + join(mood_snippets, ", ") + текстовые блоки
+Отправляет текстовый запрос в Nano Banana (без входного изображения)
+Модель генерирует изображение с фоном и текстом
+Сохраняет в S3, публикует событие
+Пример базового промпта (event: nikoh, стиль: восточная роскошь):
+Create a premium wedding invitation card, vertical portrait 4:5 aspect ratio,
+
+high resolution suitable for print (2400x3000 pixels).
+
+
+
+Style: {mood_snippets}
+
+
+
+Include the following text elegantly composed on the card:
+
+- HEADER: "{header_text}"
+
+- BODY: "{body_text}"
+
+- DATE_TIME: "{date_time_text}"
+
+- ADDRESS: "{address_text}"
+
+- FOOTER: "{footer_text}"
+
+
+
+Typography: elegant script for headers and signatures, refined serif for body.
+
+All text centered. Perfect Uzbek Cyrillic character rendering required.
+
+No watermarks. Clean, luxurious composition with generous margins.
+7.4. Кэширование
+Перед вызовом Nano Banana worker проверяет ai_generation_cache по cache_key:
+cache_key = sha256(
+
+  generation_path + "|" +
+
+  (template_id || preset_id) + "|" +
+
+  sorted(mood_tags).join(",") + "|" +
+
+  hash(final_text_blocks) + "|" +
+
+  language + "|" +
+
+  primary_format
+
+)
+При попадании — переиспользуется result_url, инкрементируется hit_count. При промахе — генерируется, сохраняется. Кэш живёт вечно, но чистится cron-джобом при hit_count = 1 и старше 60 дней.
+7.5. Retry-логика и таймауты
+Таймаут одного запроса к Nano Banana: 60 сек
+При таймауте — 1 автоматический retry с delay 5 сек
+При 429 (rate limit) — exponential backoff (5, 15, 45 сек), максимум 3 попытки
+При 500-х ошибках — 2 retry с delay 3 сек
+При исчерпании попыток — статус failed, уведомление пользователю с извинением
+7.6. Rate limits Nano Banana
+На момент написания ТЗ Google AI Studio предоставляет тарифы с разными лимитами. Разработчик обязан:
+Уточнить актуальные лимиты в момент разработки
+Реализовать очередь с ограничением concurrent requests согласно тарифу
+Настроить мониторинг остатка квоты
+7.7. Валидация результата
+После получения изображения от Nano Banana worker выполняет базовую проверку:
+Изображение получено (не пустой ответ)
+Формат корректный (JPEG/PNG)
+Размер файла > 100KB (защита от «пустых» результатов)
+Разрешение соответствует запрошенному формату
+Если валидация не прошла — retry (максимум 2 раза), затем failed.
+8. Фронтенд: экраны и компоненты
+8.1. Общие требования
+Mobile-first, адаптив под 360px+ ширины
+Поддержка тёмной/светлой темы (детект по prefers-color-scheme, переключатель в настройках)
+i18n: uz-cyrl (default), uz-latn, ru. Переключатель в шапке и в настройках профиля
+Все длительные операции — с skeleton-loader, никаких белых экранов
+Автосохранение форм через debounce 3 сек
+SEO: meta tags, OG-теги, sitemap.xml, robots.txt
+Accessibility: ARIA-атрибуты на интерактивных элементах, keyboard navigation
+8.2. Публичные страницы
+8.2.1. Главная (лендинг)
+URL: /
+Hero-блок: заголовок + видео-демо (autoplay muted loop) + CTA "Создать приглашение"
+Как это работает — 3 шага с иконками
+Галерея примеров — грид карточек с фильтром по типу события
+Отзывы — пусто на MVP, зарезервированный блок
+Футер: контакты, ссылки, соцсети
+8.2.2. Галерея примеров
+URL: /gallery
+Грид всех примеров (данные из templates.bg_url_preview + type)
+Фильтры: тип события, стиль, палитра
+При клике — модалка с крупным превью и кнопкой "Создать похожее"
+8.2.3. Как это работает
+URL: /how-it-works. Статическая страница с описанием флоу.
+8.2.4. FAQ
+URL: /faq. Статическая, вопросы и ответы.
+8.3. Продуктовые страницы (требуют логина)
+8.3.1. Выбор мероприятия
+URL: /create
+6 крупных карточек (nikoh, aqiqa, sunnat, birthday, hudoyi, hayit)
+Каждая — с иконкой, названием на текущем языке
+При выборе — POST /invitations, редирект на следующий шаг с id
+8.3.2. Уточнение (подтип + inviter)
+URL: /create/:id/details
+Если у события есть subtypes → селектор подтипа
+Для aqiqa — селектор пола ребёнка (влияет на цветовую тему интерфейса)
+Селектор "кто приглашает": родители / бабушки-дедушки / молодожёны / семья
+Селектор языка приглашения (uz-cyrl / uz-latn / ru)
+Кнопка "Далее" → PATCH /invitations/:id
+8.3.3. Ввод данных
+URL: /create/:id/data
+Динамическая форма из events_config.fields_schema
+Валидация в реальном времени (даты, длина строк)
+Автосохранение (debounce 3 сек → PATCH /invitations/:id)
+Кнопка "Далее"
+8.3.4. Выбор текста
+URL: /create/:id/text
+Секция "Готовые варианты" — карточки из text_templates с превью
+Каждая карточка — превью текста с подставленными данными пользователя
+Клик по карточке → open editor с этим шаблоном
+Отдельная кнопка "Написать свой" → open editor пустой
+Editor — 5 полей (header, body, date_time, address, footer), можно править
+Кнопка "Далее"
+8.3.5. Выбор пути генерации
+URL: /create/:id/style
+Две крупные карточки: "Готовый дизайн" (JPG-шаблоны) и "AI создаст с нуля" (mood_tags)
+8.3.6a. Галерея JPG-шаблонов
+URL: /create/:id/style/templates
+Грид JPG-шаблонов, фильтруется по event_slug
+Дополнительные фильтры: стиль, палитра
+При выборе — PATCH /invitations/:id + переход на генерацию
+8.3.6b. Выбор стилистики (AI с нуля)
+URL: /create/:id/style/ai
+Мультиселектор mood_tags по категориям (color, flowers, style, texture)
+Опциональное поле custom_style_note (свободный текст пользователя)
+При подтверждении — POST /invitations/:id/generate
+8.3.7. Экран ожидания генерации
+URL: /create/:id/generating
+Прогресс-бар (пульсирующий, не привязан к процентам)
+Ротирующиеся карточки контента (каждые 7 сек) — этикет, традиции
+Подключение WebSocket или SSE + polling GET /status как fallback
+При generation:complete → редирект на превью
+При generation:failed → показ ошибки + кнопка "Попробовать снова"
+8.3.8. Превью и скачивание
+URL: /create/:id/result
+Отображение сгенерированного изображения (final_image_url) во всю ширину
+Кнопки: "Скачать HD (4:5)", "Ещё форматы" (9:16, 1:1), "Поделиться", "Создать новое"
+Дополнительные форматы — при клике POST /invitations/:id/formats, дожидаемся генерации
+Кнопка "Поделиться" — открывает share sheet или модалку с готовым текстом на языке пользователя + иконки платформ (Telegram, WhatsApp, Instagram, копировать ссылку)
+При шеринге — POST /invitations/:id/share
+Опция "Отредактировать" — возврат на шаг 8.3.3 (генерация будет новая)
+8.3.9. Личный кабинет
+URL: /account
+Список всех приглашений пользователя (GET /user/invitations)
+Каждое — превью, тип события, дата создания, статус
+Клик — /create/:id/result (можно перескачать)
+Индикация "истекает через N дней" за 7 дней до expires_at
+Кнопка удалить (мягкое удаление)
+8.3.10. Настройки
+URL: /account/settings
+Язык интерфейса
+Телефон (опционально)
+Тема (light/dark/auto)
+Кнопка "Выйти"
+8.4. Админ-панель
+URL: /admin. Отдельный layout, доступ только для role = admin.
+8.4.1. Dashboard
+URL: /admin
+Ключевые метрики: DAU, приглашений создано сегодня/неделя, AI-стоимость сегодня
+Графики: рост пользователей, конверсия воронки
+8.4.2. Пользователи
+/admin/users — таблица с поиском по username, фильтр по role, is_banned
+/admin/users/:id — детали + история приглашений + кнопки ban/unban, назначить role
+8.4.3. Мероприятия
+/admin/events — CRUD events_config
+Форма редактирования: JSON-редакторы для subtypes, fields_schema, color_themes
+Загрузка иконки (image upload)
+8.4.4. Шаблоны текстов
+/admin/text-templates — CRUD text_templates
+Форма: event_slug, subtype_slug, inviter_type, language, title, preview_text (multiline с подсветкой плейсхолдеров типа {child_name}), tone
+Автоматический парсинг variables_used из preview_text
+Кнопка "Предпросмотр" с тестовыми данными
+8.4.5. JPG-шаблоны
+/admin/templates — грид всех шаблонов, фильтры
+/admin/templates/new — загрузка JPG (multipart), заполнение метаданных, ai_composition_prompt (textarea)
+Автоматическая генерация bg_url_preview на бэке (resize до 600×750)
+Автоматический анализ dominant_colors (опционально — через библиотеку типа node-vibrant)
+Кнопка "Тестовая генерация" — запуск AI с тестовыми данными для проверки composition prompt
+8.4.6. Mood tags
+/admin/mood-tags — CRUD
+Форма: slug, category, name_translations, prompt_snippet, icon_url, sort_order
+8.4.7. AI-пресеты
+/admin/ai-presets — CRUD
+Форма: name, event_slug, base_prompt (textarea с подсказкой доступных плейсхолдеров), negative_prompt, model_params (JSON)
+Кнопка "Тестовая генерация" — с настраиваемыми mood_tags и текстовыми блоками
+Сохранение результата теста как example_output_url
+8.4.8. Логи и мониторинг
+/admin/ai-generations — таблица логов вызовов Nano Banana (успешные/failed, стоимость, время)
+/admin/system-logs — критические логи
+/admin/analytics — экспорт daily_metrics
+9. Работа с файлами и S3
+9.1. Buckets
+lutfan-public — публичные файлы (JPG-шаблоны, иконки, превью). Доступ через CDN
+lutfan-private — приватные файлы (пользовательские приглашения). Только через signed URL с TTL 1 час
+9.2. Структура путей
+lutfan-public/
+
+├── events/
+
+│   └── {slug}/icon.png
+
+├── templates/
+
+│   ├── {template_id}/bg.jpg
+
+│   └── {template_id}/preview.jpg
+
+├── mood-tags/
+
+│   └── {slug}/icon.png
+
+└── ai-presets/
+
+    └── {preset_id}/example.jpg
+
+
+
+lutfan-private/
+
+└── invitations/
+
+    └── {invitation_id}/
+
+        ├── hd_4_5.jpg
+
+        ├── hd_9_16.jpg
+
+        └── hd_1_1.jpg
+9.3. Загрузка файлов
+Клиент → Backend (multipart/form-data). Backend валидирует MIME-type, размер (макс 20MB), затем загружает в S3 SDK-методом. Прямой upload с фронта в S3 НЕ используем на MVP (лишняя сложность).
+9.4. Скачивание
+Публичные файлы — через CDN URL напрямую
+Приватные — через backend endpoint GET /api/v1/invitations/:id/download?format=4:5, который проверяет владельца и возвращает signed URL с TTL 1 час
+9.5. Cron: удаление истёкших файлов
+Ежедневно в 03:00 UTC:
+SELECT invitations WHERE expires_at < NOW() AND deleted_at IS NULL
+Для каждого — удаление файлов из S3 (все связанные rendered_files)
+UPDATE rendered_files SET deleted_at = NOW()
+UPDATE invitations SET deleted_at = NOW() (мягкое)
+10. Безопасность
+10.1. Обязательные меры
+HTTPS на всех окружениях (Let's Encrypt / Cloudflare)
+HSTS с preload
+CORS whitelist (только lutfan.uz и поддомены)
+CSP-заголовки (запрет inline scripts, whitelist origins)
+X-Frame-Options: DENY (кроме страниц с Telegram Login Widget)
+X-Content-Type-Options: nosniff
+Rate limiting через Redis
+Валидация всех входных данных на бэке (не доверять фронту)
+Санитизация текстов пользователя перед подстановкой в промпт (защита от prompt injection)
+Prepared statements везде (защита от SQL injection). Через ORM это обеспечено автоматически
+Хэширование refresh token в БД (никогда не хранить в plain text)
+Секреты — только в env-переменных, никогда в коде
+10.2. Защита от prompt injection
+Пользовательские тексты попадают в промпт для Nano Banana. Возможна попытка "перепрограммировать" модель.
+Меры защиты:
+Обрезка длины полей до maxLength из fields_schema
+Экранирование фигурных скобок и системных ключевых слов
+Обёртка текста пользователя в кавычки внутри промпта
+Разделение system prompt и user data чётким разделителем
+Валидация результата (не отдаём, если модель отклонилась от задачи)
+10.3. Валидация Telegram Login Widget
+Обязательная последовательность:
+Извлечь все параметры кроме hash, отсортировать по ключу, склеить key=value через \n
+secret_key = SHA-256(bot_token)
+computed_hash = HMAC-SHA-256(sorted_string, secret_key)
+Сравнить с полученным hash — не равны, отказ 401
+Проверить auth_date > NOW() - 86400 — иначе отказ 401
+10.4. Приватность
+Публичная страница /privacy-policy на 3 языках
+Публичная страница /terms на 3 языках
+При регистрации — чекбокс "Согласен с условиями"
+Возможность удаления аккаунта (GDPR-like): удаляет users + связанные записи через CASCADE
+10.5. Аудит
+admin_actions — все действия админа с before/after diff
+user_sessions — история входов
+invitation_history — история изменений приглашений
+11. Качество кода и тестирование
+11.1. Стандарты кода
+TypeScript strict mode
+ESLint + Prettier с pre-commit hooks (Husky + lint-staged)
+Conventional Commits (feat:, fix:, refactor:, ...)
+PR-based workflow, обязательный self-review перед merge
+README с инструкцией запуска в 3 команды: install → migrate → dev
+11.2. Тесты
+Unit-тесты — обязательны для сервисного слоя (auth, invitation, ai_router)
+Integration-тесты — для API endpoints (Supertest/pytest)
+E2E — 1-2 сценария на MVP (Playwright): "создание приглашения от логина до скачивания"
+Целевое покрытие: 60%+ для бэка на MVP
+CI — все тесты запускаются перед деплоем
+11.3. Логирование и мониторинг
+Все ошибки → Sentry
+Структурированные JSON-логи в файлы (rotate ежедневно)
+Метрики: response time (p50, p95, p99), error rate, AI-генерация success rate
+Uptime monitoring: UptimeRobot / BetterStack (внешний пинг каждые 5 мин)
+Alerting в Telegram (личный чат разработчика + владельца) при critical-логах
+12. Критерии приёмки и этапы
+12.1. Разбивка на спринты
+Спринт 0 — Setup (2-3 дня)
+Репозиторий + CI/CD pipeline
+Docker Compose для локальной разработки
+Настройка Supabase/PostgreSQL, Redis, S3
+Настройка Telegram-бота (BotFather)
+Регистрация в Google AI Studio
+ADR (Architectural Decision Record) с обоснованием стека
+Спринт 1 — Фундамент (5-7 дней)
+Все таблицы БД + миграции
+Auth-модуль (Telegram Login Widget + JWT)
+Базовый layout, i18n
+Лендинг + FAQ + статические страницы
+Health-check endpoint
+Спринт 2 — Мастер создания (7-8 дней)
+Все шаги мастера (событие → подтип → данные → текст → стиль)
+Endpoints для events, text-templates, templates, mood-tags
+Автосохранение черновиков
+Спринт 3 — AI-генерация (7-8 дней)
+Интеграция Nano Banana (оба пути)
+Очередь + worker
+WebSocket/SSE для live-обновлений
+Экран ожидания + превью + скачивание
+Дополнительные форматы (9:16, 1:1) по запросу
+Кэширование ai_generation_cache
+Спринт 4 — Личный кабинет и виральность (3-4 дня)
+Личный кабинет со списком приглашений
+Настройки
+Модуль шеринга (share_events)
+Telegram-уведомления (welcome, generation_complete)
+Спринт 5 — Админ-панель (5-7 дней)
+Все админ-эндпоинты
+Dashboard
+CRUD-интерфейсы для events, text-templates, templates, mood-tags, ai-presets
+Логи и мониторинг
+Спринт 6 — Полировка и запуск (3-5 дней)
+Аналитика (analytics_events)
+SEO
+Cron-джобы (удаление истёкших, daily_metrics)
+Rate limiting
+Sentry, uptime monitoring
+Финальное тестирование
+Production deploy
+12.2. Definition of Done
+Задача считается выполненной, только если:
+Код соответствует стандартам (lint passes)
+Тесты написаны и проходят
+Функциональность работает на staging
+Демо владельцу проведено
+Документация обновлена
+12.3. Критерии финальной приёмки MVP
+Пользователь может залогиниться через Telegram Login Widget
+Пользователь может создать приглашение для всех 6 типов событий
+Работают оба пути генерации (JPG-шаблон и AI с нуля)
+Работают 3 языка интерфейса и генерации
+Пользователь получает HD-файл и может скачать 3 формата
+Работает шеринг в Telegram, WhatsApp, копирование ссылки
+Личный кабинет отображает всю историю
+Админ может создавать/редактировать все типы контента
+Работают Telegram-уведомления
+Rate limiting активен
+Cron-джобы работают
+Sentry подключён и получает ошибки
+Все страницы responsive (проверено на 360px, 768px, 1440px)
+Работает и в Chrome, Safari, Firefox актуальных версий
+Приложение развёрнуто на production-домене lutfan.uz
+12.4. Что НЕ входит в приёмку MVP
+Telegram Mini App
+Мобильные приложения
+Оплата
+Реферальная программа
+Промо-коды
+13. Ожидаемая документация от разработчика
+README.md — обзор, установка, запуск, деплой
+ARCHITECTURE.md — описание архитектуры, слоёв, взаимодействий
+API.md — или Swagger/OpenAPI автогенерация
+DATABASE.md — ER-диаграмма, описание таблиц
+DEPLOYMENT.md — процесс деплоя, доступы, откат
+ADR (Architectural Decision Records) — по каждому значимому решению
+Runbook — что делать при типовых инцидентах (падение AI-провайдера, БД, S3)
+14. Контакты и коммуникация
+Заказчик: Eltuzar (владелец проекта Lutfan AI, соло-фаундер).
+Формат работы:
+Еженедельный созвон (30-45 мин) — демо прогресса, планирование
+Ежедневный текстовый статус в Telegram (что сделано, что планируется, блокеры)
+Все задачи — в трекере (Linear/Notion/GitHub Issues, на выбор разработчика)
+Все вопросы по функциональности — сначала в трекере, потом обсуждаем
+— Конец документа —
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+Primary key
+telegram_id
+BIGINT UNIQUE
+нет
+Уникальный ID из Telegram
+username
+VARCHAR(64)
+да
+Telegram @username
+first_name
+VARCHAR(128)
+нет
+Имя из Telegram
+last_name
+VARCHAR(128)
+да
+Фамилия
+photo_url
+VARCHAR(512)
+да
+Аватар из Telegram
+phone
+VARCHAR(20)
+да
+Опционально
+language
+ENUM
+нет
+uz-cyrl / uz-latn / ru, default uz-cyrl
+role
+ENUM
+нет
+user / admin, default user
+is_banned
+BOOLEAN
+нет
+default false
+ban_reason
+TEXT
+да
+last_login_at
+TIMESTAMPTZ
+да
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+user_id
+UUID FK
+нет
+→ users.id ON DELETE CASCADE
+refresh_token_hash
+VARCHAR(256)
+нет
+SHA256 refresh token
+ip_address
+VARCHAR(45)
+да
+IPv4/IPv6
+user_agent
+TEXT
+да
+expires_at
+TIMESTAMPTZ
+нет
+revoked_at
+TIMESTAMPTZ
+да
+null = активная сессия
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+slug
+VARCHAR(32) UNIQUE
+нет
+nikoh / aqiqa / sunnat / birthday / hudoyi / hayit
+icon_url
+VARCHAR(512)
+да
+S3-путь к иконке
+sort_order
+INT
+нет
+Порядок в галерее
+is_active
+BOOLEAN
+нет
+default true
+name_translations
+JSONB
+нет
+{uz-cyrl, uz-latn, ru}
+description_translations
+JSONB
+да
+Описание для карточки
+subtypes
+JSONB
+да
+Массив подтипов (см. пример ниже)
+fields_schema
+JSONB
+нет
+Схема полей ввода (см. пример)
+color_themes
+JSONB
+да
+Цвета интерфейса для этого события
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+event_slug
+VARCHAR(32) FK
+нет
+→ events_config.slug
+subtype_slug
+VARCHAR(32)
+да
+Привязка к подтипу или null (для всех)
+inviter_type
+VARCHAR(32)
+да
+parents / grandparents / self / family / null (для всех)
+language
+ENUM
+нет
+uz-cyrl / uz-latn / ru
+title
+VARCHAR(128)
+нет
+«Классический», «Тёплый семейный»
+preview_text
+TEXT
+нет
+Полный текст с плейсхолдерами {child_name}, {event_date}, ...
+variables_used
+VARCHAR[]
+нет
+Массив плейсхолдеров, используемых в шаблоне
+tone
+ENUM
+да
+classic / warm / formal / poetic / modern
+sort_order
+INT
+нет
+Порядок в галерее
+is_featured
+BOOLEAN
+нет
+Рекомендованный
+usage_count
+INT
+нет
+default 0, для сортировки
+is_active
+BOOLEAN
+нет
+default true
+created_by_admin
+UUID FK
+нет
+→ users.id
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+event_slug
+VARCHAR(32) FK
+нет
+→ events_config.slug
+subtype_slug
+VARCHAR(32)
+да
+theme_name
+VARCHAR(128)
+нет
+«Rose Gold Velvet»
+style_tags
+VARCHAR[]
+да
+minimalist / floral / oriental
+color_palette
+VARCHAR[]
+да
+rose_gold / emerald / ivory
+mood_tags
+VARCHAR[]
+да
+elegant / warm / classic
+bg_url
+VARCHAR(512)
+нет
+S3 URL — HD-фон 2400×3000 (или больше)
+bg_url_preview
+VARCHAR(512)
+нет
+Уменьшенное превью 600×750 для галереи
+ai_composition_prompt
+TEXT
+нет
+Инструкция для Nano Banana как размещать текст
+supports_dark_text
+BOOLEAN
+нет
+На этом фоне лучше тёмный или светлый текст
+dominant_colors
+VARCHAR[]
+да
+Hex-коды доминирующих цветов
+supported_formats
+VARCHAR[]
+нет
+['4:5', '9:16', '1:1']
+is_active
+BOOLEAN
+нет
+default true
+is_featured
+BOOLEAN
+нет
+На главной
+view_count
+INT
+нет
+default 0
+usage_count
+INT
+нет
+default 0
+created_by_admin
+UUID FK
+нет
+→ users.id
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+slug
+VARCHAR(32) UNIQUE
+нет
+rose_gold / peonies / minimalist
+category
+ENUM
+нет
+color / flowers / style / texture
+name_translations
+JSONB
+нет
+prompt_snippet
+VARCHAR(256)
+нет
+Фрагмент промпта: with rose gold accents
+icon_url
+VARCHAR(512)
+да
+sort_order
+INT
+нет
+is_active
+BOOLEAN
+нет
+default true
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+name
+VARCHAR(128)
+нет
+«Восточная роскошь»
+event_slug
+VARCHAR(32) FK
+да
+null = универсальный
+base_prompt
+TEXT
+нет
+Базовый промпт с плейсхолдерами {mood_tags} {text_blocks}
+negative_prompt
+TEXT
+да
+Что исключить
+model_params
+JSONB
+нет
+Параметры модели
+example_output_url
+VARCHAR(512)
+да
+Пример результата
+version
+INT
+нет
+default 1
+is_active
+BOOLEAN
+нет
+default true
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+user_id
+UUID FK
+нет
+→ users.id ON DELETE CASCADE
+status
+ENUM
+нет
+draft / generating / ready / failed
+event_slug
+VARCHAR(32) FK
+нет
+→ events_config.slug
+subtype_slug
+VARCHAR(32)
+да
+inviter_type
+VARCHAR(32)
+да
+language
+ENUM
+нет
+uz-cyrl / uz-latn / ru
+event_data
+JSONB
+нет
+Все введённые поля + text_source + final_text_blocks
+generation_path
+ENUM
+да
+template / ai_from_scratch
+template_id
+UUID FK
+да
+→ templates.id (для Пути 1)
+ai_preset_id
+UUID FK
+да
+→ ai_prompt_presets.id (для Пути 2)
+selected_mood_tags
+VARCHAR[]
+да
+slug-и из mood_tags
+custom_style_note
+TEXT
+да
+Свободный текст пользователя (опц)
+primary_format
+VARCHAR(8)
+нет
+'4:5' / '9:16' / '1:1', default '4:5'
+final_image_url
+VARCHAR(512)
+да
+Основной HD-файл (4:5)
+additional_formats
+JSONB
+да
+{'9:16': url, '1:1': url}
+event_date
+DATE
+нет
+Дата мероприятия
+generation_count
+INT
+нет
+default 0, счётчик всех генераций
+last_generation_at
+TIMESTAMPTZ
+да
+expires_at
+TIMESTAMPTZ
+нет
+created_at + 90 дней (для cron удаления)
+deleted_at
+TIMESTAMPTZ
+да
+created_at
+TIMESTAMPTZ
+нет
+updated_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+invitation_id
+UUID FK
+нет
+→ invitations.id ON DELETE CASCADE
+action
+VARCHAR(64)
+нет
+created / edited / regenerated / downloaded / shared
+snapshot
+JSONB
+да
+Состояние на момент действия
+ip_address
+VARCHAR(45)
+да
+user_agent
+TEXT
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+invitation_id
+UUID FK
+нет
+→ invitations.id
+user_id
+UUID FK
+нет
+→ users.id
+model
+VARCHAR(64)
+нет
+gemini-2.5-flash-image
+generation_path
+ENUM
+нет
+template / ai_from_scratch
+prompt_preset_id
+UUID FK
+да
+base_image_url
+VARCHAR(512)
+да
+JPG-заготовка (если Путь 1)
+final_prompt
+TEXT
+нет
+Итоговый промпт после композитинга
+negative_prompt
+TEXT
+да
+model_params
+JSONB
+да
+status
+ENUM
+нет
+queued / processing / success / failed / timeout
+result_url
+VARCHAR(512)
+да
+error_message
+TEXT
+да
+provider_cost_usd
+DECIMAL(8,4)
+да
+duration_ms
+INT
+да
+queued_at
+TIMESTAMPTZ
+нет
+started_at
+TIMESTAMPTZ
+да
+completed_at
+TIMESTAMPTZ
+да
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+cache_key
+VARCHAR(128) UNIQUE
+нет
+SHA256(preset_id + sorted mood_tags + text_hash + language)
+generation_path
+ENUM
+нет
+template / ai_from_scratch
+result_url
+VARCHAR(512)
+нет
+hit_count
+INT
+нет
+default 1
+created_at
+TIMESTAMPTZ
+нет
+last_used_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+invitation_id
+UUID FK
+нет
+→ invitations.id ON DELETE CASCADE
+file_type
+ENUM
+нет
+hd_4_5 / hd_9_16 / hd_1_1
+url
+VARCHAR(512)
+нет
+S3 URL
+cdn_url
+VARCHAR(512)
+нет
+CDN URL
+file_size_bytes
+BIGINT
+нет
+width
+INT
+нет
+height
+INT
+нет
+expires_at
+TIMESTAMPTZ
+нет
+created_at + 90 дней
+deleted_at
+TIMESTAMPTZ
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+user_id
+UUID FK
+нет
+→ users.id
+type
+ENUM
+нет
+welcome / generation_complete / expiring_soon / seasonal
+channel
+ENUM
+нет
+telegram_bot / in_app, default telegram_bot
+payload
+JSONB
+нет
+Текст, кнопки, файлы
+language
+ENUM
+нет
+scheduled_at
+TIMESTAMPTZ
+нет
+sent_at
+TIMESTAMPTZ
+да
+status
+ENUM
+нет
+scheduled / sent / failed / cancelled
+error_message
+TEXT
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+invitation_id
+UUID FK
+нет
+→ invitations.id
+shared_by
+UUID FK
+нет
+→ users.id
+platform
+ENUM
+нет
+telegram / whatsapp / instagram / copy_link / other
+clicked_by_ip
+VARCHAR(45)
+да
+clicked_by_user_id
+UUID FK
+да
+resulted_in_signup
+BOOLEAN
+нет
+default false
+resulted_in_signup_user_id
+UUID FK
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+user_id
+UUID FK
+да
+null = гость
+session_id
+VARCHAR(64)
+нет
+event_name
+VARCHAR(64)
+нет
+invitation_started / template_selected / ai_generated / ...
+properties
+JSONB
+да
+utm_source
+VARCHAR(64)
+да
+utm_medium
+VARCHAR(64)
+да
+utm_campaign
+VARCHAR(64)
+да
+referrer_url
+VARCHAR(512)
+да
+user_agent
+TEXT
+да
+ip_address
+VARCHAR(45)
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+date
+DATE UNIQUE
+нет
+new_users
+INT
+нет
+dau
+INT
+нет
+invitations_created
+INT
+нет
+invitations_completed
+INT
+нет
+reached "ready" status
+ai_generations_count
+INT
+нет
+ai_cost_usd
+DECIMAL(10,4)
+нет
+downloads_count
+INT
+нет
+shares_count
+INT
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+level
+ENUM
+нет
+info / warning / error / critical
+module
+VARCHAR(64)
+нет
+auth / ai_router / renderer / ...
+message
+TEXT
+нет
+context
+JSONB
+да
+user_id
+UUID FK
+да
+invitation_id
+UUID FK
+да
+created_at
+TIMESTAMPTZ
+нет
+Поле
+Тип
+Nullable
+Описание
+id
+UUID
+нет
+PK
+admin_id
+UUID FK
+нет
+→ users.id (где role = admin)
+action
+VARCHAR(64)
+нет
+user_banned / template_created / promo_created / ...
+target_type
+VARCHAR(64)
+да
+user / invitation / template / ...
+target_id
+UUID
+да
+changes
+JSONB
+да
+before/after diff
+ip_address
+VARCHAR(45)
+нет
+created_at
+TIMESTAMPTZ
+нет
+Метод
+Путь
+Описание
+POST
+/api/v1/auth/telegram
+Валидация Telegram Login Widget данных, создание/поиск пользователя, выдача JWT
+POST
+/api/v1/auth/refresh
+Обновление access token по refresh cookie
+POST
+/api/v1/auth/logout
+Ревокация refresh token
+GET
+/api/v1/auth/me
+Профиль текущего пользователя
+Метод
+Путь
+Описание
+GET
+/api/v1/user/profile
+Профиль
+PATCH
+/api/v1/user/profile
+Обновить language, phone
+GET
+/api/v1/user/invitations
+Список приглашений пользователя (пагинация, фильтр по event_slug, status)
+Метод
+Путь
+Описание
+GET
+/api/v1/events
+Список активных мероприятий с subtypes и fields_schema
+GET
+/api/v1/events/:slug
+Детали одного мероприятия
+GET
+/api/v1/text-templates
+Библиотека шаблонных текстов. Фильтры: event_slug (обязательно), subtype_slug, inviter_type, language, tone. Сортировка по usage_count DESC
+GET
+/api/v1/templates
+JPG-шаблоны. Фильтры: event_slug (обязательно), subtype_slug, style_tags[], color_palette[]. Пагинация
+GET
+/api/v1/templates/:id
+Детали JPG-шаблона
+GET
+/api/v1/mood-tags
+Все активные mood_tags, сгруппированы по category
+GET
+/api/v1/ai-presets
+AI-пресеты для генерации с нуля. Фильтр по event_slug
+Метод
+Путь
+Описание
+POST
+/api/v1/invitations
+Создать черновик (event_slug, subtype_slug, language)
+GET
+/api/v1/invitations/:id
+Получить приглашение
+PATCH
+/api/v1/invitations/:id
+Обновить черновик (event_data, generation_path, template_id или ai_preset_id + mood_tags)
+POST
+/api/v1/invitations/:id/generate
+Запустить AI-генерацию (async). Возвращает 202 + job_id
+GET
+/api/v1/invitations/:id/status
+Опрос статуса генерации (fallback для WebSocket)
+POST
+/api/v1/invitations/:id/formats
+Запросить дополнительный формат (9:16 или 1:1) — генерирует новую версию
+DELETE
+/api/v1/invitations/:id
+Мягкое удаление приглашения (deleted_at = now)
+POST
+/api/v1/invitations/:id/share
+Записать share_event (platform в теле)
+Метод
+Путь
+Описание
+POST
+/api/v1/analytics/events
+Отправка события с фронта. Тело: {event_name, properties, session_id, utm_*}
+Метод
+Путь
+Описание
+GET
+/api/v1/admin/dashboard
+Ключевые метрики за периоды (день/неделя/месяц)
+GET
+/api/v1/admin/users
+Список пользователей (поиск, фильтры, пагинация)
+GET
+/api/v1/admin/users/:id
+Детали пользователя
+PATCH
+/api/v1/admin/users/:id
+is_banned, ban_reason, role
+GET
+/api/v1/admin/events
+CRUD мероприятий
+POST
+/api/v1/admin/events
+PATCH
+/api/v1/admin/events/:id
+DELETE
+/api/v1/admin/events/:id
+GET
+/api/v1/admin/text-templates
+CRUD шаблонов текстов
+POST
+/api/v1/admin/text-templates
+PATCH
+/api/v1/admin/text-templates/:id
+DELETE
+/api/v1/admin/text-templates/:id
+GET
+/api/v1/admin/templates
+CRUD JPG-шаблонов
+POST
+/api/v1/admin/templates
+multipart/form-data (JPG + метаданные)
+PATCH
+/api/v1/admin/templates/:id
+DELETE
+/api/v1/admin/templates/:id
+GET
+/api/v1/admin/mood-tags
+CRUD mood_tags
+POST
+/api/v1/admin/mood-tags
+PATCH
+/api/v1/admin/mood-tags/:id
+DELETE
+/api/v1/admin/mood-tags/:id
+GET
+/api/v1/admin/ai-presets
+CRUD AI-пресетов
+POST
+/api/v1/admin/ai-presets
+PATCH
+/api/v1/admin/ai-presets/:id
+DELETE
+/api/v1/admin/ai-presets/:id
+POST
+/api/v1/admin/ai-presets/:id/test
+Тестовая генерация с тестовыми данными
+GET
+/api/v1/admin/invitations
+Список всех приглашений (фильтры)
+GET
+/api/v1/admin/ai-generations
+Логи AI-генераций (для отладки)
+GET
+/api/v1/admin/system-logs
+Системные логи
+GET
+/api/v1/admin/analytics/export
+Экспорт daily_metrics в CSV

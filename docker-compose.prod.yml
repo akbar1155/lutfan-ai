@@ -1,0 +1,158 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lutfan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-lutfan}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lutfan} -d ${POSTGRES_DB:-lutfan}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - lutfan
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - lutfan
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    networks:
+      - lutfan
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${S3_ACCESS_KEY} $${S3_SECRET_KEY};
+      mc mb -p local/$${S3_BUCKET_PUBLIC:-lutfan-public} || true;
+      mc mb -p local/$${S3_BUCKET_PRIVATE:-lutfan-private} || true;
+      mc anonymous set download local/$${S3_BUCKET_PUBLIC:-lutfan-public} || true;
+      exit 0;
+      "
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET_PUBLIC: ${S3_BUCKET_PUBLIC:-lutfan-public}
+      S3_BUCKET_PRIVATE: ${S3_BUCKET_PRIVATE:-lutfan-private}
+    networks:
+      - lutfan
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      RUN_MIGRATIONS: "1"
+      RUN_SEED: ${RUN_SEED:-1}
+      ALLOW_DEV_LOGIN: "false"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lutfan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lutfan}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      S3_ENDPOINT: http://minio:9000
+      CDN_BASE_URL: ${CDN_BASE_URL}
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    networks:
+      - lutfan
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "worker", "-l", "info", "--concurrency", "1"]
+    env_file:
+      - .env.production
+    environment:
+      RUN_MIGRATIONS: "0"
+      RUN_SEED: "0"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lutfan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lutfan}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      S3_ENDPOINT: http://minio:9000
+      CDN_BASE_URL: ${CDN_BASE_URL}
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - lutfan
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api/v1
+        VITE_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-lutfan_ai_bot}
+        VITE_ENABLE_DEV_LOGIN: "false"
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - media_data:/var/lutfan-media:ro
+    depends_on:
+      - backend
+    networks:
+      - lutfan
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  media_data:
+  static_data:
+
+networks:
+  lutfan:
+    driver: bridge

@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.sqlite3
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# Env & secrets
+.env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+!.env.production.example
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Media / logs
+media/
+staticfiles/
+*.log
+logs/
+
+# Docker volumes (if bind-mounted)
+.minio-data/
+.postgres-data/

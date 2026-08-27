@@ -1,0 +1,698 @@
+{
+  "nikoh": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu qutlug‘ kunda Sizning tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning eng quvonchli kuni — nikoh to‘yimizga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Hayotimizning yangi sahifasi boshlanayotgan ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila nikoh to‘yimizga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Ikki qalbning birlashuviga guvoh bo‘lib, quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni nikoh to‘yimizga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz bayramimizni yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Hayotimizdagi eng muhim kunlardan birini Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli va unutilmas kun — nikoh to‘yimizga samimiy taklif etamiz. Ikki qalbni birlashtirayotgan ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу қутлуғ кунда Сизнинг ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг энг қувончли куни — никоҳ тўйимизга Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ҳаётимизнинг янги саҳифаси бошланаётган ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила никоҳ тўйимизга таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Икки қалбнинг бирлашувига гувоҳ бўлиб, қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни никоҳ тўйимизга таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз байрамимизни янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Ҳаётимиздаги энг муҳим кунлардан бирини Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли ва унутилмас кун — никоҳ тўйимизга самимий таклиф этамиз. Икки қалбни бирлаштираётган ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на самый радостный день нашей семьи — нашу свадьбу. Приходите и разделите нашу радость своими добрыми пожеланиями и молитвами. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. В день, когда начинается новая страница нашей жизни, будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания и искренние молитвы сделают нашу радость ещё полнее.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на нашу свадьбу. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас стать свидетелями соединения двух сердец и разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на нашу свадьбу. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает наш праздник ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами один из самых важных дней нашей жизни. Вас ждут тёплая компания и радостные мгновения.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на самый радостный и незабываемый день нашей жизни — нашу свадьбу. В эти благословенные мгновения соединения двух сердец Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ]
+  },
+  "aqiqa": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni farzandimiz aqiqa marosimiga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — farzandimiz aqiqa marosimiga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni farzandimiz aqiqa marosimiga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni farzandimiz aqiqa marosimiga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila farzandimiz aqiqa marosimiga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni farzandimiz aqiqa marosimiga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni farzandimiz aqiqa marosimiga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz aqiqa marosimini yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — farzandimiz aqiqa marosimiga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни фарзандимиз ақиқа маросимига самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — фарзандимиз ақиқа маросимига Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни фарзандимиз ақиқа маросимига самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни фарзандимиз ақиқа маросимига самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила фарзандимиз ақиқа маросимига таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни фарзандимиз ақиқа маросимига самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни фарзандимиз ақиқа маросимига таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз ақиқа маросимини янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — фарзандимиз ақиқа маросимига самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на акики нашего ребёнка. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — акики нашего ребёнка. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на акики нашего ребёнка. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на акики нашего ребёнка. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на акики нашего ребёнка. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на акики нашего ребёнка. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на акики нашего ребёнка. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает акику ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — акики нашего ребёнка. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ]
+  },
+  "sunnat": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni o‘g‘limizning sunnat to‘yiga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — o‘g‘limizning sunnat to‘yiga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni o‘g‘limizning sunnat to‘yiga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni o‘g‘limizning sunnat to‘yiga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila o‘g‘limizning sunnat to‘yiga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni o‘g‘limizning sunnat to‘yiga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni o‘g‘limizning sunnat to‘yiga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz sunnat to‘yini yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — o‘g‘limizning sunnat to‘yiga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни ўғлимизнинг суннат тўйига самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — ўғлимизнинг суннат тўйига Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни ўғлимизнинг суннат тўйига самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни ўғлимизнинг суннат тўйига самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила ўғлимизнинг суннат тўйига таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни ўғлимизнинг суннат тўйига самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни ўғлимизнинг суннат тўйига таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз суннат тўйини янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — ўғлимизнинг суннат тўйига самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на суннат тоя нашего сына. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — суннат тоя нашего сына. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на суннат тоя нашего сына. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на суннат тоя нашего сына. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на суннат тоя нашего сына. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на суннат тоя нашего сына. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на суннат тоя нашего сына. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает суннат той ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — суннат тоя нашего сына. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ]
+  },
+  "birthday": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni tug‘ilgan kun bayramimizga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — tug‘ilgan kun bayramimizga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni tug‘ilgan kun bayramimizga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni tug‘ilgan kun bayramimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila tug‘ilgan kun bayramimizga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni tug‘ilgan kun bayramimizga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni tug‘ilgan kun bayramimizga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz tug‘ilgan kun bayramini yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — tug‘ilgan kun bayramimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни туғилган кун байрамимизга самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — туғилган кун байрамимизга Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни туғилган кун байрамимизга самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни туғилган кун байрамимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила туғилган кун байрамимизга таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни туғилган кун байрамимизга самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни туғилган кун байрамимизга таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз туғилган кун байрамини янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — туғилган кун байрамимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на день рождения. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — день рождения. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на день рождения. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на день рождения. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на день рождения. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на день рождения. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на день рождения. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает день рождения ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — день рождения. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ]
+  },
+  "hudoyi": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni hudoyi dasturxonimizga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — hudoyi dasturxonimizga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni hudoyi dasturxonimizga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni hudoyi dasturxonimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila hudoyi dasturxonimizga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni hudoyi dasturxonimizga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni hudoyi dasturxonimizga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz hudoyi dasturxonini yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — hudoyi dasturxonimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни худойи дастурхонимизга самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — худойи дастурхонимизга Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни худойи дастурхонимизга самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни худойи дастурхонимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила худойи дастурхонимизга таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни худойи дастурхонимизга самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни худойи дастурхонимизга таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз худойи дастурхонини янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — худойи дастурхонимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на худое. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — худое. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на худое. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на худое. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на худое. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на худое. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на худое. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает худое ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — худое. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      }
+    ]
+  },
+  "hayit": {
+    "uz-latn": [
+      {
+        "title": "Klassik 1",
+        "preview": "Assalomu alaykum!\nAziz mehmonimiz, Sizni oilaviy hayit ziyofatimizga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — oilaviy hayit ziyofatimizga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Klassik 2",
+        "preview": "Aziz mehmonlar!\nSizni oilaviy hayit ziyofatimizga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 2",
+        "preview": "Aziz mehmonlar!\nSizni oilaviy hayit ziyofatimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Tantanavor",
+        "preview": "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila oilaviy hayit ziyofatimizga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Duoli",
+        "preview": "Aziz mehmonlar!\nSizni oilaviy hayit ziyofatimizga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Qisqa va lo‘nda",
+        "preview": "Aziz mehmonlar!\nSizni oilaviy hayit ziyofatimizga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Zamonaviy",
+        "preview": "Aziz mehmonlar!\nSizning tashrifingiz hayit ziyofatini yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Premium variant",
+        "preview": "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — oilaviy hayit ziyofatimizga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.\n{venue_name}, {venue_address}"
+      }
+    ],
+    "uz-cyrl": [
+      {
+        "title": "Классик 1",
+        "preview": "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни оилавий ҳайт зиёфатимизга самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 1",
+        "preview": "Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — оилавий ҳайт зиёфатимизга Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классик 2",
+        "preview": "Азиз меҳмонлар!\nСизни оилавий ҳайт зиёфатимизга самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Самимий 2",
+        "preview": "Азиз меҳмонлар!\nСизни оилавий ҳайт зиёфатимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тантанавор",
+        "preview": "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила оилавий ҳайт зиёфатимизга таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Дуоли",
+        "preview": "Азиз меҳмонлар!\nСизни оилавий ҳайт зиёфатимизга самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Қисқа ва лўнда",
+        "preview": "Азиз меҳмонлар!\nСизни оилавий ҳайт зиёфатимизга таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Замонавий",
+        "preview": "Азиз меҳмонлар!\nСизнинг ташрифингиз ҳайт зиёфатини янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум вариант",
+        "preview": "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — оилавий ҳайт зиёфатимизга самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.\n{venue_name}, {venue_address}"
+      }
+    ],
+    "ru": [
+      {
+        "title": "Классика 1",
+        "preview": "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на семейный праздник Хаит. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 1",
+        "preview": "Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — семейный праздник Хаит. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Классика 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на семейный праздник Хаит. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Тёплое 2",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на семейный праздник Хаит. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Торжественный",
+        "preview": "Дорогие гости!\nС глубоким уважением приглашаем Вас на семейный праздник Хаит. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "С дуа",
+        "preview": "Дорогие гости!\nИскренне приглашаем Вас на семейный праздник Хаит. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Кратко",
+        "preview": "Дорогие гости!\nПриглашаем Вас на семейный праздник Хаит. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Современный",
+        "preview": "Дорогие гости!\nВаш визит сделает праздник Хаит ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Премиум",
+        "preview": "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — семейный праздник Хаит. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.\n{venue_name}, {venue_address}"
+      }
+    ]
+  }
+}
