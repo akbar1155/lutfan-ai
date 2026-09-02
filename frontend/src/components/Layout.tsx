@@ -16,7 +16,9 @@ export default function Layout() {
   const { user, loginDev, logout } = useAuth();
   const location = useLocation();
   const current = normalizeUiLang(i18n.language);
-  const isAdmin = location.pathname.startsWith("/admin");
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const isAdminAuthed = user?.role === "admin";
+  const isAdmin = isAdminRoute;
   const isWizard = location.pathname.startsWith("/create");
   const isHome = location.pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,20 +36,30 @@ export default function Layout() {
     <div
       className={[
         "shell",
-        isAdmin ? "shell-admin" : "",
+        isAdminAuthed ? "shell-admin" : "",
+        isAdminRoute && !isAdminAuthed ? "shell-admin-gate" : "",
         isHome ? "shell-home" : "",
         isWizard ? "shell-wizard" : "",
       ]
         .filter(Boolean)
         .join(" ")}
     >
-      <header className={`top ${isHome ? "top-home" : ""} ${isAdmin ? "top-admin" : ""}`}>
+      <header
+        className={[
+          "top",
+          isHome ? "top-home" : "",
+          isAdminAuthed ? "top-admin" : "",
+          isAdminRoute && !isAdminAuthed ? "top-admin-gate" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         <div className="top-inner">
           <div className="top-brand-cluster">
             <Link to="/" className="brand">
               {t("brand")}
             </Link>
-            {isAdmin && (
+            {isAdminRoute && (
               <Link to="/" className="admin-back-link">
                 {t("back")}
               </Link>
@@ -102,6 +114,7 @@ export default function Layout() {
               </button>
             ) : (
               !isWizard &&
+              !isAdminRoute &&
               showDevLogin && (
                 <button
                   type="button"
@@ -118,7 +131,7 @@ export default function Layout() {
         </div>
       </header>
       <Outlet />
-      {!isAdmin && (
+      {!isAdminRoute && (
         <footer className="footer">
           <span className="brand footer-brand">{t("brand")}</span>
           <Link to="/privacy-policy">{t("privacy")}</Link>

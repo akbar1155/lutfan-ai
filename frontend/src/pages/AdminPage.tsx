@@ -284,59 +284,74 @@ export default function AdminPage() {
   }, [tab, textsEventSlug, eventOptions]);
 
   if (!user || user.role !== "admin") {
+    const canSubmit = Boolean(adminUsername.trim() && adminPassword);
     return (
-      <main className="page narrow admin-login-page">
-        <header className="page-head">
-          <h1>{t("admin")}</h1>
-          <p>{t("adminLoginHint")}</p>
-        </header>
-        <form
-          className="admin-login-card"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setLoginBusy(true);
-            setLoginError(null);
-            void loginAdmin(adminUsername.trim(), adminPassword)
-              .catch((err: Error) => {
-                setLoginError(err.message || t("adminLoginFailed"));
-              })
-              .finally(() => setLoginBusy(false));
-          }}
-        >
-          <label>
-            <span>{t("adminUsername")}</span>
-            <input
-              autoComplete="username"
-              value={adminUsername}
-              onChange={(e) => setAdminUsername(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            <span>{t("adminPassword")}</span>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              required
-            />
-          </label>
-          {loginError ? <p className="error">{loginError}</p> : null}
-          <button type="submit" className="cta" disabled={loginBusy || !adminUsername || !adminPassword}>
-            {loginBusy ? t("loading") : t("adminLogin")}
-          </button>
-        </form>
-        {import.meta.env.DEV ? (
-          <button
-            type="button"
-            className="ghost"
-            style={{ marginTop: "0.75rem" }}
-            onClick={() => void loginDev(true).catch(() => undefined)}
+      <main className="admin-login-gate">
+        <section className="admin-login-panel" aria-labelledby="admin-login-title">
+          <div className="admin-login-brand">
+            <span className="admin-login-badge">{t("brand")}</span>
+            <h1 id="admin-login-title">{t("admin")}</h1>
+            <p>{t("adminLoginHint")}</p>
+          </div>
+          <form
+            className="admin-login-card"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!canSubmit || loginBusy) return;
+              setLoginBusy(true);
+              setLoginError(null);
+              void loginAdmin(adminUsername.trim(), adminPassword)
+                .catch((err: Error) => {
+                  setLoginError(err.message || t("adminLoginFailed"));
+                })
+                .finally(() => setLoginBusy(false));
+            }}
           >
-            {t("adminDevLogin")}
-          </button>
-        ) : null}
+            <label>
+              <span>{t("adminUsername")}</span>
+              <input
+                autoComplete="username"
+                autoFocus
+                placeholder="admin"
+                value={adminUsername}
+                onChange={(e) => setAdminUsername(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span>{t("adminPassword")}</span>
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                required
+              />
+            </label>
+            {loginError ? (
+              <p className="admin-login-error" role="alert">
+                {loginError}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              className="admin-login-submit"
+              disabled={loginBusy || !canSubmit}
+            >
+              {loginBusy ? t("loading") : t("adminLogin")}
+            </button>
+          </form>
+          {import.meta.env.DEV ? (
+            <button
+              type="button"
+              className="admin-login-dev"
+              onClick={() => void loginDev(true).catch(() => undefined)}
+            >
+              {t("adminDevLogin")}
+            </button>
+          ) : null}
+        </section>
       </main>
     );
   }
