@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, type EventConfig, type JpgTemplate } from "../api/client";
+import { EventIcon } from "../components/EventIcons";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import { eventDisplayName, normalizeUiLang, pickTranslation } from "../i18n/lang";
 
@@ -131,6 +132,7 @@ export function GalleryPage() {
               className={filter === ev.slug ? "choice-pill active" : "choice-pill"}
               onClick={() => setFilter(ev.slug)}
             >
+              <EventIcon slug={ev.slug} size={16} />
               {pickTranslation(ev.name_translations, lang) ||
                 eventDisplayName(ev.slug, lang)}
             </button>

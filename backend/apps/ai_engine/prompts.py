@@ -44,6 +44,36 @@ def _event_slug(invitation: Invitation) -> str:
     return ""
 
 
+def _inject_hayit_occasion(body: str, occasion: str) -> str:
+    """Swap generic Hayit wording for Ramazon / Qurbon when the body is still generic."""
+    occ = (occasion or "").strip()
+    text = (body or "").replace("{hayit_occasion}", occ or "Hayit")
+    if not occ:
+        return text
+    if occ.lower() in text.lower():
+        return text
+    patterns = [
+        (r"(?i)oilaviy hayit ziyofatimiz", f"oilaviy {occ} ziyofatimiz"),
+        (r"(?i)hayit ziyofatimiz", f"{occ} ziyofatimiz"),
+        (r"(?i)hayit ziyofatini", f"{occ} ziyofatini"),
+        (r"(?i)hayit ziyofati", f"{occ} ziyofati"),
+        (r"(?i)hayit bayrami", occ),
+        (r"(?i)оилавий ҳайт зиёфатимиз", f"оилавий {occ} зиёфатимиз"),
+        (r"(?i)ҳайт зиёфатимиз", f"{occ} зиёфатимиз"),
+        (r"(?i)ҳайт зиёфатини", f"{occ} зиёфатини"),
+        (r"(?i)ҳайт зиёфати", f"{occ} зиёфати"),
+        (r"(?i)ҳайт байрами", occ),
+        (r"(?i)семейный праздник Хаит", occ),
+        (r"(?i)праздника Хаит", occ),
+        (r"(?i)праздник Хаит", occ),
+    ]
+    for pat, repl in patterns:
+        updated, n = re.subn(pat, repl, text, count=1)
+        if n:
+            return updated
+    return text
+
+
 def _inject_child_name(body: str, child: str, lang: str) -> str:
     """Put the child's name in the body instead of using it as a footer."""
     child = (child or "").strip()
@@ -140,10 +170,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     if len(valid_slots) >= 2:
         from apps.core.dates import format_display_datetime
 
-        from .layout import condense_invite_body
-
-        body = condense_invite_body(body)
-
+        # Keep the user's full body — layout shrinks fonts to fit; do not truncate.
         lines: list[str] = []
         preferred = list(invitation.subtype_slugs or []) or list(valid_slots.keys())
         # Chronological; primary nikoh first on ties
@@ -190,9 +217,10 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
         if footer and footer.lower() == child.lower():
             footer = ""
 
-    # Hayit: no calendar date/time on the card
+    # Hayit: no calendar date/time on the card; name Ramazon vs Qurbon in the body
     if event_slug == "hayit":
         date_time = ""
+        body = _inject_hayit_occasion(body, _subtype_label(invitation))
 
     return {
         "header": header,
@@ -293,7 +321,16 @@ EVENT_STYLE = {
         "Hudoyi: calm spiritual elegance, soft neutrals, minimal ornament."
     ),
     "hayit": (
-        "Hayit: festive warm tones, soft floral/geometric border, premium feel."
+        "Hayit / Eid gathering: festive warm cream paper, deep green and copper "
+        "accents, soft floral or geometric border, premium feel. No animals, no text."
+    ),
+    "ramazon_hayiti": (
+        "Eid al-Fitr (Ramazon hayiti): joyful feast mood, lantern or crescent "
+        "ornaments only at the edges, warm festive light."
+    ),
+    "qurbon_hayiti": (
+        "Eid al-Adha (Qurbon hayiti): dignified festive feast, geometric Islamic "
+        "corner ornaments, no animals, no text."
     ),
 }
 
@@ -344,6 +381,15 @@ def _compose_quality_tail(
             "Premium Central Asian celebration invitation, elegant and modern.",
         ),
     ]
+    hayit_slug = ""
+    if event_slug == "hayit" and subtype_label:
+        lowered = subtype_label.lower()
+        if "ramazon" in lowered or "ramadan" in lowered or "fitr" in lowered:
+            hayit_slug = "ramazon_hayiti"
+        elif "qurbon" in lowered or "qurban" in lowered or "adha" in lowered:
+            hayit_slug = "qurbon_hayiti"
+    if hayit_slug and hayit_slug in EVENT_STYLE:
+        parts.append(EVENT_STYLE[hayit_slug])
     if subtype_label:
         parts.append(
             f"Occasion mood for: {subtype_label} "

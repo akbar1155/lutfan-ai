@@ -8,6 +8,7 @@ import { loginHintKey, showDevLogin } from "../auth/flags";
 import UiSelect from "../components/UiSelect";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import { eventDisplayName, normalizeUiLang } from "../i18n/lang";
+import { EventIcon } from "../components/EventIcons";
 import { formatDisplayDateTimeStamp } from "../utils/date";
 import { invitationContinuePath } from "../utils/wizardResume";
 
@@ -83,7 +84,10 @@ export function AccountPage() {
         <div className="list account-list">
           {items.map((inv) => (
             <Link key={inv.id} to={invitationContinuePath(inv)} className="list-item">
-              <strong>{eventDisplayName(inv.event_slug, lang)}</strong>
+              <strong>
+                <EventIcon slug={inv.event_slug} size={18} />
+                {eventDisplayName(inv.event_slug, lang)}
+              </strong>
               <span>{t(`status_${inv.status}`, { defaultValue: inv.status })}</span>
               <span>{formatDisplayDateTimeStamp(inv.created_at)}</span>
             </Link>

@@ -1,8 +1,16 @@
 import type { Invitation } from "../api/client";
+import { getSelectedSubtypeSlugs } from "./ceremonySchedule";
 
 type ResumeInvitation = Pick<
   Invitation,
-  "id" | "status" | "inviter_type" | "generation_path" | "event_data"
+  | "id"
+  | "status"
+  | "inviter_type"
+  | "generation_path"
+  | "event_data"
+  | "event_slug"
+  | "subtype_slug"
+  | "subtype_slugs"
 >;
 
 function hasVenue(inv: ResumeInvitation): boolean {
@@ -16,6 +24,9 @@ function hasBody(inv: ResumeInvitation): boolean {
 }
 
 function hasCompletedDetails(inv: ResumeInvitation): boolean {
+  if (inv.event_slug === "hayit" && !getSelectedSubtypeSlugs(inv).length) {
+    return false;
+  }
   if (inv.event_data?.details_done === true) return true;
   // Older drafts marked details as done by saving inviter_type.
   if (inv.inviter_type) return true;

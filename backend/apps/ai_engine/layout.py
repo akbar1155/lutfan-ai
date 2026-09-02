@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import textwrap
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -251,18 +250,19 @@ def _ink_colors(style_tags: Sequence[str] | None) -> dict[str, tuple[int, int, i
         accent = (20, 55, 48)
     return {
         "title": accent,
+        # Body stays close to title ink so long copy stays readable
         "body": (
-            min(255, accent[0] + 28),
-            min(255, accent[1] + 28),
-            min(255, accent[2] + 28),
+            min(255, accent[0] + 12),
+            min(255, accent[1] + 12),
+            min(255, accent[2] + 12),
         ),
         "meta": accent,
         "primary": accent,
         "venue": accent,
         "muted": (
-            min(255, accent[0] + 40),
-            min(255, accent[1] + 40),
-            min(255, accent[2] + 40),
+            min(255, accent[0] + 36),
+            min(255, accent[1] + 36),
+            min(255, accent[2] + 36),
         ),
         "gold": (180, 145, 85),
         "rule": (170, 140, 80),
@@ -298,29 +298,6 @@ def sort_schedule_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     if len(rows) < 2:
         return rows
     return sorted(rows, key=_schedule_sort_key)
-
-
-def condense_invite_body(
-    body: str,
-    *,
-    max_chars: int = 140,
-    max_sentences: int = 1,
-) -> str:
-    """Keep invite body short so date/venue stay the visual focus."""
-    text = re.sub(r"\s+", " ", (body or "").strip())
-    if not text or len(text) <= max_chars:
-        # Still cap to one sentence when multi-ceremony layout calls us
-        parts = re.split(r"(?<=[.!?…])\s+", text)
-        if max_sentences == 1 and len(parts) > 1 and len(text) > 90:
-            return parts[0].strip()
-        return text
-    parts = re.split(r"(?<=[.!?…])\s+", text)
-    if len(parts) > max_sentences:
-        text = " ".join(parts[:max_sentences]).strip()
-    if len(text) > max_chars:
-        cut = text[: max_chars - 1].rsplit(" ", 1)[0].rstrip(".,;: ")
-        text = f"{cut}…" if cut else text[:max_chars]
-    return text
 
 
 def format_card_datetime(raw: str, language: str | None = None) -> str:
@@ -415,33 +392,40 @@ def wrap_text(
     font: ImageFont.ImageFont,
     max_width: int,
 ) -> list[str]:
+    """Pixel-accurate wrap so lines stay even and premium."""
     text = _protect_phrases((text or "").strip())
     if not text:
         return []
-    avg = max(int(_font_size(font) * 0.50), 8)
-    width_chars = max(int(max_width / avg), 12)
     lines: list[str] = []
     for paragraph in text.split("\n"):
-        if not paragraph.strip():
+        paragraph = paragraph.strip()
+        if not paragraph:
             continue
-        for line in textwrap.wrap(
-            paragraph,
-            width=width_chars,
-            break_long_words=True,
-            break_on_hyphens=False,
-        ) or [paragraph]:
-            while line and draw.textlength(line, font=font) > max_width and len(line) > 8:
+        words = paragraph.split()
+        if not words:
+            continue
+        current = words[0]
+        for word in words[1:]:
+            trial = f"{current} {word}"
+            if draw.textlength(trial, font=font) <= max_width:
+                current = trial
+                continue
+            lines.append(current)
+            current = word
+            # Hard-break oversized tokens
+            while draw.textlength(current, font=font) > max_width and len(current) > 8:
                 approx = max(
                     8,
-                    int(len(line) * max_width / max(draw.textlength(line, font=font), 1)),
+                    int(
+                        len(current)
+                        * max_width
+                        / max(draw.textlength(current, font=font), 1)
+                    ),
                 )
-                cut = line.rfind(" ", 0, approx + 1)
-                if cut < 6:
-                    cut = approx
-                lines.append(line[:cut].rstrip())
-                line = line[cut:].lstrip()
-            if line:
-                lines.append(line)
+                lines.append(current[:approx].rstrip("-"))
+                current = current[approx:].lstrip("-")
+        if current:
+            lines.append(current)
     cleaned = [ln.replace("\u00a0", " ") for ln in lines]
     return _merge_orphan_lines(draw, cleaned, font, max_width)
 
@@ -452,37 +436,65 @@ def _merge_orphan_lines(
     font: ImageFont.ImageFont,
     max_width: int,
 ) -> list[str]:
-    """Pull a dangling last word (нас / Вами.) up onto the previous line."""
+    """Avoid lonely last lines like 'kutamiz.' / short Russian tails."""
     if len(lines) < 2:
         return lines
+    lines = list(lines)
+    # 1) Try merging a short final line into the previous one
     last = lines[-1].strip()
-    if not last or last.count(" ") > 0 or len(last) > 16:
-        return lines
-    merged = f"{lines[-2].rstrip()} {last}"
-    if draw.textlength(merged, font=font) <= max_width * 1.04:
-        return lines[:-2] + [merged]
+    if last and last.count(" ") <= 2 and len(last) <= 28:
+        merged = f"{lines[-2].rstrip()} {last}"
+        if draw.textlength(merged, font=font) <= max_width * 1.06:
+            return lines[:-2] + [merged]
+    # 2) Rebalance: move trailing words down so the last line isn't tiny
+    for _ in range(4):
+        if len(lines) < 2:
+            break
+        last = lines[-1].strip()
+        prev = lines[-2].strip()
+        if len(last) > 26 or last.count(" ") > 3:
+            break
+        parts = prev.rsplit(" ", 1)
+        if len(parts) != 2:
+            break
+        new_prev, word = parts
+        new_last = f"{word} {last}"
+        if draw.textlength(new_prev, font=font) < max_width * 0.42:
+            break
+        if draw.textlength(new_last, font=font) > max_width:
+            break
+        lines[-2] = new_prev
+        lines[-1] = new_last
     return lines
 
 
-def _base_sizes(safe_w: int, dense: bool) -> dict[str, int]:
+def _base_sizes(safe_w: int, dense: bool, *, packed: bool = False) -> dict[str, int]:
     """
     Target sizes relative to safe width.
-    Anchored to ~900px design: title 48–78, body 22–32, meta 20–28.
-    Dense (multi-ceremony): smaller body, stronger date + venue.
+    Anchored to ~900px design: title 48–78, body 26–36, meta 20–28.
+    Dense/packed: body stays prominent; schedule slightly quieter.
     """
     unit = safe_w / 900.0
+    if packed:
+        return {
+            "header": int(50 * unit),
+            "body": int(30 * unit),
+            "date": int(23 * unit),
+            "address": int(22 * unit),
+            "host": int(32 * unit),
+        }
     if dense:
         return {
-            "header": int(48 * unit),
-            "body": int(24 * unit),
-            "date": int(28 * unit),
-            "address": int(26 * unit),
+            "header": int(52 * unit),
+            "body": int(31 * unit),
+            "date": int(25 * unit),
+            "address": int(23 * unit),
             "host": int(34 * unit),
         }
     return {
         "header": int(56 * unit),
-        "body": int(28 * unit),
-        "date": int(30 * unit),
+        "body": int(33 * unit),
+        "date": int(29 * unit),
         "address": int(26 * unit),
         "host": int(40 * unit),
     }
@@ -491,11 +503,11 @@ def _base_sizes(safe_w: int, dense: bool) -> dict[str, int]:
 def _clamp_sizes(sizes: dict[str, int], safe_w: int) -> dict[str, int]:
     unit = safe_w / 900.0
     return {
-        "header": max(int(40 * unit), min(int(82 * unit), sizes["header"])),
-        "body": max(int(20 * unit), min(int(40 * unit), sizes["body"])),
-        "date": max(int(20 * unit), min(int(36 * unit), sizes["date"])),
-        "address": max(int(18 * unit), min(int(34 * unit), sizes["address"])),
-        "host": max(int(28 * unit), min(int(54 * unit), sizes["host"])),
+        "header": max(int(40 * unit), min(int(78 * unit), sizes["header"])),
+        "body": max(int(24 * unit), min(int(38 * unit), sizes["body"])),
+        "date": max(int(18 * unit), min(int(32 * unit), sizes["date"])),
+        "address": max(int(18 * unit), min(int(30 * unit), sizes["address"])),
+        "host": max(int(26 * unit), min(int(48 * unit), sizes["host"])),
     }
 
 
@@ -580,10 +592,11 @@ def measure_and_layout(
     """
     Build draw ops and total height for vertical centering.
     Returns (ops, total_height) where ops are callable-like tuples.
-    Hierarchy: greeting → short body → ornament → schedule → venue → host
+    Hierarchy: greeting → body → ornament → schedule → venue → host
     """
-    content_w = int(safe.width * (0.82 if narrow else 0.92))
-    cx = safe.cx
+    # Slightly wider than before so body wraps into cleaner 3–5 lines
+    content_w = int(safe.width * (0.86 if narrow else 0.90))
+    body_w = int(safe.width * (0.84 if narrow else 0.88))
     ops: list[tuple] = []
     y = 0
 
@@ -597,26 +610,27 @@ def measure_and_layout(
     host = (blocks.get("footer") or "").strip()
     schedule = parse_schedule_blocks(blocks.get("date_time") or "", language)
     multi = len(schedule) >= 2
-    if multi:
-        body = condense_invite_body(body)
+    packed = len(schedule) >= 3
 
     if header:
         for line in wrap_text(draw, header, plan.header, content_w):
             ops.append(("text", line, plan.header, "title", y))
-            y += int(plan.header_size * 1.18)
-        gap(0.026 if multi else 0.034)
+            y += int(plan.header_size * 1.22)
+        gap(0.030 if multi else 0.038)
 
     if body:
-        for line in wrap_text(draw, body, plan.body, content_w):
+        # One flowing paragraph reads more like a classic invitation
+        body_lead = plan.body_size * (1.55 if multi else 1.62)
+        for line in wrap_text(draw, body, plan.body, body_w):
             ops.append(("text", line, plan.body, "body", y))
-            y += int(plan.body_size * (1.38 if multi else 1.48))
-        gap(0.028 if multi else 0.038)
+            y += int(body_lead)
+        gap(0.038 if multi else 0.046)
 
     # Decorative rule before schedule / address
     if schedule or address or host:
         ops.append(("rule", y))
-        y += int(safe.height * 0.028 * gap_scale) + 14
-        gap(0.018 if multi else 0.022)
+        y += int(safe.height * 0.022 * gap_scale) + 12
+        gap(0.020 if multi else 0.024)
 
     for i, row in enumerate(schedule):
         primary = row.get("primary") == "1" or is_primary_ceremony_label(
@@ -626,46 +640,56 @@ def measure_and_layout(
         meta_font = plan.date_primary if primary else plan.date_meta
         label_color = "primary" if primary else "muted"
         meta_color = "primary" if primary else "meta"
-        label_lead = plan.date_size * (1.22 if primary else 1.12)
-        meta_lead = plan.date_size * (1.42 if primary else 1.30)
+        label_lead = plan.date_size * (1.18 if primary else 1.08)
+        meta_lead = plan.date_size * (1.36 if primary else 1.24)
 
         if row["label"]:
             label_draw_font = plan.date_meta if primary else label_font
             for line in wrap_text(draw, row["label"], label_draw_font, content_w):
                 ops.append(("text", line, label_draw_font, label_color, y))
-                y += int(label_lead * (1.08 if primary else 1.0))
-            gap(0.006)
+                y += int(label_lead)
+            gap(0.004 if packed else 0.007)
         if row["line"]:
             line = row["line"]
             if " | " in line:
                 left, right = line.split(" | ", 1)
-                ops.append(("dt_pair", left.strip(), right.strip(), meta_font, meta_color, y))
+                ops.append(
+                    (
+                        "dt_pair",
+                        left.strip(),
+                        right.strip(),
+                        meta_font,
+                        meta_color,
+                        y,
+                    )
+                )
                 y += int(meta_lead)
             else:
                 for wrapped in wrap_text(draw, line, meta_font, content_w):
                     ops.append(("text", wrapped, meta_font, meta_color, y))
                     y += int(meta_lead)
         if primary and i < len(schedule) - 1:
+            gap(0.010)
             ops.append(("rule_small", y))
-            y += int(safe.height * 0.016 * gap_scale) + 8
-            gap(0.012)
+            y += int(safe.height * 0.012 * gap_scale) + 6
+            gap(0.014 if packed else 0.016)
         elif i < len(schedule) - 1:
-            gap(0.028 if multi else 0.024)
+            gap(0.026 if packed else 0.030)
         else:
-            gap(0.036)
+            gap(0.032)
 
     if address:
         for line in wrap_text(draw, address, plan.address, content_w):
             ops.append(("text", line, plan.address, "venue", y))
-            y += int(plan.address_size * 1.42)
-        gap(0.032)
+            y += int(plan.address_size * 1.40)
+        gap(0.028)
 
     if host:
         ops.append(("rule_small", y))
-        y += int(safe.height * 0.020 * gap_scale) + 10
+        y += int(safe.height * 0.018 * gap_scale) + 8
         for line in wrap_text(draw, host, plan.host, content_w):
             ops.append(("text", line, plan.host, "title", y))
-            y += int(plan.host_size * 1.30)
+            y += int(plan.host_size * 1.28)
 
     return ops, y
 
@@ -708,12 +732,7 @@ def render_invitation_layout(
 
     schedule = parse_schedule_blocks(blocks.get("date_time") or "", language)
     multi = len(schedule) >= 2
-    # Always keep body short so date + venue stay primary
-    blocks["body"] = condense_invite_body(
-        blocks.get("body") or "",
-        max_chars=150 if multi else 180,
-        max_sentences=1 if multi else 2,
-    )
+    # Use the user's body as written; fit loop below shrinks type to fit.
     if multi:
         rebuilt: list[str] = []
         for row in schedule:
@@ -725,17 +744,21 @@ def render_invitation_layout(
             blocks["date_time"] = "\n".join(rebuilt)
 
     body_len = len((blocks.get("body") or "").strip())
-    dense = body_len > 180 or multi
+    packed = len(schedule) >= 3
+    dense = body_len > 160 or multi
 
-    sizes = _clamp_sizes(_base_sizes(safe.width, dense), safe.width)
-    # Fit: grow or shrink so content occupies ~58–72% of safe height
+    sizes = _clamp_sizes(
+        _base_sizes(safe.width, dense, packed=packed),
+        safe.width,
+    )
+    # Fit into the safe panel without crushing hierarchy
     best_plan: FontPlan | None = None
     best_ops: list[tuple] = []
     best_h = 0
-    gap_scale = 1.05 if dense else 1.12
+    gap_scale = 0.98 if packed else (1.02 if dense else 1.12)
     prev_key: tuple | None = None
 
-    for step in range(12):
+    for step in range(14):
         plan = make_font_plan(sizes, mode)
         ops, total_h = measure_and_layout(
             draw,
@@ -746,49 +769,57 @@ def render_invitation_layout(
             gap_scale=gap_scale,
             narrow=corner_guard,
         )
-        target_min = int(safe.height * (0.62 if dense else 0.66))
-        target_max = int(safe.height * 0.88)
+        # Packed cards look better with air; don't force-fill the panel
+        target_min = int(safe.height * (0.52 if packed else 0.58 if dense else 0.66))
+        target_max = int(safe.height * (0.86 if packed else 0.88))
         best_plan, best_ops, best_h = plan, ops, total_h
         key = (sizes["header"], sizes["body"], sizes["date"], round(gap_scale, 3))
         if key == prev_key:
-            # Still short? stretch gaps only
-            if total_h < target_min and gap_scale < 1.45:
-                gap_scale = min(1.45, gap_scale * 1.05)
+            if total_h < target_min and gap_scale < 1.35:
+                gap_scale = min(1.35, gap_scale * 1.04)
                 prev_key = None
                 continue
             break
         prev_key = key
 
         if total_h < target_min and step < 10:
-            # Prefer growing date/address over body for hierarchy
             bump = {
-                "header": int(sizes["header"] * 1.04),
-                "body": int(sizes["body"] * 1.06),
-                "date": int(sizes["date"] * 1.10),
-                "address": int(sizes["address"] * 1.10),
-                "host": int(sizes["host"] * 1.04),
+                "header": int(sizes["header"] * 1.03),
+                "body": int(sizes["body"] * 1.03),
+                "date": int(sizes["date"] * (1.04 if packed else 1.07)),
+                "address": int(sizes["address"] * 1.04),
+                "host": int(sizes["host"] * 1.03),
             }
             sizes = _clamp_sizes(bump, safe.width)
-            gap_scale = min(1.45, gap_scale * 1.02)
+            gap_scale = min(1.35, gap_scale * 1.02)
             continue
         if total_h > target_max:
+            # Shrink schedule/gaps first; keep body as large as possible
             sizes = _clamp_sizes(
-                {k: int(v * 0.90) for k, v in sizes.items()},
+                {
+                    "header": int(sizes["header"] * 0.97),
+                    "body": int(sizes["body"] * 0.99),
+                    "date": int(sizes["date"] * 0.90),
+                    "address": int(sizes["address"] * 0.91),
+                    "host": int(sizes["host"] * 0.94),
+                },
                 safe.width,
             )
-            gap_scale = max(0.88, gap_scale * 0.94)
+            gap_scale = max(0.78, gap_scale * 0.91)
             continue
         break
 
     assert best_plan is not None
     text_ops = sum(1 for op in best_ops if op[0] == "text")
-    # Greeting + date only: center in the panel instead of hugging the top
+    # Keep dense cards centered; avoid hugging the top floral corners
     if text_ops <= 3:
         bias = 0.42
+    elif packed:
+        bias = 0.22
     elif dense:
-        bias = 0.14
+        bias = 0.26
     else:
-        bias = 0.28
+        bias = 0.30
     start_y = safe.y0 + max(0, int((safe.height - best_h) * bias))
 
     cx = safe.cx

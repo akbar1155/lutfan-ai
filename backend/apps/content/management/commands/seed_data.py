@@ -74,6 +74,7 @@ EVENTS = [
             },
         ],
         "fields_schema": {
+            "subtype_mode": "multi",
             "required": [
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
@@ -172,13 +173,33 @@ EVENTS = [
             "uz-latn": "Hayit",
             "ru": "Хаит",
         },
+        "subtypes": [
+            {
+                "slug": "ramazon_hayiti",
+                "names": {
+                    "uz-cyrl": "Рамазон ҳайти",
+                    "uz-latn": "Ramazon hayiti",
+                    "ru": "Рамазан-хаит",
+                },
+            },
+            {
+                "slug": "qurbon_hayiti",
+                "names": {
+                    "uz-cyrl": "Қурбон ҳайти",
+                    "uz-latn": "Qurbon hayiti",
+                    "ru": "Курбан-хаит",
+                },
+            },
+        ],
         "fields_schema": {
+            "subtype_mode": "single",
             "required": [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
             "optional": [],
         },
+        "is_active": False,
     },
 ]
 
@@ -709,7 +730,7 @@ TEXT_BY_EVENT = {
                 "title": "Klassik",
                 "preview": (
                     "Assalomu alaykum!\n"
-                    "Hayit bayrami munosabati bilan Sizni "
+                    "{hayit_occasion} munosabati bilan Sizni "
                     "oilaviy dasturxonimizga taklif etamiz. "
                     "Bayram tabrigini birga aytsam, deymiz.\n"
                     "{venue_name}, {venue_address}"
@@ -719,8 +740,8 @@ TEXT_BY_EVENT = {
                 "title": "Samimiy",
                 "preview": (
                     "Hurmatli mehmonimiz!\n"
-                    "Hayitingiz muborak boʻlsin! Oilamizning hayit ziyofatiga "
-                    "Sizni kutamiz — kelib, bayram quvonchini baham koʻring.\n"
+                    "Hayitingiz muborak boʻlsin! Oilamizning {hayit_occasion} "
+                    "ziyofatiga Sizni kutamiz — kelib, bayram quvonchini baham koʻring.\n"
                     "{venue_name}, {venue_address}"
                 ),
             },
@@ -730,7 +751,7 @@ TEXT_BY_EVENT = {
                 "title": "Классик",
                 "preview": (
                     "Ассалому алайкум!\n"
-                    "Ҳайт байрами муносабати билан Сизни "
+                    "{hayit_occasion} муносабати билан Сизни "
                     "оилавий дастурхонимизга таклиф этамиз. "
                     "Байрам табригини бирга айтсак, деймиз.\n"
                     "{venue_name}, {venue_address}"
@@ -740,8 +761,8 @@ TEXT_BY_EVENT = {
                 "title": "Самимий",
                 "preview": (
                     "Ҳурматли меҳмонимиз!\n"
-                    "Ҳайтингиз муборак бўлсин! Оиламизнинг ҳайт зиёфатига "
-                    "Сизни кутамиз — келиб, байрам қувончини баҳам кўринг.\n"
+                    "Ҳайтингиз муборак бўлсин! Оиламизнинг {hayit_occasion} "
+                    "зиёфатига Сизни кутамиз — келиб, байрам қувончини баҳам кўринг.\n"
                     "{venue_name}, {venue_address}"
                 ),
             },
@@ -751,7 +772,7 @@ TEXT_BY_EVENT = {
                 "title": "Классика",
                 "preview": (
                     "Ассаламу алейкум!\n"
-                    "По случаю праздника Хаит приглашаем Вас "
+                    "По случаю праздника {hayit_occasion} приглашаем Вас "
                     "за наш семейный дастархан. "
                     "Будем рады вместе обменяться поздравлениями.\n"
                     "{venue_name}, {venue_address}"
@@ -761,8 +782,8 @@ TEXT_BY_EVENT = {
                 "title": "Тёплое",
                 "preview": (
                     "Уважаемый гость!\n"
-                    "С праздником Хаит! Ждём Вас на нашем праздничном угощении — "
-                    "приходите разделить радость этого дня.\n"
+                    "С праздником {hayit_occasion}! Ждём Вас на нашем праздничном "
+                    "угощении — приходите разделить радость этого дня.\n"
                     "{venue_name}, {venue_address}"
                 ),
             },
@@ -794,6 +815,7 @@ class Command(BaseCommand):
         )
 
         for item in EVENTS:
+            active = bool(item.get("is_active", True))
             event, _ = EventConfig.objects.update_or_create(
                 slug=item["slug"],
                 defaults={
@@ -803,7 +825,7 @@ class Command(BaseCommand):
                     "subtypes": item.get("subtypes") or [],
                     "fields_schema": item["fields_schema"],
                     "color_themes": {},
-                    "is_active": True,
+                    "is_active": active,
                 },
             )
 
@@ -825,7 +847,7 @@ class Command(BaseCommand):
                             "variables_used": _template_variables(preview),
                             "tone": "classic" if idx == 0 else "warm",
                             "sort_order": idx,
-                            "is_active": True,
+                            "is_active": active,
                             "created_by_admin": admin,
                         },
                     )
@@ -849,8 +871,8 @@ class Command(BaseCommand):
                         "supported_formats": ["4:5", "9:16", "1:1"],
                         "style_tags": asset["tags"],
                         "color_palette": asset["palette"],
-                        "is_active": True,
-                        "is_featured": idx == 0,
+                        "is_active": active,
+                        "is_featured": active and idx == 0,
                         "created_by_admin": admin,
                     },
                 )
@@ -878,7 +900,7 @@ class Command(BaseCommand):
                         "generic identical layout for every event type"
                     ),
                     "model_params": {"aspect_ratio": "4:5"},
-                    "is_active": True,
+                    "is_active": active,
                 },
             )
 

@@ -159,6 +159,7 @@ export type EventConfig = {
   fields_schema: {
     required: Array<Record<string, unknown>>;
     optional?: Array<Record<string, unknown>>;
+    subtype_mode?: "single" | "multi";
   };
 };
 
@@ -183,6 +184,7 @@ export type Invitation = {
   last_error?: string;
   expires_at: string;
   created_at: string;
+  updated_at?: string;
 };
 
 export type TextTemplate = {

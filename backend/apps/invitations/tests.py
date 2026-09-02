@@ -140,6 +140,46 @@ class InvitationValidationTests(TestCase):
         hidden = anon.get(f"/api/v1/public/invitations/{invitation.id}")
         self.assertEqual(hidden.status_code, 404)
 
+    def test_hayit_details_require_a_type(self):
+        hayit = EventConfig.objects.create(
+            slug="hayit",
+            name_translations={"uz-latn": "Hayit"},
+            subtypes=[
+                {"slug": "ramazon_hayiti", "names": {"uz-latn": "Ramazon hayiti"}},
+                {"slug": "qurbon_hayiti", "names": {"uz-latn": "Qurbon hayiti"}},
+            ],
+            fields_schema={
+                "subtype_mode": "single",
+                "required": [{"key": "venue_name", "type": "string"}],
+                "optional": [],
+            },
+        )
+        invitation = Invitation.objects.create(
+            user=self.user,
+            event=hayit,
+            language="uz-latn",
+            event_data={},
+        )
+        missing = self.client.patch(
+            f"/api/v1/invitations/{invitation.id}",
+            {"subtype_slugs": [], "event_data": {"details_done": True}},
+            format="json",
+        )
+        self.assertEqual(missing.status_code, 400)
+
+        ok = self.client.patch(
+            f"/api/v1/invitations/{invitation.id}",
+            {
+                "subtype_slugs": ["ramazon_hayiti", "qurbon_hayiti"],
+                "event_data": {"details_done": True},
+            },
+            format="json",
+        )
+        self.assertEqual(ok.status_code, 200)
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.subtype_slugs, ["ramazon_hayiti"])
+        self.assertEqual(invitation.subtype_slug, "ramazon_hayiti")
+
     def test_public_unknown_id_is_404(self):
         anon = APIClient()
         res = anon.get(f"/api/v1/public/invitations/{uuid4()}")

@@ -72,10 +72,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Klassik 2", "uz-cyrl": "Классик 2", ru: "Классика 2" },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Hayotimizning yangi sahifasi boshlanayotgan ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.",
+        "Aziz mehmonlar!\nHayotimizning yangi sahifasi boshlanayotgan nikoh to‘yimizga Sizni hurmat bilan chorlaymiz. Ushbu qutlug‘ kunda Sizni mehmonlarimiz safida ko‘rish biz uchun alohida mamnuniyat. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi. Quvonchli daqiqalarimizni birga o‘tkazishni intizorlik bilan kutamiz.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ҳаётимизнинг янги саҳифаси бошланаётган ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.",
-      ru: "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. В день, когда начинается новая страница нашей жизни, будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.",
+        "Азиз меҳмонлар!\nҲаётимизнинг янги саҳифаси бошланаётган никоҳ тўйимизга Сизни ҳурмат билан чорлаймиз. Ушбу қутлуғ кунда Сизни меҳмонларимиз сафида кўриш биз учун алоҳида мамнуният. Ташрифингиз байрамимизга янада кўрк бағишлайди. Қувончли дақиқаларимизни бирга ўтказишни интизорлик билан кутамиз.",
+      ru: "Дорогие гости!\nС уважением приглашаем Вас на нашу свадьбу — день, когда начинается новая страница нашей жизни. Будем особенно рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее. С нетерпением ждём, чтобы разделить с Вами эти радостные минуты.",
     },
   },
   {
@@ -83,10 +83,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Samimiy 2", "uz-cyrl": "Самимий 2", ru: "Тёплое 2" },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi.",
+        "Aziz mehmonlar!\nYuragimizdagi eng iliqlik bilan Sizni nikoh dasturxonimizga taklif qilamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Kelib, oilaviy shodligimizga sherik bo‘ling.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади.",
-      ru: "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания и искренние молитвы сделают нашу радость ещё полнее.",
+        "Азиз меҳмонлар!\nЮрагимиздаги энг илиқлик билан Сизни никоҳ дастурхонимизга таклиф қиламиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Келиб, оилавий шодлигимизга шерик бўлинг.",
+      ru: "Дорогие гости!\nОт всего сердца приглашаем Вас за наш свадебный дастархан. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания и искренние молитвы сделают нашу радость ещё полнее. Приходите и разделите семейную радость вместе с нами.",
     },
   },
   {
@@ -202,12 +202,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutRu: "худое",
     },
     hayit: {
-      latn: "hayit ziyofati",
-      cyrl: "ҳайт зиёфати",
-      ru: "праздник Хаит",
-      aboutLatn: "oilaviy hayit ziyofatimiz",
-      aboutCyrl: "оилавий ҳайт зиёфатимиз",
-      aboutRu: "семейный праздник Хаит",
+      latn: "{hayit_occasion} ziyofati",
+      cyrl: "{hayit_occasion} зиёфати",
+      ru: "{hayit_occasion}",
+      aboutLatn: "{hayit_occasion} ziyofatimiz",
+      aboutCyrl: "{hayit_occasion} зиёфатимиз",
+      aboutRu: "{hayit_occasion}",
     },
   };
 

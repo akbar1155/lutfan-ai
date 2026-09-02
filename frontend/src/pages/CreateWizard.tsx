@@ -35,10 +35,16 @@ import {
   primaryEventDate,
   type CeremonySchedule,
 } from "../utils/ceremonySchedule";
+import {
+  applyHayitOccasion,
+  getSubtypeMode,
+  hayitOccasionName,
+} from "../utils/eventSubtypes";
 import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
+import { EventIcon } from "../components/EventIcons";
 import {
   IconClose,
   IconDownload,
@@ -83,7 +89,6 @@ function WizardChrome({
   hint,
   children,
   error,
-  saveState,
   gated,
 }: {
   step: number;
@@ -91,7 +96,6 @@ function WizardChrome({
   hint?: string;
   children: ReactNode;
   error?: string | null;
-  saveState?: "idle" | "saving" | "saved" | "error";
   gated?: boolean;
 }) {
   const { t } = useTranslation();
@@ -104,7 +108,7 @@ function WizardChrome({
     t("result"),
   ];
 
-  const showHead = Boolean(title || hint || (saveState && saveState !== "idle"));
+  const showHead = Boolean(title || hint);
 
   return (
     <main className={`page narrow wizard ${gated ? "wizard-gated" : ""}`.trim()}>
@@ -134,13 +138,6 @@ function WizardChrome({
         <header className="wizard-head reveal">
           {title ? <h1>{title}</h1> : null}
           {hint && <p className="hint">{hint}</p>}
-          {saveState && saveState !== "idle" && (
-            <p className={`save-pill ${saveState}`}>
-              {saveState === "saving" && t("saving")}
-              {saveState === "saved" && t("saved")}
-              {saveState === "error" && t("saveError")}
-            </p>
-          )}
         </header>
       ) : null}
       {error && <div className="banner error">{error}</div>}
@@ -324,9 +321,11 @@ export function CreateEventPage() {
               key={event.slug}
               type="button"
               className={`card-link event-card ${preferredSlug === event.slug ? "is-preferred" : ""}`}
+              data-event={event.slug}
               disabled={busy}
               onClick={() => startEvent(event)}
             >
+              <EventIcon slug={event.slug} size={28} />
               <strong>
                 {pickTranslation(event.name_translations, lang) ||
                   eventDisplayName(event.slug, lang)}
@@ -379,6 +378,11 @@ export function DetailsPage() {
     );
   };
 
+  const subtypeMode = getSubtypeMode(event);
+  const pickSingleSubtype = (slug: string) => {
+    setSubtypes([slug]);
+  };
+
   if (!invitation || !event) {
     return (
       <WizardChrome step={2} title={t("details")} error={error}>
@@ -391,22 +395,35 @@ export function DetailsPage() {
     <WizardChrome
       step={2}
       title={t("details")}
-      hint={event.subtypes?.length ? t("detailsHint") : t("detailsHintSimple")}
+      hint={
+        subtypeMode === "single"
+          ? t("detailsHintSingle")
+          : event.subtypes?.length
+            ? t("detailsHint")
+            : t("detailsHintSimple")
+      }
       error={error}
     >
       {!!event.subtypes?.length && (
         <fieldset className="check-group">
           <legend>{t("subtype")}</legend>
-          <p className="hint">{t("subtypeMultiHint")}</p>
-          <div className="check-list">
+          <p className="hint">
+            {subtypeMode === "single" ? t("subtypeSingleHint") : t("subtypeMultiHint")}
+          </p>
+          <div className="check-list" role={subtypeMode === "single" ? "radiogroup" : undefined}>
             {event.subtypes.map((s) => {
               const checked = subtypes.includes(s.slug);
               return (
                 <label key={s.slug} className={`check-chip ${checked ? "active" : ""}`}>
                   <input
-                    type="checkbox"
+                    type={subtypeMode === "single" ? "radio" : "checkbox"}
+                    name={subtypeMode === "single" ? "hayit_subtype" : undefined}
                     checked={checked}
-                    onChange={() => toggleSubtype(s.slug)}
+                    onChange={() =>
+                      subtypeMode === "single"
+                        ? pickSingleSubtype(s.slug)
+                        : toggleSubtype(s.slug)
+                    }
                   />
                   <span>{pickTranslation(s.names, uiLang) || s.slug}</span>
                 </label>
@@ -434,12 +451,18 @@ export function DetailsPage() {
           className="cta"
           disabled={busy}
           onClick={() => {
+            if (subtypeMode === "single" && subtypes.length !== 1) {
+              setError(t("subtypeRequired"));
+              return;
+            }
+            const chosen =
+              subtypeMode === "single" ? subtypes.slice(0, 1) : subtypes;
             setBusy(true);
             setError(null);
             void api
               .patchInvitation(invitation.id, {
-                subtype_slugs: subtypes,
-                subtype_slug: subtypes[0] || null,
+                subtype_slugs: chosen,
+                subtype_slug: chosen[0] || null,
                 language,
                 event_data: {
                   ...(invitation.event_data || {}),
@@ -470,9 +493,6 @@ export function DataPage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [schedule, setSchedule] = useState<CeremonySchedule>({});
   const [error, setError] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">(
-    "idle",
-  );
   const [busy, setBusy] = useState(false);
   const skipAutosave = useRef(true);
 
@@ -480,7 +500,8 @@ export function DataPage() {
     () => (invitation ? getSelectedSubtypeSlugs(invitation) : []),
     [invitation],
   );
-  const multiCeremony = subtypeSlugs.length >= 2;
+  const multiCeremony =
+    getSubtypeMode(event) === "multi" && subtypeSlugs.length >= 2;
 
   useEffect(() => {
     if (!id) return;
@@ -540,7 +561,6 @@ export function DataPage() {
       return;
     }
     const handle = window.setTimeout(() => {
-      setSaveState("saving");
       const structured = { ...form };
       if (multiCeremony) {
         const primary = primaryEventDate(schedule);
@@ -569,12 +589,10 @@ export function DataPage() {
         .patchInvitation(invitation.id, payload)
         .then((updated) => {
           setInvitation(updated);
-          setSaveState("saved");
-          window.setTimeout(() => {
-            setSaveState((prev) => (prev === "saved" ? "idle" : prev));
-          }, 1800);
         })
-        .catch(() => setSaveState("error"));
+        .catch(() => {
+          /* silent background save; Next / next edit will retry */
+        });
     }, 900);
     return () => window.clearTimeout(handle);
   }, [form, schedule, invitation?.id, multiCeremony, subtypeSlugs.join(",")]);
@@ -683,7 +701,6 @@ export function DataPage() {
       title={t("data")}
       hint={multiCeremony ? t("ceremonyScheduleHint") : t("dataHint")}
       error={error}
-      saveState={saveState}
     >
       <form className="form-stack" noValidate onSubmit={submit}>
         {multiCeremony && (
@@ -867,13 +884,14 @@ export function TextPage() {
           (inv.event_data?.final_text_blocks as typeof blocks) || null;
         const slugs = getSelectedSubtypeSlugs(inv);
         const schedule = loadCeremonySchedule(inv.event_data, slugs);
-        let subtypes: EventConfig["subtypes"];
+        let eventConfig: EventConfig | null = null;
         try {
-          const ev = await api.event(inv.event_slug);
-          subtypes = ev.subtypes;
+          eventConfig = await api.event(inv.event_slug);
         } catch {
-          subtypes = undefined;
+          eventConfig = null;
         }
+        const subtypes = eventConfig?.subtypes;
+        const occasion = hayitOccasionName(eventConfig, slugs, inv.language);
         const dateTimeFromSchedule =
           inv.event_slug === "hayit"
             ? ""
@@ -888,9 +906,17 @@ export function TextPage() {
         const multiSchedule = dateTimeFromSchedule.includes("\n");
         const defaultBody =
           fields.personal_message ||
-          t(`defaultBody_${inv.event_slug}`, {
-            defaultValue: t("defaultBody"),
-          });
+          (inv.event_slug === "hayit"
+            ? applyHayitOccasion(
+                t("defaultBody_hayit", {
+                  occasion,
+                  defaultValue: t("defaultBody"),
+                }),
+                occasion,
+              )
+            : t(`defaultBody_${inv.event_slug}`, {
+                defaultValue: t("defaultBody"),
+              }));
         const venueLine = cleanFieldValue(
           [fields.venue_name, fields.venue_address]
             .map((v) => String(v || "").trim())
@@ -922,6 +948,9 @@ export function TextPage() {
           ) {
             body = ensureChildNameInBody(body, fields.child_name, inv.language);
           }
+          if (inv.event_slug === "hayit") {
+            body = applyHayitOccasion(body, occasion);
+          }
           if (isJunkFieldValue(dateTime) && inv.event_slug !== "hayit") {
             dateTime = dateTimeFromSchedule;
           }
@@ -935,11 +964,21 @@ export function TextPage() {
         } else {
           setBlocks({
             header: t("defaultGreeting"),
-            body: ensureChildNameInBody(
-              defaultBody,
-              fields.child_name,
-              inv.language,
-            ),
+            body:
+              inv.event_slug === "hayit"
+                ? applyHayitOccasion(
+                    ensureChildNameInBody(
+                      defaultBody,
+                      fields.child_name,
+                      inv.language,
+                    ),
+                    occasion,
+                  )
+                : ensureChildNameInBody(
+                    defaultBody,
+                    fields.child_name,
+                    inv.language,
+                  ),
             date_time: dateTimeFromSchedule,
             address: venueLine,
           });
@@ -1002,8 +1041,26 @@ export function TextPage() {
                     className={active ? "choice-pill active" : "choice-pill"}
                     onClick={() => {
                       setSelectedTemplateId(tpl.id);
+                      const occasion = hayitOccasionName(
+                        null,
+                        getSelectedSubtypeSlugs(invitation),
+                        invitation.language,
+                      );
+                      const fallbackBody =
+                        invitation.event_slug === "hayit"
+                          ? applyHayitOccasion(
+                              t("defaultBody_hayit", {
+                                occasion,
+                                defaultValue: t("defaultBody"),
+                              }),
+                              occasion,
+                            )
+                          : t(`defaultBody_${invitation.event_slug}`, {
+                              defaultValue: t("defaultBody"),
+                            });
                       const vars = {
                         ...structuredFields,
+                        hayit_occasion: occasion,
                         child_name:
                           structuredFields.child_name ||
                           structuredFields.childName ||
@@ -1015,9 +1072,7 @@ export function TextPage() {
                         personal_message:
                           structuredFields.personal_message ||
                           structuredFields.personalMessage ||
-                          t(`defaultBody_${invitation.event_slug}`, {
-                            defaultValue: t("defaultBody"),
-                          }),
+                          fallbackBody,
                       };
                       setBlocks(() => {
                         const next = splitTemplateBlocks(
@@ -1026,28 +1081,22 @@ export function TextPage() {
                           invitation.language,
                           {
                             skipDate: invitation.event_slug === "hayit",
-                            fallbackBody: t(`defaultBody_${invitation.event_slug}`, {
-                              defaultValue: t("defaultBody"),
-                            }),
+                            fallbackBody,
                           },
                         );
-                        // Keep per-ceremony schedule times if present
+                        const body =
+                          invitation.event_slug === "hayit"
+                            ? applyHayitOccasion(next.body, occasion)
+                            : next.body;
+                        // Multi-ceremony: keep the full ready-text body; only replace date block.
                         if (scheduleDateTime.includes("\n")) {
-                          const shortBody = next.body
-                            .split(/(?<=[.!?…])\s+/)
-                            .slice(0, 2)
-                            .join(" ")
-                            .trim();
                           return {
                             ...next,
-                            body:
-                              shortBody.length > 40 && shortBody.length < next.body.length
-                                ? shortBody
-                                : next.body,
+                            body,
                             date_time: scheduleDateTime,
                           };
                         }
-                        return next;
+                        return { ...next, body };
                       });
                     }}
                   >
@@ -1587,7 +1636,13 @@ export function ResultPage() {
         <div className="result-stage">
           <img
             className="result-img"
-            src={invitation.final_image_url}
+            src={
+              invitation.updated_at
+                ? `${invitation.final_image_url}${
+                    invitation.final_image_url.includes("?") ? "&" : "?"
+                  }v=${encodeURIComponent(invitation.updated_at)}`
+                : invitation.final_image_url
+            }
             alt={t("resultAlt")}
           />
         </div>

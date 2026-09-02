@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from apps.ai_engine.tasks import enqueue_invitation_generation
 from apps.ai_engine.storage import resolve_media_url
 from apps.content.models import EventConfig
+from apps.content.subtypes import event_subtype_mode, normalize_invitation_subtypes
 from apps.users.permissions import IsNotBanned
 
 from .models import (
@@ -120,20 +121,31 @@ class InvitationDetailView(APIView):
                 setattr(invitation, field, data[field])
 
         if "subtype_slugs" in data:
-            slugs = [str(s).strip() for s in (data["subtype_slugs"] or []) if str(s).strip()]
-            # Deduplicate while preserving order
-            seen: set[str] = set()
-            unique: list[str] = []
-            for slug in slugs:
-                if slug in seen:
-                    continue
-                seen.add(slug)
-                unique.append(slug)
-            invitation.subtype_slugs = unique
-            invitation.subtype_slug = unique[0] if unique else None
+            invitation.subtype_slugs = list(data["subtype_slugs"] or [])
         elif "subtype_slug" in data and data.get("subtype_slug"):
-            # Legacy single field → keep list in sync
             invitation.subtype_slugs = [data["subtype_slug"]]
+
+        normalized = normalize_invitation_subtypes(
+            invitation.event,
+            list(invitation.subtype_slugs or []),
+            invitation.subtype_slug,
+        )
+        invitation.subtype_slugs = normalized
+        invitation.subtype_slug = normalized[0] if normalized else None
+
+        incoming_event_data = data.get("event_data") if "event_data" in data else None
+        incoming_details_done = (
+            isinstance(incoming_event_data, dict)
+            and incoming_event_data.get("details_done") is True
+        )
+        if (
+            incoming_details_done
+            and event_subtype_mode(invitation.event) == "single"
+            and not normalized
+        ):
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError("Please select an event type.")
 
         if "template_id" in data:
             invitation.template_id = data["template_id"]
@@ -199,6 +211,16 @@ class InvitationGenerateView(APIView):
             event_date=invitation.event_date,
             for_generate=True,
         )
+        if event_subtype_mode(invitation.event) == "single":
+            chosen = normalize_invitation_subtypes(
+                invitation.event,
+                list(invitation.subtype_slugs or []),
+                invitation.subtype_slug,
+            )
+            if not chosen:
+                from rest_framework.exceptions import ValidationError
+
+                raise ValidationError("Please select an event type.")
 
         check_generation_rate_limit(str(request.user.id))
         invitation.status = InvitationStatus.GENERATING
