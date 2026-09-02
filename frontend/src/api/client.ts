@@ -297,13 +297,28 @@ export const api = {
       `/public/invitations/${id}`,
     ),
   adminDashboard: () => request<Record<string, unknown>>("/admin/dashboard"),
-  adminUsers: (params?: { search?: string; role?: string; is_banned?: string }) => {
+  adminUsers: (params?: {
+    search?: string;
+    role?: string;
+    status?: string;
+    is_banned?: string;
+    page?: number;
+    limit?: number;
+  }) => {
     const q = new URLSearchParams();
     if (params?.search) q.set("search", params.search);
     if (params?.role) q.set("role", params.role);
+    if (params?.status) q.set("status", params.status);
     if (params?.is_banned) q.set("is_banned", params.is_banned);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
     const qs = q.toString();
-    return request<Array<Record<string, unknown>>>(`/admin/users${qs ? `?${qs}` : ""}`);
+    return request<{
+      count: number;
+      page: number;
+      limit: number;
+      results: Array<Record<string, unknown>>;
+    }>(`/admin/users${qs ? `?${qs}` : ""}`);
   },
   adminGetUser: (id: string) =>
     request<{

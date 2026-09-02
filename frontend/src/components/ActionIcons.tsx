@@ -103,6 +103,45 @@ export function IconBan() {
   );
 }
 
+export function IconSessions() {
+  return (
+    <Svg>
+      <rect
+        x="4"
+        y="5"
+        width="16"
+        height="11"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M8 20h8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <circle cx="8.5" cy="10.5" r="1" fill="currentColor" />
+      <circle cx="12" cy="10.5" r="1" fill="currentColor" />
+      <circle cx="15.5" cy="10.5" r="1" fill="currentColor" />
+    </Svg>
+  );
+}
+
+export function IconEye() {
+  return (
+    <Svg>
+      <path
+        d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.8" />
+    </Svg>
+  );
+}
+
 export function IconUser() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -232,6 +271,20 @@ export function IconLink() {
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function IconSearch() {
+  return (
+    <Svg>
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M16 16l4 4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
       />
     </Svg>
   );

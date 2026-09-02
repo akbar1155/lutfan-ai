@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand
-from django.db.models import Sum
+from django.db.models import Q, Sum
 
 from apps.ai_engine.models import AIGeneration
 from apps.invitations.models import DailyMetric, Invitation, InvitationStatus, ShareEvent
@@ -32,8 +32,9 @@ class Command(BaseCommand):
             new_users = User.objects.filter(created_at__date=day).count()
             dau = User.objects.filter(last_login_at__date=day).count()
             invitations_created = Invitation.objects.filter(created_at__date=day).count()
-            invitations_completed = Invitation.objects.filter(
-                created_at__date=day, status=InvitationStatus.READY
+            invitations_completed = Invitation.objects.filter(status=InvitationStatus.READY).filter(
+                Q(last_generation_at__date=day)
+                | Q(last_generation_at__isnull=True, updated_at__date=day)
             ).count()
             ai_generations_qs = AIGeneration.objects.filter(created_at__date=day)
             ai_generations_count = ai_generations_qs.count()

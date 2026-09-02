@@ -115,25 +115,40 @@ def _compose_test_prompt(base_prompt: str, blocks: dict[str, str], mood: str = "
     return prompt
 
 
+def _daily_metrics_series(days: int = 14) -> list[dict]:
+    """Live daily aggregates from DB (not cached DailyMetric rows)."""
+    today = timezone.now().date()
+    start = today - timedelta(days=max(days - 1, 0))
+    series: list[dict] = []
+    day = start
+    while day <= today:
+        ai_qs = AIGeneration.objects.filter(created_at__date=day)
+        completed_qs = Invitation.objects.filter(status=InvitationStatus.READY).filter(
+            Q(last_generation_at__date=day)
+            | Q(last_generation_at__isnull=True, updated_at__date=day)
+        )
+        series.append(
+            {
+                "date": format_numeric_date(day),
+                "new_users": User.objects.filter(created_at__date=day).count(),
+                "dau": User.objects.filter(last_login_at__date=day).count(),
+                "invitations_created": Invitation.objects.filter(created_at__date=day).count(),
+                "invitations_completed": completed_qs.count(),
+                "ai_cost_usd": float(
+                    ai_qs.aggregate(total=Sum("provider_cost_usd"))["total"] or 0
+                ),
+            }
+        )
+        day += timedelta(days=1)
+    return series
+
+
 class AdminDashboardView(APIView):
     permission_classes = [IsAdminRole]
 
     def get(self, request):
         today = timezone.now().date()
-        series = list(
-            DailyMetric.objects.order_by("-date")
-            .values(
-                "date",
-                "new_users",
-                "dau",
-                "invitations_created",
-                "invitations_completed",
-                "ai_cost_usd",
-            )[:14]
-        )
-        series.reverse()
-        for row in series:
-            row["date"] = format_numeric_date(row["date"])
+        series = _daily_metrics_series(days=14)
         return Response(
             {
                 "dau": User.objects.filter(last_login_at__date=today).count(),
@@ -208,8 +223,10 @@ class AdminUsersView(APIView):
         qs = User.objects.all().order_by("-created_at")
         search = (request.query_params.get("search") or "").strip()
         role = (request.query_params.get("role") or "").strip()
+        status = (request.query_params.get("status") or "").strip()
         is_banned = request.query_params.get("is_banned")
-        limit = min(max(int(request.query_params.get("limit", 100)), 1), 500)
+        page = max(int(request.query_params.get("page", 1)), 1)
+        limit = min(max(int(request.query_params.get("limit", 20)), 1), 100)
 
         if search:
             if search.isdigit() or (search.startswith("-") and search[1:].isdigit()):
@@ -223,7 +240,13 @@ class AdminUsersView(APIView):
                 )
         if role in {Role.USER, Role.ADMIN}:
             qs = qs.filter(role=role)
-        if is_banned in {"true", "false"}:
+        if status == "banned":
+            qs = qs.filter(is_banned=True)
+        elif status == "inactive":
+            qs = qs.filter(is_banned=False, is_active=False)
+        elif status == "active":
+            qs = qs.filter(is_banned=False, is_active=True)
+        elif is_banned in {"true", "false"}:
             qs = qs.filter(is_banned=(is_banned == "true"))
 
         qs = qs.annotate(
@@ -231,12 +254,20 @@ class AdminUsersView(APIView):
                 "invitations",
                 filter=Q(invitations__deleted_at__isnull=True),
             )
-        )[:limit]
+        )
+        total = qs.count()
+        offset = (page - 1) * limit
+        rows = qs[offset : offset + limit]
         return Response(
-            [
-                _admin_user_payload(u, invitation_count=int(u.invitation_count or 0))
-                for u in qs
-            ]
+            {
+                "count": total,
+                "page": page,
+                "limit": limit,
+                "results": [
+                    _admin_user_payload(u, invitation_count=int(u.invitation_count or 0))
+                    for u in rows
+                ],
+            }
         )
 
 

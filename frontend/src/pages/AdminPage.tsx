@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import {
-  IconBan,
   IconBtn,
   IconEdit,
   IconExternal,
   IconPower,
   IconTrash,
-  IconUser,
 } from "../components/ActionIcons";
 import { EmptyState } from "../components/UiStates";
 import UiSelect from "../components/UiSelect";
 import { formatDisplayDateTimeStamp, isIsoDateTime } from "../utils/date";
+import AdminUsersSection, { type AdminUsersSectionHandle } from "./AdminUsersSection";
+import AdminDashboardSection from "./AdminDashboardSection";
 
 function AdminSkeleton() {
   return (
@@ -141,17 +141,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const [dashboard, setDashboard] = useState<Record<string, unknown> | null>(null);
-  const [users, setUsers] = useState<Array<Record<string, unknown>>>([]);
-  const [userSearch, setUserSearch] = useState("");
-  const [userRole, setUserRole] = useState("");
-  const [userBanned, setUserBanned] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [userDetail, setUserDetail] = useState<{
-    user: Record<string, unknown>;
-    sessions?: Array<Record<string, unknown>>;
-    invitations: Array<Record<string, unknown>>;
-    history: Array<Record<string, unknown>>;
-  } | null>(null);
+  const usersSectionRef = useRef<AdminUsersSectionHandle>(null);
 
   const [invitations, setInvitations] = useState<Array<Record<string, unknown>>>([]);
   const [invStatus, setInvStatus] = useState("");
@@ -175,19 +165,14 @@ export default function AdminPage() {
 
   const load = useCallback(async () => {
     if (!user || user.role !== "admin") return;
+    if (tab === "users") {
+      usersSectionRef.current?.refresh();
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       if (tab === "dashboard") setDashboard(await api.adminDashboard());
-      if (tab === "users") {
-        setUsers(
-          await api.adminUsers({
-            search: userSearch || undefined,
-            role: userRole || undefined,
-            is_banned: userBanned || undefined,
-          }),
-        );
-      }
       if (tab === "invitations") {
         setInvitations(
           await api.adminInvitations({ status: invStatus || undefined }),
@@ -214,22 +199,11 @@ export default function AdminPage() {
     } finally {
       setBusy(false);
     }
-  }, [tab, user, userSearch, userRole, userBanned, invStatus, genStatus]);
+  }, [tab, user, invStatus, genStatus]);
 
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    if (!selectedUserId) {
-      setUserDetail(null);
-      return;
-    }
-    void api
-      .adminGetUser(selectedUserId)
-      .then(setUserDetail)
-      .catch((err: Error) => setError(err.message));
-  }, [selectedUserId]);
 
   const run = async (key: string, fn: () => Promise<unknown>) => {
     setActionBusy(key);
@@ -243,9 +217,6 @@ export default function AdminPage() {
       setEditingMood(null);
       setEditingPreset(null);
       await load();
-      if (selectedUserId) {
-        setUserDetail(await api.adminGetUser(selectedUserId));
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Action failed");
     } finally {
@@ -357,7 +328,6 @@ export default function AdminPage() {
     );
   }
 
-  const counts = (dashboard?.counts as Record<string, number> | undefined) || {};
   const meta = TAB_META[tab];
 
   return (
@@ -393,7 +363,6 @@ export default function AdminPage() {
                       setTab(item.id);
                       setSidebarOpen(false);
                       setShowCreate(false);
-                      setSelectedUserId(null);
                     }}
                   >
                     {t(item.labelKey)}
@@ -447,334 +416,27 @@ export default function AdminPage() {
         )}
 
         <div className={`admin-content ${busy ? "is-loading" : ""}`}>
-          {busy && tab === "dashboard" && !dashboard ? <AdminSkeleton /> : null}
-          {busy && tab !== "dashboard" && (
+          {busy && tab === "dashboard" && !dashboard ? (
+            <div className="admin-dash admin-dash-skeleton" aria-busy="true">
+              <AdminSkeleton />
+            </div>
+          ) : null}
+          {busy && tab !== "dashboard" && tab !== "users" && (
             <div className="admin-section" aria-busy="true">
               <AdminSkeleton />
             </div>
           )}
 
           {tab === "dashboard" && dashboard && (
-            <section className="admin-section">
-              <div className="admin-quick">
-                {(
-                  [
-                    ["users", "adminNavUsers"],
-                    ["events", "adminNavEvents"],
-                    ["templates", "adminNavTemplates"],
-                    ["generations", "adminNavGenerations"],
-                  ] as Array<[Tab, string]>
-                ).map(([id, key]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className="admin-quick-btn"
-                    onClick={() => setTab(id)}
-                  >
-                    {t(key)}
-                  </button>
-                ))}
-              </div>
-
-              <div className="admin-metrics">
-                {(
-                  [
-                    [t("adminMetricDau"), dashboard.dau],
-                    [t("adminMetricNewUsers"), dashboard.new_users_today],
-                    [t("adminMetricInvites"), dashboard.invitations_today],
-                    [t("adminMetricReady"), dashboard.invitations_ready_week],
-                    [t("adminMetricAi"), dashboard.ai_generations_today],
-                    [t("adminMetricCost"), dashboard.ai_cost_today],
-                  ] as Array<[string, unknown]>
-                ).map(([label, value]) => (
-                  <div key={label} className="metric-card">
-                    <span>{label}</span>
-                    <strong>{String(value ?? 0)}</strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="admin-panel">
-                <div className="admin-panel-head">
-                  <h2>{t("adminCatalog")}</h2>
-                  <button type="button" className="admin-btn" onClick={exportCsv}>
-                    {t("adminExportCsv")}
-                  </button>
-                </div>
-                <div className="admin-catalog-grid">
-                  {Object.entries(counts).map(([k, v]) => (
-                    <button
-                      key={k}
-                      type="button"
-                      className="catalog-tile"
-                      onClick={() => {
-                        const map: Record<string, Tab> = {
-                          users: "users",
-                          events: "events",
-                          text_templates: "texts",
-                          templates: "templates",
-                          mood_tags: "moods",
-                          invitations: "invitations",
-                          ai_presets: "presets",
-                        };
-                        if (map[k]) setTab(map[k]);
-                      }}
-                    >
-                      <span>{k.replace(/_/g, " ")}</span>
-                      <strong>{v}</strong>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
+            <AdminDashboardSection
+              dashboard={dashboard as never}
+              onNavigate={setTab}
+              onExport={exportCsv}
+            />
           )}
 
           {tab === "users" && (
-            <section className="admin-section">
-              <div className="admin-filters">
-                <input
-                  placeholder={t("adminSearchUsers")}
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && void load()}
-                />
-                <UiSelect
-                  size="sm"
-                  aria-label={t("adminColRole")}
-                  value={userRole}
-                  onChange={(e) => setUserRole(e.target.value)}
-                >
-                  <option value="">{t("adminColRole")}</option>
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </UiSelect>
-                <UiSelect
-                  size="sm"
-                  aria-label={t("adminColStatus")}
-                  value={userBanned}
-                  onChange={(e) => setUserBanned(e.target.value)}
-                >
-                  <option value="">{t("adminColStatus")}</option>
-                  <option value="false">{t("adminActive")}</option>
-                  <option value="true">{t("adminBanned")}</option>
-                </UiSelect>
-                <button type="button" className="admin-btn primary" onClick={() => void load()}>
-                  {t("adminSearch")}
-                </button>
-              </div>
-              <div className="admin-split admin-split-users">
-                <AdminTable
-                  empty={t("adminEmpty")}
-                  hasData={users.length > 0}
-                  headers={[
-                    t("adminColName"),
-                    "Telegram",
-                    t("adminColRole"),
-                    t("adminColStatus"),
-                    t("adminColRegistered"),
-                    t("adminColLastLogin"),
-                    t("adminColInvites"),
-                  ]}
-                >
-                  {users.map((u) => (
-                    <tr
-                      key={String(u.id)}
-                      className={selectedUserId === String(u.id) ? "is-selected" : ""}
-                      onClick={() => setSelectedUserId(String(u.id))}
-                    >
-                      <td>
-                        <strong>
-                          {[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}
-                        </strong>
-                        {u.username ? <div className="muted">@{String(u.username)}</div> : null}
-                      </td>
-                      <td className="mono">{String(u.telegram_id)}</td>
-                      <td>
-                        <StatusBadge tone={u.role === "admin" ? "accent" : "muted"}>
-                          {String(u.role)}
-                        </StatusBadge>
-                      </td>
-                      <td>
-                        <StatusBadge tone={u.is_banned ? "danger" : "ok"}>
-                          {u.is_banned ? t("adminBanned") : t("adminActive")}
-                        </StatusBadge>
-                      </td>
-                      <td className="muted nowrap">{formatDate(u.created_at)}</td>
-                      <td className="muted nowrap">
-                        {u.last_login_at ? formatDate(u.last_login_at) : "—"}
-                      </td>
-                      <td className="mono">{String(u.invitation_count ?? 0)}</td>
-                    </tr>
-                  ))}
-                </AdminTable>
-
-                {userDetail && (
-                  <aside className="admin-drawer">
-                    <div className="admin-panel-head">
-                      <h2>
-                        {[userDetail.user.first_name, userDetail.user.last_name]
-                          .filter(Boolean)
-                          .join(" ") || "—"}
-                      </h2>
-                      <button type="button" className="ghost" onClick={() => setSelectedUserId(null)}>
-                        ×
-                      </button>
-                    </div>
-                    {userDetail.user.username ? (
-                      <p className="hint">@{String(userDetail.user.username)}</p>
-                    ) : null}
-                    <dl className="admin-meta-grid">
-                      <div>
-                        <dt>ID</dt>
-                        <dd className="mono">{String(userDetail.user.id)}</dd>
-                      </div>
-                      <div>
-                        <dt>Telegram ID</dt>
-                        <dd className="mono">{String(userDetail.user.telegram_id)}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColPhone")}</dt>
-                        <dd>{String(userDetail.user.phone || "—")}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColLang")}</dt>
-                        <dd>{String(userDetail.user.language || "—")}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColRole")}</dt>
-                        <dd>{String(userDetail.user.role)}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColStatus")}</dt>
-                        <dd>
-                          {userDetail.user.is_banned
-                            ? t("adminBanned")
-                            : userDetail.user.is_active === false
-                              ? t("adminAccountInactive")
-                              : t("adminActive")}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColRegistered")}</dt>
-                        <dd>{formatDate(userDetail.user.created_at)}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColLastLogin")}</dt>
-                        <dd>
-                          {userDetail.user.last_login_at
-                            ? formatDate(userDetail.user.last_login_at)
-                            : "—"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColUpdated")}</dt>
-                        <dd>
-                          {userDetail.user.updated_at
-                            ? formatDate(userDetail.user.updated_at)
-                            : "—"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColInvites")}</dt>
-                        <dd>{String(userDetail.user.invitation_count ?? 0)}</dd>
-                      </div>
-                      <div>
-                        <dt>{t("adminColSessions")}</dt>
-                        <dd>{String(userDetail.user.active_sessions ?? 0)}</dd>
-                      </div>
-                      {userDetail.user.ban_reason ? (
-                        <div className="span-2">
-                          <dt>{t("adminColBanReason")}</dt>
-                          <dd>{String(userDetail.user.ban_reason)}</dd>
-                        </div>
-                      ) : null}
-                      {userDetail.user.photo_url ? (
-                        <div className="span-2">
-                          <dt>{t("adminColPhoto")}</dt>
-                          <dd>
-                            <a
-                              href={String(userDetail.user.photo_url)}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {t("adminOpenLink")}
-                            </a>
-                          </dd>
-                        </div>
-                      ) : null}
-                    </dl>
-                    <div className="admin-actions">
-                      <IconBtn
-                        label={
-                          userDetail.user.role === "admin"
-                            ? t("adminMakeUser")
-                            : t("adminMakeAdmin")
-                        }
-                        disabled={!!actionBusy}
-                        onClick={() =>
-                          void run("role", () =>
-                            api.adminPatchUser(String(userDetail.user.id), {
-                              role: userDetail.user.role === "admin" ? "user" : "admin",
-                            }),
-                          )
-                        }
-                      >
-                        <IconUser />
-                      </IconBtn>
-                      <IconBtn
-                        label={userDetail.user.is_banned ? t("adminUnban") : t("adminBan")}
-                        tone={userDetail.user.is_banned ? "ok" : "danger"}
-                        disabled={!!actionBusy}
-                        onClick={() => {
-                          const banned = Boolean(userDetail.user.is_banned);
-                          if (!banned && !window.confirm(t("adminBanConfirm"))) return;
-                          void run("ban", () =>
-                            api.adminPatchUser(String(userDetail.user.id), {
-                              is_banned: !banned,
-                              ban_reason: banned ? "" : "Banned by admin",
-                            }),
-                          );
-                        }}
-                      >
-                        <IconBan />
-                      </IconBtn>
-                    </div>
-                    <h3>{t("adminUserSessions")}</h3>
-                    <ul className="admin-mini-list">
-                      {(userDetail.sessions || []).map((s) => (
-                        <li key={String(s.id)}>
-                          {s.is_active ? "●" : "○"} {String(s.ip_address || "—")} ·{" "}
-                          {formatDate(s.created_at)}
-                          {s.user_agent ? (
-                            <div className="muted truncate">{String(s.user_agent)}</div>
-                          ) : null}
-                        </li>
-                      ))}
-                      {!(userDetail.sessions || []).length && <li>{t("adminEmpty")}</li>}
-                    </ul>
-                    <h3>{t("adminNavInvitations")}</h3>
-                    <ul className="admin-mini-list">
-                      {userDetail.invitations.map((inv) => (
-                        <li key={String(inv.id)}>
-                          {String(inv.event_slug)} · {String(inv.status)} ·{" "}
-                          {formatDate(inv.created_at)}
-                        </li>
-                      ))}
-                      {!userDetail.invitations.length && <li>{t("adminEmpty")}</li>}
-                    </ul>
-                    <h3>{t("adminUserHistory")}</h3>
-                    <ul className="admin-mini-list">
-                      {userDetail.history.map((h) => (
-                        <li key={String(h.id)}>
-                          {String(h.action)} · {formatDate(h.created_at)}
-                        </li>
-                      ))}
-                      {!userDetail.history.length && <li>{t("adminEmpty")}</li>}
-                    </ul>
-                  </aside>
-                )}
-              </div>
-            </section>
+            <AdminUsersSection ref={usersSectionRef} onError={setError} />
           )}
 
           {tab === "invitations" && (
