@@ -13,6 +13,7 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   loginDev: (asAdmin?: boolean) => Promise<void>;
+  loginAdmin: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 };
@@ -54,24 +55,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("auth:changed", handler);
   }, [refreshMe]);
 
-  const loginDev = useCallback(async (asAdmin = false) => {
-    try {
-      const data = await api.devLogin({
-        telegram_id: asAdmin ? 900001 : 1001,
-        as_admin: asAdmin,
-        first_name: asAdmin ? "Admin" : "Dev User",
-        username: asAdmin ? "admin_dev" : "dev_user",
-      });
+  const applyAuth = useCallback(
+    (data: { user: User; access: string; refresh?: string }) => {
       localStorage.setItem("access_token", data.access);
       if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
       setUser(data.user);
-    } catch (err) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      setUser(null);
-      throw err instanceof Error ? err : new Error("Login failed");
-    }
-  }, []);
+    },
+    [],
+  );
+
+  const loginDev = useCallback(
+    async (asAdmin = false) => {
+      try {
+        const data = await api.devLogin({
+          telegram_id: asAdmin ? 900001 : 1001,
+          as_admin: asAdmin,
+          first_name: asAdmin ? "Admin" : "Dev User",
+          username: asAdmin ? "admin_dev" : "dev_user",
+        });
+        applyAuth(data);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setUser(null);
+        throw err instanceof Error ? err : new Error("Login failed");
+      }
+    },
+    [applyAuth],
+  );
+
+  const loginAdmin = useCallback(
+    async (username: string, password: string) => {
+      try {
+        const data = await api.adminLogin({ username, password });
+        applyAuth(data);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setUser(null);
+        throw err instanceof Error ? err : new Error("Login failed");
+      }
+    },
+    [applyAuth],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -85,8 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, loginDev, logout, refreshMe }),
-    [user, loading, loginDev, logout, refreshMe],
+    () => ({ user, loading, loginDev, loginAdmin, logout, refreshMe }),
+    [user, loading, loginDev, loginAdmin, logout, refreshMe],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

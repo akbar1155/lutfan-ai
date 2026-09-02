@@ -9,6 +9,8 @@ ROOT_DIR = BASE_DIR.parent
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
     ALLOW_DEV_LOGIN=(bool, False),
+    ADMIN_LOGIN_USERNAME=(str, "admin"),
+    ADMIN_LOGIN_PASSWORD=(str, "admin123"),
     DJANGO_ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     CORS_ALLOWED_ORIGINS=(list, ["http://localhost:5173"]),
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:5173"]),
@@ -21,6 +23,8 @@ environ.Env.read_env(ROOT_DIR / ".env")
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-dev-only-change-me")
 DEBUG = env("DJANGO_DEBUG")
 ALLOW_DEV_LOGIN = env("ALLOW_DEV_LOGIN") or DEBUG
+ADMIN_LOGIN_USERNAME = env("ADMIN_LOGIN_USERNAME")
+ADMIN_LOGIN_PASSWORD = env("ADMIN_LOGIN_PASSWORD")
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
 # Dev tunnels (ngrok / cloudflare / jprq): accept any Host while DEBUG is on.
 if DEBUG and "*" not in ALLOWED_HOSTS:

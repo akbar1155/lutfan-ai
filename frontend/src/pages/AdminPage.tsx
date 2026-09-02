@@ -129,12 +129,16 @@ function Field({
 
 export default function AdminPage() {
   const { t } = useTranslation();
-  const { user, loginDev } = useAuth();
+  const { user, loginDev, loginAdmin } = useAuth();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const [dashboard, setDashboard] = useState<Record<string, unknown> | null>(null);
   const [users, setUsers] = useState<Array<Record<string, unknown>>>([]);
@@ -281,12 +285,58 @@ export default function AdminPage() {
 
   if (!user || user.role !== "admin") {
     return (
-      <main className="page">
-        <h1>{t("admin")}</h1>
-        <p>{t("adminRequired")}</p>
-        <button type="button" className="cta" onClick={() => void loginDev(true)}>
-          {t("adminLogin")}
-        </button>
+      <main className="page narrow admin-login-page">
+        <header className="page-head">
+          <h1>{t("admin")}</h1>
+          <p>{t("adminLoginHint")}</p>
+        </header>
+        <form
+          className="admin-login-card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setLoginBusy(true);
+            setLoginError(null);
+            void loginAdmin(adminUsername.trim(), adminPassword)
+              .catch((err: Error) => {
+                setLoginError(err.message || t("adminLoginFailed"));
+              })
+              .finally(() => setLoginBusy(false));
+          }}
+        >
+          <label>
+            <span>{t("adminUsername")}</span>
+            <input
+              autoComplete="username"
+              value={adminUsername}
+              onChange={(e) => setAdminUsername(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            <span>{t("adminPassword")}</span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              required
+            />
+          </label>
+          {loginError ? <p className="error">{loginError}</p> : null}
+          <button type="submit" className="cta" disabled={loginBusy || !adminUsername || !adminPassword}>
+            {loginBusy ? t("loading") : t("adminLogin")}
+          </button>
+        </form>
+        {import.meta.env.DEV ? (
+          <button
+            type="button"
+            className="ghost"
+            style={{ marginTop: "0.75rem" }}
+            onClick={() => void loginDev(true).catch(() => undefined)}
+          >
+            {t("adminDevLogin")}
+          </button>
+        ) : null}
       </main>
     );
   }

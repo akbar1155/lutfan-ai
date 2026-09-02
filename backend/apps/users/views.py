@@ -211,3 +211,59 @@ class DevLoginView(APIView):
             },
         )
         return _issue_auth_response(request, user)
+
+
+class AdminPasswordLoginView(APIView):
+    """Username/password login for the custom admin panel (shareable credentials)."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        username = str(request.data.get("username") or "").strip()
+        password = str(request.data.get("password") or "")
+        if not username or not password:
+            return Response(
+                {
+                    "error": {
+                        "code": "INVALID_CREDENTIALS",
+                        "message": "Username and password are required",
+                    }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = (
+            User.objects.filter(username__iexact=username, is_active=True)
+            .order_by("-updated_at")
+            .first()
+        )
+        if (
+            user is None
+            or not user.is_admin
+            or not user.has_usable_password()
+            or not user.check_password(password)
+        ):
+            return Response(
+                {
+                    "error": {
+                        "code": "INVALID_CREDENTIALS",
+                        "message": "Invalid username or password",
+                    }
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if user.is_banned:
+            return Response(
+                {
+                    "error": {
+                        "code": "USER_BANNED",
+                        "message": user.ban_reason or "Account is banned",
+                    }
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        user.last_login_at = timezone.now()
+        user.save(update_fields=["last_login_at", "updated_at"])
+        return _issue_auth_response(request, user)

@@ -32,4 +32,7 @@ if [ "${RUN_SEED:-0}" = "1" ]; then
   python manage.py seed_data || true
 fi
 
+# Password login for /admin (username/password from env, defaults in settings)
+python manage.py ensure_admin_login || true
+
 exec "$@"

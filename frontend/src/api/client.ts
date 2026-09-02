@@ -219,6 +219,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload || {}),
     }),
+  adminLogin: (payload: { username: string; password: string }) =>
+    request<{ user: User; access: string; refresh?: string }>("/auth/admin-login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   me: () => request<User>("/auth/me"),
   logout: () => {
     const refresh = localStorage.getItem("refresh_token");

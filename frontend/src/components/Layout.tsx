@@ -43,9 +43,16 @@ export default function Layout() {
     >
       <header className={`top ${isHome ? "top-home" : ""} ${isAdmin ? "top-admin" : ""}`}>
         <div className="top-inner">
-          <Link to="/" className="brand">
-            {t("brand")}
-          </Link>
+          <div className="top-brand-cluster">
+            <Link to="/" className="brand">
+              {t("brand")}
+            </Link>
+            {isAdmin && (
+              <Link to="/" className="admin-back-link">
+                {t("back")}
+              </Link>
+            )}
+          </div>
 
           {!isAdmin && (
             <button
@@ -73,12 +80,6 @@ export default function Layout() {
               <NavLink to="/faq">{t("faq")}</NavLink>
               {user && <NavLink to="/account">{t("account")}</NavLink>}
               {user?.role === "admin" && <NavLink to="/admin">{t("admin")}</NavLink>}
-            </nav>
-          )}
-
-          {isAdmin && (
-            <nav className="nav admin-site-nav" aria-label="Site">
-              <Link to="/">{t("back")}</Link>
             </nav>
           )}
 
