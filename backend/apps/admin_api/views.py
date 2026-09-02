@@ -6,7 +6,7 @@ import re
 import uuid
 from pathlib import Path
 
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -177,6 +177,30 @@ class AdminDashboardView(APIView):
         )
 
 
+def _admin_user_payload(user: User, *, invitation_count: int | None = None) -> dict:
+    payload = {
+        "id": str(user.id),
+        "telegram_id": user.telegram_id,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "photo_url": user.photo_url,
+        "phone": user.phone,
+        "language": user.language,
+        "role": user.role,
+        "is_banned": user.is_banned,
+        "ban_reason": user.ban_reason,
+        "is_active": user.is_active,
+        "is_staff": user.is_staff,
+        "last_login_at": user.last_login_at,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at,
+    }
+    if invitation_count is not None:
+        payload["invitation_count"] = invitation_count
+    return payload
+
+
 class AdminUsersView(APIView):
     permission_classes = [IsAdminRole]
 
@@ -188,32 +212,29 @@ class AdminUsersView(APIView):
         limit = min(max(int(request.query_params.get("limit", 100)), 1), 500)
 
         if search:
-            if search.isdigit():
+            if search.isdigit() or (search.startswith("-") and search[1:].isdigit()):
                 qs = qs.filter(telegram_id=int(search))
             else:
                 qs = qs.filter(
-                    Q(username__icontains=search) | Q(first_name__icontains=search)
+                    Q(username__icontains=search)
+                    | Q(first_name__icontains=search)
+                    | Q(last_name__icontains=search)
+                    | Q(phone__icontains=search)
                 )
         if role in {Role.USER, Role.ADMIN}:
             qs = qs.filter(role=role)
         if is_banned in {"true", "false"}:
             qs = qs.filter(is_banned=(is_banned == "true"))
 
-        qs = qs[:limit]
+        qs = qs.annotate(
+            invitation_count=Count(
+                "invitations",
+                filter=Q(invitations__deleted_at__isnull=True),
+            )
+        )[:limit]
         return Response(
             [
-                {
-                    "id": str(u.id),
-                    "telegram_id": u.telegram_id,
-                    "username": u.username,
-                    "first_name": u.first_name,
-                    "last_name": u.last_name,
-                    "role": u.role,
-                    "is_banned": u.is_banned,
-                    "ban_reason": u.ban_reason,
-                    "last_login_at": u.last_login_at,
-                    "created_at": u.created_at,
-                }
+                _admin_user_payload(u, invitation_count=int(u.invitation_count or 0))
                 for u in qs
             ]
         )
@@ -234,20 +255,42 @@ class AdminUserDetailView(APIView):
             .order_by("-created_at")
             .select_related("invitation")[:20]
         )
+        sessions = list(
+            user.sessions.order_by("-created_at").values(
+                "id",
+                "ip_address",
+                "user_agent",
+                "created_at",
+                "expires_at",
+                "revoked_at",
+            )[:10]
+        )
+        invitation_count = Invitation.objects.filter(
+            user=user, deleted_at__isnull=True
+        ).count()
+        active_sessions = user.sessions.filter(
+            revoked_at__isnull=True, expires_at__gt=timezone.now()
+        ).count()
         return Response(
             {
                 "user": {
-                    "id": str(user.id),
-                    "telegram_id": user.telegram_id,
-                    "username": user.username,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "role": user.role,
-                    "is_banned": user.is_banned,
-                    "ban_reason": user.ban_reason,
-                    "last_login_at": user.last_login_at,
-                    "created_at": user.created_at,
+                    **_admin_user_payload(user, invitation_count=invitation_count),
+                    "active_sessions": active_sessions,
                 },
+                "sessions": [
+                    {
+                        "id": str(s["id"]),
+                        "ip_address": s["ip_address"],
+                        "user_agent": s["user_agent"],
+                        "created_at": s["created_at"],
+                        "expires_at": s["expires_at"],
+                        "revoked_at": s["revoked_at"],
+                        "is_active": s["revoked_at"] is None
+                        and s["expires_at"] is not None
+                        and s["expires_at"] > timezone.now(),
+                    }
+                    for s in sessions
+                ],
                 "invitations": [
                     {
                         "id": str(inv.id),

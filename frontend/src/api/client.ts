@@ -308,6 +308,7 @@ export const api = {
   adminGetUser: (id: string) =>
     request<{
       user: Record<string, unknown>;
+      sessions?: Array<Record<string, unknown>>;
       invitations: Array<Record<string, unknown>>;
       history: Array<Record<string, unknown>>;
     }>(`/admin/users/${id}`),

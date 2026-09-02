@@ -148,6 +148,7 @@ export default function AdminPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userDetail, setUserDetail] = useState<{
     user: Record<string, unknown>;
+    sessions?: Array<Record<string, unknown>>;
     invitations: Array<Record<string, unknown>>;
     history: Array<Record<string, unknown>>;
   } | null>(null);
@@ -561,7 +562,7 @@ export default function AdminPage() {
                   {t("adminSearch")}
                 </button>
               </div>
-              <div className="admin-split">
+              <div className="admin-split admin-split-users">
                 <AdminTable
                   empty={t("adminEmpty")}
                   hasData={users.length > 0}
@@ -570,6 +571,9 @@ export default function AdminPage() {
                     "Telegram",
                     t("adminColRole"),
                     t("adminColStatus"),
+                    t("adminColRegistered"),
+                    t("adminColLastLogin"),
+                    t("adminColInvites"),
                   ]}
                 >
                   {users.map((u) => (
@@ -579,7 +583,9 @@ export default function AdminPage() {
                       onClick={() => setSelectedUserId(String(u.id))}
                     >
                       <td>
-                        <strong>{String(u.first_name || "—")}</strong>
+                        <strong>
+                          {[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}
+                        </strong>
                         {u.username ? <div className="muted">@{String(u.username)}</div> : null}
                       </td>
                       <td className="mono">{String(u.telegram_id)}</td>
@@ -593,6 +599,11 @@ export default function AdminPage() {
                           {u.is_banned ? t("adminBanned") : t("adminActive")}
                         </StatusBadge>
                       </td>
+                      <td className="muted nowrap">{formatDate(u.created_at)}</td>
+                      <td className="muted nowrap">
+                        {u.last_login_at ? formatDate(u.last_login_at) : "—"}
+                      </td>
+                      <td className="mono">{String(u.invitation_count ?? 0)}</td>
                     </tr>
                   ))}
                 </AdminTable>
@@ -600,12 +611,98 @@ export default function AdminPage() {
                 {userDetail && (
                   <aside className="admin-drawer">
                     <div className="admin-panel-head">
-                      <h2>{String(userDetail.user.first_name)}</h2>
+                      <h2>
+                        {[userDetail.user.first_name, userDetail.user.last_name]
+                          .filter(Boolean)
+                          .join(" ") || "—"}
+                      </h2>
                       <button type="button" className="ghost" onClick={() => setSelectedUserId(null)}>
                         ×
                       </button>
                     </div>
-                    <p className="hint mono">TG {String(userDetail.user.telegram_id)}</p>
+                    {userDetail.user.username ? (
+                      <p className="hint">@{String(userDetail.user.username)}</p>
+                    ) : null}
+                    <dl className="admin-meta-grid">
+                      <div>
+                        <dt>ID</dt>
+                        <dd className="mono">{String(userDetail.user.id)}</dd>
+                      </div>
+                      <div>
+                        <dt>Telegram ID</dt>
+                        <dd className="mono">{String(userDetail.user.telegram_id)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColPhone")}</dt>
+                        <dd>{String(userDetail.user.phone || "—")}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColLang")}</dt>
+                        <dd>{String(userDetail.user.language || "—")}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColRole")}</dt>
+                        <dd>{String(userDetail.user.role)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColStatus")}</dt>
+                        <dd>
+                          {userDetail.user.is_banned
+                            ? t("adminBanned")
+                            : userDetail.user.is_active === false
+                              ? t("adminAccountInactive")
+                              : t("adminActive")}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColRegistered")}</dt>
+                        <dd>{formatDate(userDetail.user.created_at)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColLastLogin")}</dt>
+                        <dd>
+                          {userDetail.user.last_login_at
+                            ? formatDate(userDetail.user.last_login_at)
+                            : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColUpdated")}</dt>
+                        <dd>
+                          {userDetail.user.updated_at
+                            ? formatDate(userDetail.user.updated_at)
+                            : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColInvites")}</dt>
+                        <dd>{String(userDetail.user.invitation_count ?? 0)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t("adminColSessions")}</dt>
+                        <dd>{String(userDetail.user.active_sessions ?? 0)}</dd>
+                      </div>
+                      {userDetail.user.ban_reason ? (
+                        <div className="span-2">
+                          <dt>{t("adminColBanReason")}</dt>
+                          <dd>{String(userDetail.user.ban_reason)}</dd>
+                        </div>
+                      ) : null}
+                      {userDetail.user.photo_url ? (
+                        <div className="span-2">
+                          <dt>{t("adminColPhoto")}</dt>
+                          <dd>
+                            <a
+                              href={String(userDetail.user.photo_url)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {t("adminOpenLink")}
+                            </a>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
                     <div className="admin-actions">
                       <IconBtn
                         label={
@@ -642,6 +739,19 @@ export default function AdminPage() {
                         <IconBan />
                       </IconBtn>
                     </div>
+                    <h3>{t("adminUserSessions")}</h3>
+                    <ul className="admin-mini-list">
+                      {(userDetail.sessions || []).map((s) => (
+                        <li key={String(s.id)}>
+                          {s.is_active ? "●" : "○"} {String(s.ip_address || "—")} ·{" "}
+                          {formatDate(s.created_at)}
+                          {s.user_agent ? (
+                            <div className="muted truncate">{String(s.user_agent)}</div>
+                          ) : null}
+                        </li>
+                      ))}
+                      {!(userDetail.sessions || []).length && <li>{t("adminEmpty")}</li>}
+                    </ul>
                     <h3>{t("adminNavInvitations")}</h3>
                     <ul className="admin-mini-list">
                       {userDetail.invitations.map((inv) => (

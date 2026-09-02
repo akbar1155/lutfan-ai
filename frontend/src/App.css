@@ -3396,8 +3396,13 @@ details p {
   align-items: start;
 }
 
+.admin-split-users {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+}
+
 @media (max-width: 900px) {
-  .admin-split {
+  .admin-split,
+  .admin-split-users {
     grid-template-columns: 1fr;
   }
 }
@@ -3409,11 +3414,44 @@ details p {
   background: #fafaf8;
   position: sticky;
   top: 0.5rem;
+  max-height: calc(100vh - 7rem);
+  overflow: auto;
 }
 
 .admin-drawer h3 {
   margin: 1rem 0 0.45rem;
   font-size: 0.9rem;
+}
+
+.admin-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.75rem;
+  margin: 0.75rem 0 0;
+}
+
+.admin-meta-grid > div {
+  min-width: 0;
+}
+
+.admin-meta-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-meta-grid dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-meta-grid dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  word-break: break-word;
 }
 
 .admin-mini-list {
@@ -3422,6 +3460,17 @@ details p {
   color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.5;
+}
+
+.admin-mini-list .truncate {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-table .nowrap {
+  white-space: nowrap;
 }
 
 .admin-table tr {
