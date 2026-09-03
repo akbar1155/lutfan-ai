@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "django_celery_beat",
     # Local
     "apps.core",
     "apps.users",
@@ -193,6 +194,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_ALWAYS_EAGER = CELERY_TASK_ALWAYS_EAGER
 CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
 TELEGRAM_BOT_USERNAME = env("TELEGRAM_BOT_USERNAME", default="lutfan_ai_bot")
@@ -214,3 +218,37 @@ RATE_LIMIT_GENERATIONS_PER_HOUR = env("RATE_LIMIT_GENERATIONS_PER_HOUR")
 RATE_LIMIT_GENERATIONS_PER_DAY = env("RATE_LIMIT_GENERATIONS_PER_DAY")
 
 LOG_LEVEL = env("LOG_LEVEL", default="info").upper()
+
+SENTRY_DSN = env("SENTRY_DSN", default="")
+SENTRY_ENVIRONMENT = env("SENTRY_ENVIRONMENT", default="development" if DEBUG else "production")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.redis import RedisIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=True,
+                cache_spans=True,
+            ),
+            CeleryIntegration(
+                monitor_beat_tasks=True,
+                exclude_beat_tasks=None,
+            ),
+            RedisIntegration(),
+        ],
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        profiles_sample_rate=0.1,
+        send_default_pii=False,
+        attach_stacktrace=True,
+        request_bodies="medium",
+        before_send=lambda event, hint: event if not DEBUG else None,
+    )
