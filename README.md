@@ -27,7 +27,9 @@ npm run dev
 - Frontend: http://localhost:5173  
 - API: http://localhost:8000/api/v1/health  
 - Swagger: http://localhost:8000/api/docs/  
-- Django admin: http://localhost:8000/admin/
+- Django admin: http://localhost:8000/django-admin/  
+  (production: https://lutfanai.uz/django-admin/)
+- React admin: http://localhost:5173/admin/
 
 В DEBUG режиме кнопка **Кириш** вызывает `POST /api/v1/auth/dev-login` (Telegram widget key bo‘lmasa ham oqimni sinash uchun).
 
@@ -54,7 +56,8 @@ docker compose up -d --build
 
 Push to `main` runs GitHub Actions: frontend lint/build, Django tests, then deploy to the production VPS.
 
-Production: https://lutfan.israilov.uz
+Production: https://lutfanai.uz  
+(legacy: https://lutfan.israilov.uz)
 
 ## Что ещё доработать до prod-приёмки
 

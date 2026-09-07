@@ -798,7 +798,9 @@ select:focus-visible {
 
 .shell-admin {
   background: #f4f4f5;
-  overflow-x: clip;
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
 }
 
 .shell-admin .footer {
@@ -2591,7 +2593,8 @@ details p {
   max-width: none;
   margin: 0;
   flex: 1;
-  min-height: calc(100vh - 49px);
+  min-height: 0;
+  height: auto;
   border-radius: 0;
   overflow: hidden;
   border: 0;
@@ -2614,6 +2617,9 @@ details p {
   padding: var(--admin-space-2);
   background: var(--admin-bg);
   border-right: 1px solid var(--admin-border);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .admin-sidebar-brand {
@@ -2749,6 +2755,10 @@ details p {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--admin-surface);
 }
 
@@ -3582,11 +3592,23 @@ details p {
 }
 
 @media (max-width: 900px) {
+  .shell-admin {
+    height: auto;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
   .admin-shell {
     width: 100%;
     grid-template-columns: 1fr;
     width: min(960px, 100% - 1.25rem);
     min-height: auto;
+    overflow: visible;
+  }
+
+  .admin-main {
+    height: auto;
+    overflow-y: visible;
   }
 
   .admin-backdrop {
@@ -3710,27 +3732,38 @@ details p {
 
 .admin-users-search-icon {
   position: absolute;
-  left: 11px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--admin-muted);
   pointer-events: none;
   display: inline-flex;
+  z-index: 1;
 }
 
-.admin-users-search input {
+/* Beat global `input:not(...)` padding specificity so icon/text don't overlap */
+.admin-users-search input:not([type="checkbox"]):not([type="radio"]) {
   width: 100%;
   min-height: 38px;
-  padding: 0 34px 0 36px;
+  padding: 0 34px 0 40px;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
   background: var(--admin-bg);
   font: inherit;
   font-size: 13px;
+  letter-spacing: normal;
+  -webkit-appearance: none;
+  appearance: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.admin-users-search input:focus-visible {
+.admin-users-search input:not([type="checkbox"]):not([type="radio"])::-webkit-search-decoration,
+.admin-users-search input:not([type="checkbox"]):not([type="radio"])::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.admin-users-search input:not([type="checkbox"]):not([type="radio"]):focus-visible {
   outline: none;
   border-color: var(--admin-accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 14%, transparent);
@@ -4758,13 +4791,133 @@ details p {
   background: #fef2f2;
 }
 
+.admin-dash-chart-card.compact {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.admin-dash-chart-sub.tight {
+  max-width: none;
+  font-size: 10px;
+}
+
+.admin-dash-week-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-dash-week-head h3 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.admin-dash-week-head .admin-dash-chart-summary {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.admin-dash-week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  align-items: end;
+}
+
+.admin-dash-week-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px 2px 2px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.admin-dash-week-cell.active {
+  background: #f3faf8;
+}
+
+.admin-dash-week-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dash-ink, #0f172a);
+  line-height: 1;
+}
+
+.admin-dash-week-cell:not(.active) .admin-dash-week-value {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.admin-dash-week-bar-track {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+}
+
+.admin-dash-week-bar {
+  width: 100%;
+  max-width: 22px;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, var(--admin-accent, #1a4540), #3d8b80);
+}
+
+.admin-dash-week-bar.zero {
+  max-width: 16px;
+  background: #dbe4e2;
+}
+
+.admin-dash-week-day {
+  font-size: 9px;
+  font-weight: 650;
+  color: var(--dash-ink, #0f172a);
+  text-transform: capitalize;
+  line-height: 1.1;
+}
+
+.admin-dash-week-date {
+  font-size: 9px;
+  color: #94a3b8;
+  line-height: 1;
+}
+
 .admin-dash-grid.user-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-dash-grid.two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .admin-dash-chart-head.stacked {
   align-items: flex-start;
   margin-bottom: 4px;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-dash-chart-summary {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef6f4;
+  color: var(--admin-accent, #1a4540);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.admin-dash-axis-label.muted {
+  fill: #94a3b8;
+  font-size: 9px;
 }
 
 .admin-dash-chart-sub {
@@ -5103,6 +5256,7 @@ details p {
   }
 
   .admin-dash-grid,
+  .admin-dash-grid.two,
   .admin-dash-grid.three,
   .admin-dash-grid.user-metrics {
     grid-template-columns: 1fr;

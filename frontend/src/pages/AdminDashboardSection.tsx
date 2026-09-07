@@ -41,7 +41,7 @@ const CHART_SECONDARY = "#3d8b80";
 const CHART_TERTIARY = "#14b8a6";
 const CHART_W = 640;
 const CHART_H = 220;
-const PAD = { t: 18, r: 16, b: 28, l: 36 };
+const PAD = { t: 18, r: 16, b: 34, l: 36 };
 
 function num(v: unknown): number {
   const n = Number(v);
@@ -56,14 +56,15 @@ function formatMoney(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
-function shortDayLabel(dateStr: string): string {
+function shortDayDateLabel(dateStr: string): string {
   const parts = dateStr.split(".");
   const d =
     parts.length >= 3
       ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
       : new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return dateStr.slice(0, 5);
-  return d.toLocaleDateString(undefined, { weekday: "short" });
+  if (Number.isNaN(d.getTime())) return shortDateLabel(dateStr);
+  const day = d.toLocaleDateString(undefined, { weekday: "short" });
+  return `${day} · ${parts[0]}.${parts[1]}`;
 }
 
 function shortDateLabel(dateStr: string): string {
@@ -135,6 +136,7 @@ function DailyMetricChart({
   variant,
   valueLabel,
   gradientId,
+  summary,
 }: {
   title: string;
   subtitle: string;
@@ -145,22 +147,32 @@ function DailyMetricChart({
   variant: "bar" | "line";
   valueLabel: string;
   gradientId: string;
+  summary?: string;
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const width = CHART_W;
   const height = CHART_H;
   const innerW = width - PAD.l - PAD.r;
+  const innerH = height - PAD.t - PAD.b;
   const max = Math.max(1, ...values);
   const xs = labels.map((_, i) =>
     PAD.l + (labels.length <= 1 ? innerW / 2 : (i / (labels.length - 1)) * innerW),
   );
+  const barLayout = values.map((_, i) => {
+    const gap = 6;
+    const barW = innerW / values.length - gap;
+    const x = PAD.l + i * (barW + gap) + gap / 2;
+    return { x, barW, center: x + barW / 2 };
+  });
   const ys = scaleSeries(values, height);
   const tipLeft =
-    hover != null && labels.length > 1
-      ? `${((xs[hover] - PAD.l) / innerW) * 100}%`
-      : hover != null
-        ? "50%"
-        : undefined;
+    hover != null && variant === "bar"
+      ? `${((barLayout[hover].center - PAD.l) / innerW) * 100}%`
+      : hover != null && labels.length > 1
+        ? `${((xs[hover] - PAD.l) / innerW) * 100}%`
+        : hover != null
+          ? "50%"
+          : undefined;
 
   return (
     <div className="admin-dash-chart-card">
@@ -169,6 +181,7 @@ function DailyMetricChart({
           <h3>{title}</h3>
           <p className="admin-dash-chart-sub">{subtitle}</p>
         </div>
+        {summary ? <span className="admin-dash-chart-summary">{summary}</span> : null}
       </div>
       <div className="admin-dash-chart-wrap">
         {hover != null && tipLeft && (
@@ -215,36 +228,42 @@ function DailyMetricChart({
           })}
           {variant === "bar" ? (
             values.map((v, i) => {
-              const gap = 6;
-              const barW = innerW / values.length - gap;
-              const barH = ((height - PAD.t - PAD.b) * v) / max;
-              const x = PAD.l + i * (barW + gap) + gap / 2;
+              const { x, barW } = barLayout[i];
+              const barH = v === 0 ? 4 : (innerH * v) / max;
               const y = height - PAD.b - barH;
               const active = hover === null || hover === i;
+              const [dayLabel, dateLabel] = labels[i].includes(" · ")
+                ? labels[i].split(" · ")
+                : [labels[i], ""];
               return (
                 <g key={labels[i]}>
                   <rect
                     x={x}
                     y={y}
                     width={barW}
-                    height={barH}
+                    height={Math.max(barH, 4)}
                     rx="6"
-                    fill={color}
-                    opacity={active ? 0.92 : 0.35}
+                    fill={v === 0 ? "#dbe4e2" : color}
+                    opacity={active ? (v === 0 ? 1 : 0.92) : 0.35}
                   />
-                  {hover === i && v > 0 && (
+                  {hover === i && (
                     <text x={x + barW / 2} y={y - 6} textAnchor="middle" className="admin-dash-bar-value">
                       {formatCount(v)}
                     </text>
                   )}
-                  <text x={x + barW / 2} y={height - 8} textAnchor="middle" className="admin-dash-axis-label">
-                    {labels[i]}
+                  <text x={x + barW / 2} y={height - (dateLabel ? 18 : 8)} textAnchor="middle" className="admin-dash-axis-label">
+                    {dayLabel}
                   </text>
+                  {dateLabel ? (
+                    <text x={x + barW / 2} y={height - 6} textAnchor="middle" className="admin-dash-axis-label muted">
+                      {dateLabel}
+                    </text>
+                  ) : null}
                   <rect
                     x={x}
                     y={PAD.t}
                     width={barW}
-                    height={height - PAD.t - PAD.b}
+                    height={innerH}
                     fill="transparent"
                     onMouseEnter={() => setHover(i)}
                     onMouseLeave={() => setHover(null)}
@@ -307,44 +326,57 @@ function DailyMetricChart({
   );
 }
 
-function BarChart({
-  values,
-  labels,
+function WeekActiveStrip({
   title,
+  subtitle,
+  rawDates,
+  values,
+  summary,
 }: {
-  values: number[];
-  labels: string[];
   title: string;
+  subtitle: string;
+  rawDates: string[];
+  values: number[];
+  summary?: string;
 }) {
-  const width = CHART_W;
-  const height = 200;
   const max = Math.max(1, ...values);
-  const barW = (width - PAD.l - PAD.r) / values.length - 8;
+  const maxBarH = 44;
 
   return (
-    <div className="admin-dash-chart-card">
-      <h3>{title}</h3>
-      <svg viewBox={`0 0 ${width} ${height}`} className="admin-dash-chart" role="img" aria-label={title}>
-        <defs>
-          <linearGradient id="dash-bar-grad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor={CHART_PRIMARY} />
-            <stop offset="100%" stopColor={CHART_TERTIARY} />
-          </linearGradient>
-        </defs>
+    <div className="admin-dash-chart-card compact">
+      <div className="admin-dash-week-head">
+        <div>
+          <h3>{title}</h3>
+          <p className="admin-dash-chart-sub tight">{subtitle}</p>
+        </div>
+        {summary ? <span className="admin-dash-chart-summary">{summary}</span> : null}
+      </div>
+      <div className="admin-dash-week-strip" role="img" aria-label={title}>
         {values.map((v, i) => {
-          const h = ((height - PAD.b - 20) * v) / max;
-          const x = PAD.l + i * (barW + 8) + 4;
-          const y = height - PAD.b - h;
+          const parts = rawDates[i].split(".");
+          const labelParts = shortDayDateLabel(rawDates[i]).split(" · ");
+          const day = labelParts[0] ?? "";
+          const date = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : labelParts[1] ?? "";
+          const barH = v === 0 ? 4 : Math.max(8, Math.round((v / max) * maxBarH));
           return (
-            <g key={labels[i]}>
-              <rect x={x} y={y} width={barW} height={h} rx="6" fill="url(#dash-bar-grad)" opacity="0.9" />
-              <text x={x + barW / 2} y={height - 8} textAnchor="middle" className="admin-dash-axis-label">
-                {labels[i]}
-              </text>
-            </g>
+            <div
+              key={rawDates[i]}
+              className={`admin-dash-week-cell${v > 0 ? " active" : ""}`}
+              title={`${formatFullDate(rawDates[i])}: ${formatCount(v)}`}
+            >
+              <span className="admin-dash-week-value">{formatCount(v)}</span>
+              <div className="admin-dash-week-bar-track">
+                <div
+                  className={`admin-dash-week-bar${v === 0 ? " zero" : ""}`}
+                  style={{ height: barH }}
+                />
+              </div>
+              <span className="admin-dash-week-day">{day}</span>
+              <span className="admin-dash-week-date">{date}</span>
+            </div>
           );
         })}
-      </svg>
+      </div>
     </div>
   );
 }
@@ -477,8 +509,9 @@ export default function AdminDashboardSection({
   const invitesDone = useMemo(() => daily.map((d) => num(d.invitations_completed)), [daily]);
 
   const last7 = daily.slice(-7);
-  const barLabels = last7.map((d) => shortDayLabel(d.date));
-  const barValues = last7.map((d) => num(d.dau));
+  const weekDates = useMemo(() => last7.map((d) => d.date), [last7]);
+  const weekActive = useMemo(() => last7.map((d) => num(d.dau)), [last7]);
+  const weekActiveTotal = useMemo(() => weekActive.reduce((sum, v) => sum + v, 0), [weekActive]);
   const rawDates = useMemo(() => daily.map((d) => d.date), [daily]);
 
   const catalogEntries = [
@@ -614,7 +647,13 @@ export default function AdminDashboardSection({
           value={num(funnel.ready_week)}
           total={Math.max(num(funnel.created_week), num(funnel.ready_week), 1)}
         />
-        <BarChart title={t("adminDashActiveByWeek")} values={barValues} labels={barLabels} />
+        <WeekActiveStrip
+          title={t("adminDashActiveByWeek")}
+          subtitle={t("adminDashActiveByWeekHint")}
+          rawDates={weekDates}
+          values={weekActive}
+          summary={t("adminDashWeekTotal", { count: formatCount(weekActiveTotal) })}
+        />
       </div>
 
       <div className="admin-dash-catalog">

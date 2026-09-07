@@ -6,7 +6,8 @@ from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Public Django admin (React panel stays at /admin/)
+    path("django-admin/", admin.site.urls),
     path("api/v1/", include("apps.core.urls")),
     path("api/v1/", include("apps.users.urls")),
     path("api/v1/", include("apps.content.urls")),
