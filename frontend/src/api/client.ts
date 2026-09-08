@@ -29,36 +29,46 @@ let refreshPromise: Promise<boolean> | null = null;
 async function refreshAccessToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
-    const storedRefresh = localStorage.getItem("refresh_token");
-    // Cookie may still be present even when localStorage refresh is missing.
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(storedRefresh ? { refresh: storedRefresh } : {}),
-    });
-    if (!res.ok) {
-      // Only wipe session after refresh truly fails.
+    try {
+      const storedRefresh = localStorage.getItem("refresh_token");
+      // Always hit refresh with credentials so httpOnly cookie can restore
+      // the session even when localStorage was wiped (e.g. after refresh).
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storedRefresh ? { refresh: storedRefresh } : {}),
+      });
+      if (!res.ok) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        return false;
+      }
+      const data = (await res.json()) as { access?: string; refresh?: string };
+      if (!data.access) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        return false;
+      }
+      localStorage.setItem("access_token", data.access);
+      if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
+      window.dispatchEvent(new Event("auth:changed"));
+      return true;
+    } catch {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       return false;
     }
-    const data = (await res.json()) as { access?: string; refresh?: string };
-    if (!data.access) return false;
-    localStorage.setItem("access_token", data.access);
-    if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
-    window.dispatchEvent(new Event("auth:changed"));
-    return true;
   })().finally(() => {
     refreshPromise = null;
   });
   return refreshPromise;
 }
 
-function canAttemptRefresh(): boolean {
-  return Boolean(
-    localStorage.getItem("access_token") || localStorage.getItem("refresh_token"),
-  );
+/** Restore access token from refresh cookie/body when localStorage is empty. */
+export async function ensureSession(): Promise<boolean> {
+  if (localStorage.getItem("access_token")) return true;
+  return refreshAccessToken();
 }
 
 async function request<T>(
@@ -79,8 +89,7 @@ async function request<T>(
       !path.startsWith("/auth/logout") &&
       !path.startsWith("/auth/telegram") &&
       !path.startsWith("/auth/dev-login") &&
-      !path.startsWith("/auth/admin-login") &&
-      canAttemptRefresh()
+      !path.startsWith("/auth/admin-login")
     ) {
       const ok = await refreshAccessToken();
       if (ok) {
@@ -111,7 +120,7 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
     });
   };
   let res = await doFetch();
-  if (res.status === 401 && canAttemptRefresh()) {
+  if (res.status === 401) {
     const ok = await refreshAccessToken();
     if (ok) res = await doFetch();
   }
@@ -139,7 +148,7 @@ async function patchForm<T>(path: string, formData: FormData): Promise<T> {
     });
   };
   let res = await doFetch();
-  if (res.status === 401 && canAttemptRefresh()) {
+  if (res.status === 401) {
     const ok = await refreshAccessToken();
     if (ok) res = await doFetch();
   }
@@ -230,6 +239,7 @@ export type JpgTemplate = {
 };
 
 export const api = {
+  ensureSession,
   health: () => request<HealthResponse>("/health"),
   events: () => request<EventConfig[]>("/events"),
   event: (slug: string) => request<EventConfig>(`/events/${slug}`),

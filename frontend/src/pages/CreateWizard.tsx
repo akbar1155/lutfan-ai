@@ -153,6 +153,12 @@ function useRequireAuth() {
   return { user, loading, loginDev };
 }
 
+/** Wait for AuthProvider cookie/localStorage restore before private API calls. */
+function useWaitForAuth() {
+  const { user, loading } = useRequireAuth();
+  return { user, authLoading: loading };
+}
+
 function fieldLabelKey(key: string) {
   return `field_${key}`;
 }
@@ -344,6 +350,7 @@ export function DetailsPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [event, setEvent] = useState<EventConfig | null>(null);
   const [subtypes, setSubtypes] = useState<string[]>([]);
@@ -353,7 +360,7 @@ export function DetailsPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then((inv) => {
@@ -370,7 +377,7 @@ export function DetailsPage() {
       })
       .then(setEvent)
       .catch((err: Error) => setError(err.message));
-  }, [id]);
+  }, [id, authLoading]);
 
   const toggleSubtype = (slug: string) => {
     setSubtypes((prev) =>
@@ -487,6 +494,7 @@ export function DataPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const uiLang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [event, setEvent] = useState<EventConfig | null>(null);
@@ -504,7 +512,7 @@ export function DataPage() {
     getSubtypeMode(event) === "multi" && subtypeSlugs.length >= 2;
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then((inv) => {
@@ -519,7 +527,7 @@ export function DataPage() {
       })
       .then(setEvent)
       .catch((err: Error) => setError(err.message));
-  }, [id]);
+  }, [id, authLoading]);
 
   const fields = useMemo(() => {
     if (!event) return [] as FieldDef[];
@@ -863,6 +871,7 @@ export function TextPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<TextTemplate[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -880,7 +889,7 @@ export function TextPage() {
   const [scheduleDateTime, setScheduleDateTime] = useState("");
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then(async (inv) => {
@@ -1012,7 +1021,7 @@ export function TextPage() {
         );
       })
       .catch((err: Error) => setError(err.message));
-  }, [id, t]);
+  }, [id, t, authLoading]);
 
   if (!invitation) {
     return (
@@ -1214,13 +1223,14 @@ export function StyleTemplatesPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<JpgTemplate[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then((inv) => {
@@ -1229,7 +1239,7 @@ export function StyleTemplatesPage() {
       })
       .then(setTemplates)
       .catch((err: Error) => setError(err.message));
-  }, [id]);
+  }, [id, authLoading]);
 
   if (!invitation) {
     return (
@@ -1304,6 +1314,7 @@ export function StyleAiPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const lang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [moods, setMoods] = useState<
@@ -1316,7 +1327,7 @@ export function StyleAiPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then((inv) => {
@@ -1331,7 +1342,7 @@ export function StyleAiPage() {
         });
       })
       .catch((err: Error) => setError(err.message));
-  }, [id]);
+  }, [id, authLoading]);
 
   if (!invitation) {
     return (
@@ -1438,13 +1449,14 @@ export function GeneratingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { authLoading } = useWaitForAuth();
   const [message, setMessage] = useState(t("generating"));
   const [failed, setFailed] = useState(false);
   const [polling, setPolling] = useState(false);
   const kickStarted = useRef(false);
 
   useEffect(() => {
-    if (!id || kickStarted.current) return;
+    if (!id || authLoading || kickStarted.current) return;
     kickStarted.current = true;
     const state = location.state as
       | { pendingGenerate?: boolean; pendingFormat?: "9:16" | "1:1" }
@@ -1482,7 +1494,7 @@ export function GeneratingPage() {
         navigate(invitationContinuePath(inv), { replace: true });
       })
       .catch((err: Error) => fail(err.message || t("generateFailed")));
-  }, [id, location.state, navigate, t]);
+  }, [id, authLoading, location.state, navigate, t]);
 
   useEffect(() => {
     if (!id || failed || !polling) return;
@@ -1530,6 +1542,7 @@ export function ResultPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -1544,7 +1557,7 @@ export function ResultPage() {
   });
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     void api
       .getInvitation(id)
       .then((inv) => {
@@ -1570,7 +1583,7 @@ export function ResultPage() {
         });
       })
       .catch((err: Error) => setError(err.message));
-  }, [id, navigate]);
+  }, [id, authLoading, navigate]);
 
   if (!invitation) {
     return (

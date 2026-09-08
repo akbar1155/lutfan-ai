@@ -25,19 +25,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    const access = localStorage.getItem("access_token");
-    const refresh = localStorage.getItem("refresh_token");
-    if (!access && !refresh) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
     try {
-      // api.me() auto-refreshes access on 401 when refresh cookie/token exists.
+      // localStorage may be empty after a hard refresh while httpOnly
+      // refresh cookie is still valid — restore before calling /auth/me.
+      if (!localStorage.getItem("access_token")) {
+        const restored = await api.ensureSession();
+        if (!restored) {
+          setUser(null);
+          return;
+        }
+      }
       const me = await api.me();
       setUser(me);
     } catch {
-      // Keep tokens only if refresh truly failed inside the API client.
       if (!localStorage.getItem("access_token")) {
         setUser(null);
       }

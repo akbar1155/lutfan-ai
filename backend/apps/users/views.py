@@ -25,6 +25,10 @@ def _client_meta(request):
     return ip, ua
 
 
+REFRESH_COOKIE_PATH = "/api/v1"
+LEGACY_REFRESH_COOKIE_PATH = "/api/v1/auth"
+
+
 def _set_refresh_cookie(response, refresh: RefreshToken) -> None:
     response.set_cookie(
         key="refresh_token",
@@ -33,8 +37,12 @@ def _set_refresh_cookie(response, refresh: RefreshToken) -> None:
         secure=not settings.DEBUG,
         samesite="Lax",
         max_age=30 * 24 * 60 * 60,
-        path="/api/v1/auth",
+        # Wider than /auth so any API call can send the cookie; clients
+        # restore the session via POST /auth/refresh with credentials.
+        path=REFRESH_COOKIE_PATH,
     )
+    # Drop legacy path cookie so browsers don't keep a stale duplicate.
+    response.delete_cookie("refresh_token", path=LEGACY_REFRESH_COOKIE_PATH)
 
 
 def _issue_auth_response(request, user: User) -> Response:
@@ -167,7 +175,8 @@ class LogoutView(APIView):
                 revoked_at__isnull=True,
             ).update(revoked_at=timezone.now())
         response = Response({"ok": True})
-        response.delete_cookie("refresh_token", path="/api/v1/auth")
+        response.delete_cookie("refresh_token", path=REFRESH_COOKIE_PATH)
+        response.delete_cookie("refresh_token", path=LEGACY_REFRESH_COOKIE_PATH)
         return response
 
 
