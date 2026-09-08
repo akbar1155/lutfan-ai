@@ -4,6 +4,7 @@ import io
 import logging
 import re
 import textwrap
+import time
 from typing import Any, Optional
 
 from django.conf import settings
@@ -278,11 +279,21 @@ def _prepare_style_reference(data: bytes, *, max_side: int = 1024) -> bytes:
 
 
 def _extract_image_bytes(response) -> bytes | None:
-    if not response or not getattr(response, "candidates", None):
+    if not response:
+        logger.warning("Gemini response is empty")
         return None
-    for candidate in response.candidates:
+    candidates = getattr(response, "candidates", None) or []
+    if not candidates:
+        feedback = getattr(response, "prompt_feedback", None)
+        logger.warning("Gemini returned no candidates (prompt_feedback=%s)", feedback)
+        return None
+    for idx, candidate in enumerate(candidates):
+        finish = getattr(candidate, "finish_reason", None)
         content = getattr(candidate, "content", None)
         if not content or not getattr(content, "parts", None):
+            logger.warning(
+                "Gemini candidate[%s] has no parts (finish_reason=%s)", idx, finish
+            )
             continue
         for part in content.parts:
             inline = getattr(part, "inline_data", None)
@@ -296,6 +307,11 @@ def _extract_image_bytes(response) -> bytes | None:
                     return buf.getvalue()
                 except Exception:
                     pass
+        logger.warning(
+            "Gemini candidate[%s] had parts but no image (finish_reason=%s)",
+            idx,
+            finish,
+        )
     return None
 
 
@@ -507,7 +523,28 @@ def generate_image_bytes(
             )
             return _extract_image_bytes(response)
 
-        data = _one_shot()
+        # Gemini image models occasionally return empty candidates; retry a few times.
+        data: bytes | None = None
+        attempts = 3 if require_gemini else 1
+        for attempt in range(1, attempts + 1):
+            try:
+                data = _one_shot()
+            except Exception as exc:
+                last_error = exc
+                logger.exception("Gemini generation failed (attempt %s/%s)", attempt, attempts)
+                data = None
+            if data and len(data) >= 8_000:
+                break
+            logger.warning(
+                "Gemini returned no usable image (attempt %s/%s, bytes=%s)",
+                attempt,
+                attempts,
+                len(data) if data else 0,
+            )
+            data = None
+            if attempt < attempts:
+                time.sleep(1.2 * attempt)
+
         if data and len(data) >= 8_000:
             data = _normalize_jpeg(data, width=width, height=height)
 
@@ -556,17 +593,18 @@ def generate_image_bytes(
                     text_overlay=bool(blocks) if overlay_text else True,
                 )
 
-        logger.warning("Gemini returned no usable image")
+        logger.warning("Gemini returned no usable image after %s attempt(s)", attempts)
     except Exception as exc:
         last_error = exc
         logger.exception("Gemini generation failed")
 
     if require_gemini:
-        detail = str(last_error)[:300] if last_error else "Gemini rasm qaytarmadi"
-        raise RuntimeError(
-            "AI rasm yaratilmadi (Gemini). Kod o‘zgargan, lekin API ishlamayapti. "
-            f"Tafsilot: {detail}"
+        detail = (
+            str(last_error)[:300]
+            if last_error
+            else "Gemini baʼzan boʻsh javob qaytaradi — qayta urinib koʻring"
         )
+        raise RuntimeError(f"AI rasm yaratilmadi (Gemini). Tafsilot: {detail}")
 
     return _placeholder_image(
         prompt,

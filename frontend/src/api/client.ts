@@ -30,13 +30,15 @@ async function refreshAccessToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
     const storedRefresh = localStorage.getItem("refresh_token");
+    // Cookie may still be present even when localStorage refresh is missing.
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: storedRefresh ? JSON.stringify({ refresh: storedRefresh }) : undefined,
+      body: JSON.stringify(storedRefresh ? { refresh: storedRefresh } : {}),
     });
     if (!res.ok) {
+      // Only wipe session after refresh truly fails.
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       return false;
@@ -51,6 +53,12 @@ async function refreshAccessToken(): Promise<boolean> {
     refreshPromise = null;
   });
   return refreshPromise;
+}
+
+function canAttemptRefresh(): boolean {
+  return Boolean(
+    localStorage.getItem("access_token") || localStorage.getItem("refresh_token"),
+  );
 }
 
 async function request<T>(
@@ -70,7 +78,9 @@ async function request<T>(
       !path.startsWith("/auth/refresh") &&
       !path.startsWith("/auth/logout") &&
       !path.startsWith("/auth/telegram") &&
-      localStorage.getItem("access_token")
+      !path.startsWith("/auth/dev-login") &&
+      !path.startsWith("/auth/admin-login") &&
+      canAttemptRefresh()
     ) {
       const ok = await refreshAccessToken();
       if (ok) {
@@ -91,13 +101,20 @@ async function request<T>(
 }
 
 async function requestForm<T>(path: string, formData: FormData): Promise<T> {
-  const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    credentials: "include",
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    body: formData,
-  });
+  const doFetch = () => {
+    const token = localStorage.getItem("access_token");
+    return fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: formData,
+    });
+  };
+  let res = await doFetch();
+  if (res.status === 401 && canAttemptRefresh()) {
+    const ok = await refreshAccessToken();
+    if (ok) res = await doFetch();
+  }
   if (!res.ok) {
     let message = `Request failed: ${res.status}`;
     try {
@@ -112,13 +129,20 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
 }
 
 async function patchForm<T>(path: string, formData: FormData): Promise<T> {
-  const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    body: formData,
-  });
+  const doFetch = () => {
+    const token = localStorage.getItem("access_token");
+    return fetch(`${API_BASE}${path}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: formData,
+    });
+  };
+  let res = await doFetch();
+  if (res.status === 401 && canAttemptRefresh()) {
+    const ok = await refreshAccessToken();
+    if (ok) res = await doFetch();
+  }
   if (!res.ok) {
     let message = `Request failed: ${res.status}`;
     try {

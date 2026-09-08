@@ -144,7 +144,13 @@ class RefreshView(APIView):
             )
 
         access = token.access_token
-        response = Response({"access": str(access), "user": UserSerializer(user).data})
+        response = Response(
+            {
+                "access": str(access),
+                "refresh": str(token),
+                "user": UserSerializer(user).data,
+            }
+        )
         _set_refresh_cookie(response, token)
         return response
 
