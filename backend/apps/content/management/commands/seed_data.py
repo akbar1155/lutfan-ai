@@ -231,13 +231,13 @@ MOOD_TAGS = [
     (
         "peonies",
         "flowers",
-        "detailed cream-yellow roses and green-gold leaves framing the four corners without covering text",
+        "detailed cream and blush peonies with soft green-gold leaves framing the four corners without covering text",
         {"uz-cyrl": "Пионлар", "uz-latn": "Pionlar", "ru": "Пионы"},
     ),
     (
         "fine_line",
         "flowers",
-        "delicate fine-line rose and foliage illustrations overlapping a thin metallic frame",
+        "delicate fine-line botanical and foliage illustrations overlapping a thin metallic frame — no roses",
         {"uz-cyrl": "Ингичка чизиқ", "uz-latn": "Ingichka chiziq", "ru": "Тонкая графика"},
     ),
     (

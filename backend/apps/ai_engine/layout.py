@@ -202,16 +202,16 @@ def clear_safe_text_area(
         pass
 
     luminance = 0.299 * paper[0] + 0.587 * paper[1] + 0.114 * paper[2]
-    # Light stationery — keep AI décor continuous under the type
-    if luminance >= 195 and not corner_guard:
+    # Keep a soft lightening wash so dark AI décor doesn't mute type.
+    if luminance >= 215 and not corner_guard:
         return img
 
     base = img.convert("RGBA")
     wipe = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(wipe)
-    pad_x = int(safe.width * 0.12)
-    pad_y = int(safe.height * 0.14)
-    # Soft oval, tiny alpha — no rectangular silhouette, no dark edge
+    pad_x = int(safe.width * 0.10)
+    pad_y = int(safe.height * 0.12)
+    # Soft oval — enough alpha for readable contrast, no hard rectangle.
     draw.ellipse(
         (
             safe.x0 + pad_x,
@@ -219,9 +219,9 @@ def clear_safe_text_area(
             safe.x1 - pad_x,
             safe.y1 - pad_y,
         ),
-        fill=(*paper, 88 if corner_guard else 40),
+        fill=(*paper, 140 if corner_guard else 96),
     )
-    soft = wipe.filter(ImageFilter.GaussianBlur(radius=max(48, img.width // 18)))
+    soft = wipe.filter(ImageFilter.GaussianBlur(radius=max(40, img.width // 22)))
     return Image.alpha_composite(base, soft).convert("RGB")
 
 
@@ -241,31 +241,27 @@ def typography_mode(style_tags: Sequence[str] | None) -> str:
 def _ink_colors(style_tags: Sequence[str] | None) -> dict[str, tuple[int, int, int]]:
     tags = {str(t).lower() for t in (style_tags or [])}
     if "emerald" in tags or "formal" in tags:
-        accent = (26, 69, 64)
-    elif "blush" in tags or "romance" in tags:
-        accent = (110, 60, 70)
-    elif "champagne" in tags or "warm" in tags:
-        accent = (90, 55, 35)
+        accent = (18, 52, 48)
+    elif "blush" in tags or "romance" in tags or "rose_gold" in tags:
+        accent = (78, 42, 50)
+    elif "champagne" in tags or "warm" in tags or "ivory" in tags:
+        accent = (72, 44, 28)
     else:
-        accent = (20, 55, 48)
+        accent = (16, 42, 38)
     return {
         "title": accent,
-        # Body stays close to title ink so long copy stays readable
-        "body": (
-            min(255, accent[0] + 12),
-            min(255, accent[1] + 12),
-            min(255, accent[2] + 12),
-        ),
+        # Body matches title ink — avoid washed-out / faded copy
+        "body": accent,
         "meta": accent,
         "primary": accent,
         "venue": accent,
         "muted": (
-            min(255, accent[0] + 36),
-            min(255, accent[1] + 36),
-            min(255, accent[2] + 36),
+            min(255, accent[0] + 18),
+            min(255, accent[1] + 18),
+            min(255, accent[2] + 18),
         ),
-        "gold": (180, 145, 85),
-        "rule": (170, 140, 80),
+        "gold": (168, 132, 72),
+        "rule": (158, 128, 70),
     }
 
 

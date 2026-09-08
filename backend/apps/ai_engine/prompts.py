@@ -114,7 +114,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     )
     body = normalize_invitation_spelling(
         format_dates_in_text(
-            sanitize_user_text(blocks.get("body", ""), 600), language=lang
+            sanitize_user_text(blocks.get("body", ""), 900), language=lang
         ),
         lang,
     )
@@ -354,12 +354,12 @@ COMPOSITION BRIEF:
 
 CORNER_DECORATION_SYSTEM = """
 CORNER DECORATION SYSTEM (mandatory):
-- All four corners must carry botanical / floral / ornamental presence.
-- TOP-LEFT: strongest floral or botanical cluster (roses, peonies, leaves, gold flourishes)
-  flowing inward from the edge.
-- TOP-RIGHT: balancing cluster of related flora with organic variation (different arrangement).
-- BOTTOM-LEFT: floral continuation / trailing stems / soft foliage.
-- BOTTOM-RIGHT: floral continuation that closes the composition.
+- All four corners must carry botanical / floral / ornamental presence matching the
+  SELECTED decoration language (do not invent roses unless moods ask for roses).
+- TOP-LEFT: strongest corner cluster flowing inward from the edge.
+- TOP-RIGHT: balancing cluster with organic variation (different arrangement).
+- BOTTOM-LEFT: continuation / trailing stems / soft foliage or ornaments.
+- BOTTOM-RIGHT: closing composition element.
 - Décor must grow naturally FROM the frame edges INTO the card — not tiny floating stickers.
 - Forbidden: four identical corner circles, tiny sparse sprigs, empty corners, clip-art icons.
 """.strip()
@@ -448,14 +448,14 @@ COLOR_PALETTES = {
 EVENT_STYLE_PROMPTS = {
     "nikoh": (
         "EVENT — NIKOH (Uzbek wedding): romantic luxury. Cream ivory paper, deep green + "
-        "antique gold, rose/peony corner compositions, elegant double gold frame, soft "
-        "filigree. Optional subtle rings or couple silhouette ONLY as tiny edge ornaments "
-        "(never large faces). Modern luxury + delicate Uzbek floral sensibility."
+        "antique gold, elegant double gold frame, soft filigree. Optional subtle rings or "
+        "couple silhouette ONLY as tiny edge ornaments (never large faces). "
+        "Floral motifs ONLY as directed by selected moods — do not default to roses."
     ),
     "aqiqa": (
         "EVENT — AQIQA: soft, warm, family-oriented elegance. Blush-to-ivory wash, "
-        "rose-gold fine frame, fine-line roses, gentle botanical corners. Calm premium, "
-        "not childish."
+        "fine metallic frame, gentle botanical corners. Calm premium, not childish. "
+        "Motifs follow selected moods — no default roses."
     ),
     "sunnat": (
         "EVENT — SUNNAT TOʻYI: festive yet dignified Uzbek celebration. Sage + ivory, "
@@ -552,25 +552,30 @@ MOOD_PRESET_HINTS: dict[str, dict[str, str]] = {
     "peonies": {"palette": "dusty_rose", "decoration": "floral"},
     "fine_line": {"palette": "sage_antique", "decoration": "minimal_luxury"},
     "ornament": {"palette": "emerald_gold", "decoration": "uzbek_ornament"},
+    "event_rows": {"palette": "champagne_olive", "decoration": "minimal_luxury", "frame": "fine"},
+    "minimalist": {"palette": "champagne_olive", "decoration": "minimal_luxury", "frame": "fine", "density": "airy"},
     "velvet": {"palette": "burgundy_gold", "decoration": "luxury_wedding"},
     "watercolor": {"palette": "blush_pearl", "decoration": "botanical"},
     "silk": {"palette": "champagne_olive", "decoration": "floral"},
     "marble": {"palette": "sage_antique", "decoration": "gold_ornamental"},
+    "linen": {"palette": "champagne_olive", "decoration": "minimal_luxury"},
+    "pearlescent": {"palette": "blush_pearl", "decoration": "gold_ornamental"},
+    "handmade": {"palette": "sage_antique", "decoration": "botanical"},
 }
 
 
 DECORATION_STYLE_LINES = {
-    "floral": "Decoration language: lush floral bouquets (roses/peonies), soft leaves, natural stems.",
-    "botanical": "Decoration language: botanical sprigs, leaves, branches, elegant green foliage.",
+    "floral": "Decoration language: lush floral bouquets (peonies/garden flowers — roses ONLY if mood asks), soft leaves, natural stems.",
+    "botanical": "Decoration language: botanical sprigs, leaves, branches, elegant green foliage — NO roses.",
     "rose": "Decoration language: cream and blush roses with gold-tinted leaves.",
-    "gold_ornamental": "Decoration language: antique-gold filigree, scrollwork, refined ornaments.",
-    "luxury_wedding": "Decoration language: luxury wedding florals + soft gold filigree accents.",
+    "gold_ornamental": "Decoration language: antique-gold filigree, scrollwork, refined ornaments — NO roses.",
+    "luxury_wedding": "Decoration language: luxury wedding florals + soft gold filigree accents (follow mood flower choice).",
     "uzbek_ornament": (
         "Decoration language: delicate modern-Uzbek ornamental motifs / islimiy-inspired "
-        "patterns (subtle, contemporary — not Soviet-era kitsch)."
+        "patterns (subtle, contemporary — not Soviet-era kitsch). NO roses."
     ),
     "romantic": "Decoration language: romantic florals, soft hearts only as tiny ornaments, airy gold lines.",
-    "minimal_luxury": "Decoration language: restrained luxury — refined frame, sparse but intentional corner flora.",
+    "minimal_luxury": "Decoration language: restrained luxury — refined frame, sparse but intentional corner flora — NO roses.",
 }
 
 
@@ -589,25 +594,36 @@ def resolve_design_preset(
     mood_slugs = mood_slugs or []
     preset = {
         "style": "luxury",
-        "decoration": "floral",
+        "decoration": "botanical",
         "frame": "ornamental",
         "palette": "emerald_gold",
         "density": "rich",
     }
-    event_defaults = {
-        "nikoh": {"decoration": "luxury_wedding", "palette": "emerald_gold"},
-        "aqiqa": {"decoration": "rose", "palette": "blush_pearl", "frame": "fine"},
-        "sunnat": {"decoration": "uzbek_ornament", "palette": "sage_antique"},
-        "birthday": {"decoration": "botanical", "palette": "champagne_olive"},
-        "hudoyi": {"decoration": "uzbek_ornament", "palette": "sage_antique", "style": "restrained"},
-        "hayit": {"decoration": "uzbek_ornament", "palette": "emerald_gold"},
-    }
-    preset.update(event_defaults.get(event_slug, {}))
-    for slug in mood_slugs:
-        hint = MOOD_PRESET_HINTS.get(slug)
-        if hint:
-            preset.update(hint)
-            break
+    # Event defaults only when the user has not picked moods — otherwise moods win.
+    if not mood_slugs:
+        event_defaults = {
+            "nikoh": {"decoration": "luxury_wedding", "palette": "emerald_gold"},
+            "aqiqa": {"decoration": "botanical", "palette": "blush_pearl", "frame": "fine"},
+            "sunnat": {"decoration": "uzbek_ornament", "palette": "sage_antique"},
+            "birthday": {"decoration": "botanical", "palette": "champagne_olive"},
+            "hudoyi": {"decoration": "uzbek_ornament", "palette": "sage_antique", "style": "restrained"},
+            "hayit": {"decoration": "uzbek_ornament", "palette": "emerald_gold"},
+        }
+        preset.update(event_defaults.get(event_slug, {}))
+    else:
+        event_light = {
+            "nikoh": {"palette": "emerald_gold"},
+            "aqiqa": {"palette": "blush_pearl", "frame": "fine"},
+            "sunnat": {"palette": "sage_antique"},
+            "birthday": {"palette": "champagne_olive"},
+            "hudoyi": {"palette": "sage_antique", "style": "restrained"},
+            "hayit": {"palette": "emerald_gold"},
+        }
+        preset.update(event_light.get(event_slug, {}))
+        for slug in mood_slugs:
+            hint = MOOD_PRESET_HINTS.get(slug)
+            if hint:
+                preset.update(hint)
     return preset
 
 
@@ -692,7 +708,7 @@ def compose_design_modules(
         f"Design preset: style={preset.get('style')}, decoration={preset.get('decoration')}, "
         f"frame={preset.get('frame')}, palette={preset.get('palette')}, density={preset.get('density')}.",
         f"One image, aspect ratio {fmt}.",
-        f"Visual style cues from user/mood: {mood}." if mood else "",
+        f"Visual style cues from SELECTED moods (follow these strictly): {mood}." if mood else "",
         occasion,
         hayit_extra,
         f"Additional art direction: {user_request}" if user_request else "",
@@ -751,12 +767,10 @@ def build_prompt(
         event_slug = str(invitation.event_id)
     fmt = invitation.primary_format or "4:5"
 
-    # AI-from-scratch paints the full card (décor + exact text). Templates stay style-only.
-    include_text = invitation.generation_path != GenerationPath.TEMPLATE
-    text_blocks = blocks if blocks is not None else (
-        build_text_blocks(invitation) if include_text else {}
-    )
-    text_payload = format_exact_text_for_prompt(text_blocks) if include_text else ""
+    # Gemini paints décor only; PIL typesets exact user text (edits must appear).
+    include_text = False
+    text_blocks = blocks if blocks is not None else build_text_blocks(invitation)
+    text_payload = ""
 
     model_params: dict = {"aspect_ratio": fmt}
     if invitation.ai_preset and invitation.ai_preset.model_params:
@@ -766,21 +780,28 @@ def build_prompt(
     mood_slugs = list(invitation.selected_mood_tags or [])
     mood_snippets: list[str] = []
     if mood_slugs:
-        mood_snippets = list(
-            MoodTag.objects.filter(slug__in=mood_slugs, is_active=True).values_list(
-                "prompt_snippet", flat=True
-            )
-        )
+        by_slug = {
+            m.slug: m.prompt_snippet
+            for m in MoodTag.objects.filter(slug__in=mood_slugs, is_active=True)
+        }
+        mood_snippets = [
+            by_slug[s] if s in by_slug else f"visual mood: {s.replace('_', ' ')}"
+            for s in mood_slugs
+        ]
     custom_note = ""
     if invitation.custom_style_note:
         custom_note = sanitize_user_text(invitation.custom_style_note, 200)
         mood_snippets.append(custom_note)
-    mood = ", ".join(mood_snippets) or (
-        "cream ivory paper, antique gold double frame, lush rose corner compositions, deep green accents"
-        if event_slug == "nikoh"
-        else "soft blush wash, rose-gold frame, fine-line rose corners"
-        if event_slug == "aqiqa"
-        else "ivory paper, antique gold ornamental frame, rich botanical corners"
+
+    rose_allowed = any(s in ("rose_gold", "peonies") for s in mood_slugs)
+    if mood_slugs and not rose_allowed:
+        mood_snippets.append(
+            "CRITICAL: Do NOT draw roses, rose bouquets, or rose-gold florals. "
+            "Use ONLY the selected mood motifs above."
+        )
+
+    mood = ", ".join(s for s in mood_snippets if s) or (
+        "elegant cream stationery, refined ornamental frame, botanical corner accents"
     )
 
     preset = resolve_design_preset(event_slug=event_slug, mood_slugs=mood_slugs)
@@ -894,4 +915,6 @@ def build_prompt(
         neg = negative.strip()
         if "any text" not in neg.lower():
             neg = f"{DEFAULT_NEGATIVE}; {neg}"
+        if mood_slugs and not rose_allowed:
+            neg = f"{neg}; roses, rose bouquets, rose petals, pink rose clusters"
     return prompt, neg, model_params

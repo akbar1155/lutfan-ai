@@ -83,9 +83,9 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Samimiy 2", "uz-cyrl": "Самимий 2", ru: "Тёплое 2" },
     text: {
       "uz-latn":
-        "Aziz do‘stlar!\nTo‘y kechasida Sizning ovozingiz, kulguingiz va samimiy tilaklaringiz bo‘lsin. Kelib, yosh oilani quvontiring — har bir mehmon biz uchun qadrli. Intizorlik bilan kutamiz!",
+        "Aziz do‘stlar!\nTo‘y kechasida Sizning ovozingiz, kulgingiz va samimiy tilaklaringiz bo‘lsin. Kelib, yosh oilani quvontiring — har bir mehmon biz uchun qadrli. Intizorlik bilan kutamiz!",
       "uz-cyrl":
-        "Азиз дўстлар!\nТўй кечасида Сизнинг овозингиз, кулгуингиз ва самимий тилакларингиз бўлсин. Келиб, ёш оилани қувонтирнг — ҳар бир меҳмон биз учун қадрли. Интизорлик билан кутамиз!",
+        "Азиз дўстлар!\nТўй кечасида Сизнинг овозингиз, кулгингиз ва самимий тилакларингиз бўлсин. Келиб, ёш оилани қувонтиринг — ҳар бир меҳмон биз учун қадрли. Интизорлик билан кутамиз!",
       ru: "Дорогие друзья!\nПусть на свадебном вечере звучат Ваш голос, смех и искренние пожелания. Приходите порадовать молодую семью — каждый гость для нас дорог. С нетерпением ждём!",
     },
   },
@@ -139,10 +139,10 @@ const NIKOH: Draft[] = [
     },
     text: {
       "uz-latn":
-        "Salom!\nBizning love storymizning eng muhim kechasi — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va unutilmas xotiralar qoldiraylik.",
+        "Qadrli do‘stlar!\nBizning love storymizning eng muhim kechasi — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va unutilmas xotiralar qoldiraylik.",
       "uz-cyrl":
-        "Салом!\nБизнинг love storyмизнинг энг муҳим кечаси — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва унутилмас хотиралар қолдирайлик.",
-      ru: "Привет!\nСамый важный вечер нашей истории любви — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и оставим незабываемые воспоминания.",
+        "Қадрли дўстлар!\nБизнинг love storyмизнинг энг муҳим кечаси — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва унутилмас хотиралар қолдирайлик.",
+      ru: "Дорогие друзья!\nСамый важный вечер нашей истории любви — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и оставим незабываемые воспоминания.",
     },
   },
   {
@@ -349,9 +349,9 @@ function eventDrafts(slug: string): Draft[] {
         ru: "Современный",
       },
       text: {
-        "uz-latn": `Salom!\n${e.latn[0].toUpperCase()}${e.latn.slice(1)} — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va yaxshi kayfiyat ulashaylik.`,
-        "uz-cyrl": `Салом!\n${e.cyrl[0].toUpperCase()}${e.cyrl.slice(1)} — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва яхши кайфият улашайлик.`,
-        ru: `Привет!\n${e.ru[0].toUpperCase()}${e.ru.slice(1)} — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и поделимся хорошим настроением.`,
+        "uz-latn": `Qadrli do‘stlar!\n${e.latn[0].toUpperCase()}${e.latn.slice(1)} — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va yaxshi kayfiyat ulashaylik.`,
+        "uz-cyrl": `Қадрли дўстлар!\n${e.cyrl[0].toUpperCase()}${e.cyrl.slice(1)} — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва яхши кайфият улашайлик.`,
+        ru: `Дорогие друзья!\n${e.ru[0].toUpperCase()}${e.ru.slice(1)} — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и поделимся хорошим настроением.`,
       },
     },
     {
