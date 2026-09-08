@@ -50,10 +50,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Klassik 1", "uz-cyrl": "Классик 1", ru: "Классика 1" },
     text: {
       "uz-latn":
-        "Assalomu alaykum!\nAziz mehmonimiz, Sizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu qutlug‘ kunda Sizning tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.",
+        "Assalomu alaykum!\nHurmat bilan Sizni nikoh to‘yimizga mehmon bo‘lishga chorlaymiz. Ikki oilaning quvonchi birlashadigan ushbu kunda Sizning ishtirokingiz biz uchun muhim. Marhamat qilib, tantanamizda mehmon bo‘ling.",
       "uz-cyrl":
-        "Ассалому алайкум!\nАзиз меҳмонимиз, Сизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу қутлуғ кунда Сизнинг ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.",
-      ru: "Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.",
+        "Ассалому алайкум!\nҲурмат билан Сизни никоҳ тўйимизга меҳмон бўлишга чорлаймиз. Икки оиланинг қувончи бирлашадиган ушбу кунда Сизнинг иштирокингиз биз учун муҳим. Марҳамат қилиб, тантанамизда меҳмон бўлинг.",
+      ru: "Ассаламу алейкум!\nС уважением приглашаем Вас на нашу свадьбу. В день, когда соединяется радость двух семей, Ваше присутствие для нас особенно важно. Пожалуйста, будьте нашим дорогим гостем.",
     },
   },
   {
@@ -61,10 +61,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Samimiy 1", "uz-cyrl": "Самимий 1", ru: "Тёплое 1" },
     text: {
       "uz-latn":
-        "Hurmatli mehmonimiz!\nOilamizning eng quvonchli kuni — nikoh to‘yimizga Sizni chin dildan taklif qilamiz. Kelib, duolaringiz va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.",
+        "Hurmatli mehmonimiz!\nYuragimizdagi eng iliqlik bilan Sizni oilaviy dasturxonimizga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan uyimizni to‘ldiring. Bu kunni Siz bilan o‘tkazish — eng katta baxtimiz.",
       "uz-cyrl":
-        "Ҳурматли меҳмонимиз!\nОиламизнинг энг қувончли куни — никоҳ тўйимизга Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.",
-      ru: "Уважаемый гость!\nОт всей души приглашаем Вас на самый радостный день нашей семьи — нашу свадьбу. Приходите и разделите нашу радость своими добрыми пожеланиями и молитвами. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.",
+        "Ҳурматли меҳмонимиз!\nЮрагимиздаги энг илиқлик билан Сизни оилавий дастурхонимизга чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан уйимизни тўлдиринг. Бу кунни Сиз билан ўтказиш — энг катта бахтимиз.",
+      ru: "Уважаемый гость!\nОт всего сердца зовём Вас за наш семейный дастархан. Приходите и наполните наш дом улыбкой и добрыми словами. Провести этот день с Вами — наше большое счастье.",
     },
   },
   {
@@ -72,10 +72,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Klassik 2", "uz-cyrl": "Классик 2", ru: "Классика 2" },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nHayotimizning yangi sahifasi boshlanayotgan nikoh to‘yimizga Sizni hurmat bilan chorlaymiz. Ushbu qutlug‘ kunda Sizni mehmonlarimiz safida ko‘rish biz uchun alohida mamnuniyat. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi. Quvonchli daqiqalarimizni birga o‘tkazishni intizorlik bilan kutamiz.",
+        "Aziz mehmonlar!\nHayotimizda yangi sahifa ochilmoqda — nikoh rishtasi. Shu munosabat bilan Sizni tantanaga taklif etamiz. Mehmonlarimiz safida Sizni ko‘rish — oilamiz uchun alohida mamnuniyat.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nҲаётимизнинг янги саҳифаси бошланаётган никоҳ тўйимизга Сизни ҳурмат билан чорлаймиз. Ушбу қутлуғ кунда Сизни меҳмонларимиз сафида кўриш биз учун алоҳида мамнуният. Ташрифингиз байрамимизга янада кўрк бағишлайди. Қувончли дақиқаларимизни бирга ўтказишни интизорлик билан кутамиз.",
-      ru: "Дорогие гости!\nС уважением приглашаем Вас на нашу свадьбу — день, когда начинается новая страница нашей жизни. Будем особенно рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее. С нетерпением ждём, чтобы разделить с Вами эти радостные минуты.",
+        "Азиз меҳмонлар!\nҲаётимизда янги саҳифа очилмоқда — никоҳ риштаси. Шу муносабат билан Сизни тантанага таклиф этамиз. Меҳмонларимиз сафида Сизни кўриш — оиламиз учун алоҳида мамнуният.",
+      ru: "Дорогие гости!\nВ нашей жизни открывается новая страница — брачный союз. По этому случаю приглашаем Вас на торжество. Видеть Вас среди гостей — особая радость для нашей семьи.",
     },
   },
   {
@@ -83,10 +83,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Samimiy 2", "uz-cyrl": "Самимий 2", ru: "Тёплое 2" },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nYuragimizdagi eng iliqlik bilan Sizni nikoh dasturxonimizga taklif qilamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Kelib, oilaviy shodligimizga sherik bo‘ling.",
+        "Aziz do‘stlar!\nTo‘y kechasida Sizning ovozingiz, kulguingiz va samimiy tilaklaringiz bo‘lsin. Kelib, yosh oilani quvontiring — har bir mehmon biz uchun qadrli. Intizorlik bilan kutamiz!",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nЮрагимиздаги энг илиқлик билан Сизни никоҳ дастурхонимизга таклиф қиламиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Келиб, оилавий шодлигимизга шерик бўлинг.",
-      ru: "Дорогие гости!\nОт всего сердца приглашаем Вас за наш свадебный дастархан. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания и искренние молитвы сделают нашу радость ещё полнее. Приходите и разделите семейную радость вместе с нами.",
+        "Азиз дўстлар!\nТўй кечасида Сизнинг овозингиз, кулгуингиз ва самимий тилакларингиз бўлсин. Келиб, ёш оилани қувонтирнг — ҳар бир меҳмон биз учун қадрли. Интизорлик билан кутамиз!",
+      ru: "Дорогие друзья!\nПусть на свадебном вечере звучат Ваш голос, смех и искренние пожелания. Приходите порадовать молодую семью — каждый гость для нас дорог. С нетерпением ждём!",
     },
   },
   {
@@ -98,10 +98,10 @@ const NIKOH: Draft[] = [
     },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila nikoh to‘yimizga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Ikki qalbning birlashuviga guvoh bo‘lib, quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.",
+        "Hurmatli mehmonlar!\nYuqori ehtirom bilan Sizni nikoh marosimiga taklif etamiz. Ikki qalbning rasmiy birlashuviga guvoh bo‘lishingizni so‘raymiz. Tashrifingiz oilamiz uchun yuksak izzatdir.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила никоҳ тўйимизга таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Икки қалбнинг бирлашувига гувоҳ бўлиб, қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.",
-      ru: "Дорогие гости!\nС глубоким уважением приглашаем Вас на нашу свадьбу. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас стать свидетелями соединения двух сердец и разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.",
+        "Ҳурматли меҳмонлар!\nЮқори эҳтиром билан Сизни никоҳ маросимига таклиф этамиз. Икки қалбнинг расмий бирлашувига гувоҳ бўлишингизни сўраймиз. Ташрифингиз оиламиз учун юксак иззатдир.",
+      ru: "Уважаемые гости!\nС глубоким почтением приглашаем Вас на свадебную церемонию. Просим стать свидетелями официального соединения двух сердец. Ваш визит — высокая честь для нашей семьи.",
     },
   },
   {
@@ -109,10 +109,10 @@ const NIKOH: Draft[] = [
     title: { "uz-latn": "Duoli", "uz-cyrl": "Дуоли", ru: "С дуа" },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizni nikoh to‘yimizga samimiy taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi.",
+        "Bismillahir rohmanir rohiym.\nNikoh to‘yimizda Allohdan oilamizga baraka, sabr va mehr so‘raymiz. Sizning duolarigiz — shu kunning eng ulug‘ sovg‘asi. Kelib, ezgu tilaklaringiz bilan birga bo‘ling.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизни никоҳ тўйимизга самимий таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади.",
-      ru: "Дорогие гости!\nИскренне приглашаем Вас на нашу свадьбу. Для нас большая честь разделить этот счастливый день с Вами. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня.",
+        "Бисмиллаҳир роҳманир роҳийм.\nНикоҳ тўйимизда Аллоҳдан оиламизга барака, сабр ва меҳр сўраймиз. Сизнинг дуоларингиз — шу куннинг энг улуғ совғаси. Келиб, эзгу тилакларингиз билан бирга бўлинг.",
+      ru: "Бисмилляхи р-рахмани р-рахим.\nНа нашей свадьбе просим у Всевышнего благословения, терпения и любви для семьи. Ваши молитвы — самый великий дар этого дня. Приходите вместе с добрыми пожеланиями.",
     },
   },
   {
@@ -124,10 +124,10 @@ const NIKOH: Draft[] = [
     },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizni nikoh to‘yimizga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.",
+        "Aziz mehmonlar!\nNikoh to‘yimizga taklif etamiz. Kutamiz!",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизни никоҳ тўйимизга таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.",
-      ru: "Дорогие гости!\nПриглашаем Вас на нашу свадьбу. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.",
+        "Азиз меҳмонлар!\nНикоҳ тўйимизга таклиф этамиз. Кутамиз!",
+      ru: "Дорогие гости!\nПриглашаем Вас на свадьбу. Ждём!",
     },
   },
   {
@@ -139,10 +139,10 @@ const NIKOH: Draft[] = [
     },
     text: {
       "uz-latn":
-        "Aziz mehmonlar!\nSizning tashrifingiz bayramimizni yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Hayotimizdagi eng muhim kunlardan birini Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.",
+        "Salom!\nBizning love storymizning eng muhim kechasi — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va unutilmas xotiralar qoldiraylik.",
       "uz-cyrl":
-        "Азиз меҳмонлар!\nСизнинг ташрифингиз байрамимизни янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Ҳаётимиздаги энг муҳим кунлардан бирини Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.",
-      ru: "Дорогие гости!\nВаш визит сделает наш праздник ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами один из самых важных дней нашей жизни. Вас ждут тёплая компания и радостные мгновения.",
+        "Салом!\nБизнинг love storyмизнинг энг муҳим кечаси — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва унутилмас хотиралар қолдирайлик.",
+      ru: "Привет!\nСамый важный вечер нашей истории любви — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и оставим незабываемые воспоминания.",
     },
   },
   {
@@ -154,10 +154,10 @@ const NIKOH: Draft[] = [
     },
     text: {
       "uz-latn":
-        "Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli va unutilmas kun — nikoh to‘yimizga samimiy taklif etamiz. Ikki qalbni birlashtirayotgan ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.",
+        "Aziz va qadrli mehmonlar!\nOilalarimizning eng sharafli kuni — nikoh rishtasining mustahkamlanishi. Shu tantanada Sizning ishtirokingiz biz uchun nafaqat sharaf, balki baxtning to‘liqligidir. Ezgu niyatlaringiz bilan kelib, yosh juftlikka mehr bag‘ishlang. Ushbu kechani Siz bilan birga nishonlash — eng ulug‘ izzatimiz.",
       "uz-cyrl":
-        "Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли ва унутилмас кун — никоҳ тўйимизга самимий таклиф этамиз. Икки қалбни бирлаштираётган ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.",
-      ru: "Дорогие и уважаемые гости!\nИскренне приглашаем Вас на самый радостный и незабываемый день нашей жизни — нашу свадьбу. В эти благословенные мгновения соединения двух сердец Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.",
+        "Азиз ва қадрли меҳмонлар!\nОилаларимизнинг энг шарафли куни — никоҳ риштасининг мустаҳкамланиши. Шу тантанада Сизнинг иштирокингиз биз учун нафақат шараф, балки бахтнинг тўлиқлигидир. Эзгу ниятларингиз билан келиб, ёш жуфтликка меҳр бағишланг. Ушбу кечани Сиз билан бирга нишонлаш — энг улуғ иззатимиз.",
+      ru: "Дорогие и уважаемые гости!\nСамый почётный день наших семей — укрепление брачного союза. Ваше присутствие на этом торжестве для нас не только честь, но и полнота счастья. Приходите с добрыми намерениями и подарите молодой паре своё тепло. Разделить этот вечер с Вами — наша величайшая честь.",
     },
   },
 ];
@@ -167,7 +167,20 @@ function eventDrafts(slug: string): Draft[] {
 
   const topic: Record<
     string,
-    { latn: string; cyrl: string; ru: string; aboutLatn: string; aboutCyrl: string; aboutRu: string }
+    {
+      latn: string;
+      cyrl: string;
+      ru: string;
+      aboutLatn: string;
+      aboutCyrl: string;
+      aboutRu: string;
+      warmLatn: string;
+      warmCyrl: string;
+      warmRu: string;
+      duaLatn: string;
+      duaCyrl: string;
+      duaRu: string;
+    }
   > = {
     aqiqa: {
       latn: "aqiqa marosimi",
@@ -176,6 +189,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutLatn: "farzandimiz aqiqa marosimi",
       aboutCyrl: "фарзандимиз ақиқа маросими",
       aboutRu: "акики нашего ребёнка",
+      warmLatn: "kichik farzandimiz sharafiga uyushtirilgan aqiqa",
+      warmCyrl: "кичик фарзандимиз шарафига уюштирилган ақиқа",
+      warmRu: "акику в честь нашего малыша",
+      duaLatn: "farzandimizga sihat-salomatlik va baraka",
+      duaCyrl: "фарзандимизга сиҳат-саломатлик ва барака",
+      duaRu: "здоровья и благословения нашему ребёнку",
     },
     sunnat: {
       latn: "sunnat to‘yi",
@@ -184,6 +203,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutLatn: "o‘g‘limizning sunnat to‘yi",
       aboutCyrl: "ўғлимизнинг суннат тўйи",
       aboutRu: "суннат тоя нашего сына",
+      warmLatn: "o‘g‘limiz uchun sunnat to‘yi",
+      warmCyrl: "ўғлимиз учун суннат тўйи",
+      warmRu: "суннат той для нашего сына",
+      duaLatn: "o‘g‘limizga baxt, salomatlik va to‘g‘ri yo‘l",
+      duaCyrl: "ўғлимизга бахт, саломатлик ва тўғри йўл",
+      duaRu: "счастья, здоровья и верного пути нашему сыну",
     },
     birthday: {
       latn: "tug‘ilgan kun bayrami",
@@ -192,6 +217,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutLatn: "tug‘ilgan kun bayramimiz",
       aboutCyrl: "туғилган кун байрамимиз",
       aboutRu: "день рождения",
+      warmLatn: "yubiley kayfiyatidagi tug‘ilgan kun",
+      warmCyrl: "юбилей кайфиятидаги туғилган кун",
+      warmRu: "день рождения в праздничном настроении",
+      duaLatn: "umrga baraka, baxt va omad",
+      duaCyrl: "умрга барака, бахт ва омад",
+      duaRu: "долгих лет, счастья и удачи",
     },
     hudoyi: {
       latn: "hudoyi dasturxoni",
@@ -200,6 +231,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutLatn: "hudoyi dasturxonimiz",
       aboutCyrl: "худойи дастурхонимиз",
       aboutRu: "худое",
+      warmLatn: "shukronalik uchun hudoyi dasturxon",
+      warmCyrl: "шукроналик учун худойи дастурхон",
+      warmRu: "дастархан худои в знак благодарности",
+      duaLatn: "oilamizga tinchlik, baraka va rahmat",
+      duaCyrl: "оиламизга тинчлик, барака ва раҳмат",
+      duaRu: "миру, благословению и милости для нашей семьи",
     },
     hayit: {
       latn: "{hayit_occasion} ziyofati",
@@ -208,6 +245,12 @@ function eventDrafts(slug: string): Draft[] {
       aboutLatn: "{hayit_occasion} ziyofatimiz",
       aboutCyrl: "{hayit_occasion} зиёфатимиз",
       aboutRu: "{hayit_occasion}",
+      warmLatn: "hayit munosabati bilan oilaviy dasturxon",
+      warmCyrl: "ҳайт муносабати билан оилавий дастурхон",
+      warmRu: "семейный дастархан по случаю хаита",
+      duaLatn: "hayit barakasi va oilaviy tinchlik",
+      duaCyrl: "ҳайт баракаси ва оилавий тинчлик",
+      duaRu: "благословения хаита и семейного мира",
     },
   };
 
@@ -218,6 +261,12 @@ function eventDrafts(slug: string): Draft[] {
     aboutLatn: "tadbirimiz",
     aboutCyrl: "тадбиримиз",
     aboutRu: "наше торжество",
+    warmLatn: "oilaviy tadbirimiz",
+    warmCyrl: "оилавий тадбиримиз",
+    warmRu: "наше семейное торжество",
+    duaLatn: "oilamizga baraka va tinchlik",
+    duaCyrl: "оиламизга барака ва тинчлик",
+    duaRu: "благословения и мира нашей семье",
   };
 
   return [
@@ -225,36 +274,36 @@ function eventDrafts(slug: string): Draft[] {
       id: "classic1",
       title: { "uz-latn": "Klassik 1", "uz-cyrl": "Классик 1", ru: "Классика 1" },
       text: {
-        "uz-latn": `Assalomu alaykum!\nAziz mehmonimiz, Sizni ${e.aboutLatn}ga samimiy taklif etamiz. Ushbu quvonchli kunni Siz bilan birga nishonlash biz uchun katta sharafdir. Tashrifingiz bayramimizga alohida fayz bag‘ishlaydi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.`,
-        "uz-cyrl": `Ассалому алайкум!\nАзиз меҳмонимиз, Сизни ${e.aboutCyrl}га самимий таклиф этамиз. Ушбу қувончли кунни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ташрифингиз байрамимизга алоҳида файз бағишлайди. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.`,
-        ru: `Ассаламу алейкум!\nДорогой гость, искренне приглашаем Вас на ${e.aboutRu}. Для нас большая честь разделить этот радостный день с Вами. Ваш визит придаст нашему празднику особое тепло. С нетерпением ждём, что Вы разделите с нами нашу радость.`,
+        "uz-latn": `Assalomu alaykum!\nHurmat bilan Sizni ${e.aboutLatn}ga mehmon bo‘lishga chorlaymiz. Ushbu kunda Sizning ishtirokingiz oilamiz uchun muhim. Marhamat qilib, tantanamizda bo‘ling.`,
+        "uz-cyrl": `Ассалому алайкум!\nҲурмат билан Сизни ${e.aboutCyrl}га меҳмон бўлишга чорлаймиз. Ушбу кунда Сизнинг иштирокингиз оиламиз учун муҳим. Марҳамат қилиб, тантанамизда бўлинг.`,
+        ru: `Ассаламу алейкум!\nС уважением приглашаем Вас на ${e.aboutRu}. Ваше присутствие в этот день важно для нашей семьи. Пожалуйста, будьте нашим гостем.`,
       },
     },
     {
       id: "warm1",
       title: { "uz-latn": "Samimiy 1", "uz-cyrl": "Самимий 1", ru: "Тёплое 1" },
       text: {
-        "uz-latn": `Hurmatli mehmonimiz!\nOilamizning quvonchli kuni — ${e.aboutLatn}ga Sizni chin dildan taklif qilamiz. Kelib, samimiy tabrik va ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling. Ushbu unutilmas lahzalarni Siz bilan birga baham ko‘rish biz uchun katta baxtdir. Tashrifingiz biz uchun eng qadrli sovg‘alardan biri bo‘ladi.`,
-        "uz-cyrl": `Ҳурматли меҳмонимиз!\nОиламизнинг қувончли куни — ${e.aboutCyrl}га Сизни чин дилдан таклиф қиламиз. Келиб, дуоларингиз ва эзгу тилакларингиз билан қувончимизга шерик бўлинг. Ушбу унутилмас лаҳзаларни Сиз билан бирга баҳам кўриш биз учун катта бахтдир. Ташрифингиз биз учун энг қадрли совғалардан бири бўлади.`,
-        ru: `Уважаемый гость!\nОт всей души приглашаем Вас на радостный день нашей семьи — ${e.aboutRu}. Приходите и разделите нашу радость своими добрыми пожеланиями. Для нас большое счастье прожить эти незабываемые мгновения вместе с Вами. Ваш визит станет для нас одним из самых ценных подарков.`,
+        "uz-latn": `Hurmatli mehmonimiz!\nChin dildan Sizni ${e.warmLatn}ga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish — eng katta baxtimiz.`,
+        "uz-cyrl": `Ҳурматли меҳмонимиз!\nЧин дилдан Сизни ${e.warmCyrl}га чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш — энг катта бахтимиз.`,
+        ru: `Уважаемый гость!\nОт всей души зовём Вас на ${e.warmRu}. Приходите и наполните наш круг улыбкой и добрыми словами. Провести этот день с Вами — наше большое счастье.`,
       },
     },
     {
       id: "classic2",
       title: { "uz-latn": "Klassik 2", "uz-cyrl": "Классик 2", ru: "Классика 2" },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizni ${e.aboutLatn}ga samimiy taklif etamiz. Quvonchli kunimizni Siz bilan birga nishonlash biz uchun katta sharafdir. Ushbu kunda Sizni mehmonlarimiz safida ko‘rishdan mamnun bo‘lamiz. Tashrifingiz bayramimizga yanada ko‘rk bag‘ishlaydi.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизни ${e.aboutCyrl}га самимий таклиф этамиз. Қувончли кунимизни Сиз билан бирга нишонлаш биз учун катта шарафдир. Ушбу кунда Сизни меҳмонларимиз сафида кўришдан мамнун бўламиз. Ташрифингиз байрамимизга янада кўрк бағишлайди.`,
-        ru: `Дорогие гости!\nИскренне приглашаем Вас на ${e.aboutRu}. Для нас большая честь разделить этот радостный день с Вами. Будем рады видеть Вас среди наших гостей. Ваш визит сделает наш праздник ещё прекраснее.`,
+        "uz-latn": `Aziz mehmonlar!\nOilamizdagi muhim kun — ${e.aboutLatn}. Shu munosabat bilan Sizni tantanaga taklif etamiz. Mehmonlarimiz safida Sizni ko‘rishdan mamnun bo‘lamiz.`,
+        "uz-cyrl": `Азиз меҳмонлар!\nОиламиздаги муҳим кун — ${e.aboutCyrl}. Шу муносабат билан Сизни тантанага таклиф этамиз. Меҳмонларимиз сафида Сизни кўришдан мамнун бўламиз.`,
+        ru: `Дорогие гости!\nВажный день нашей семьи — ${e.aboutRu}. По этому случаю приглашаем Вас на торжество. Будем рады видеть Вас среди гостей.`,
       },
     },
     {
       id: "warm2",
       title: { "uz-latn": "Samimiy 2", "uz-cyrl": "Самимий 2", ru: "Тёплое 2" },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizni ${e.aboutLatn}ga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarni Siz bilan baham ko‘rish biz uchun ulkan baxtdir. Ezgu tilaklaringiz va samimiy duolaringiz quvonchimizni yanada ziyoda qiladi. Tashrifingizni chin dildan kutamiz.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизни ${e.aboutCyrl}га самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларни Сиз билан баҳам кўриш биз учун улкан бахтдир. Эзгу тилакларингиз ва самимий дуоларингиз қувончимизни янада зиёда қилади. Ташрифингизни чин дилдан кутамиз.`,
-        ru: `Дорогие гости!\nИскренне приглашаем Вас на ${e.aboutRu}. Делить с Вами эти благословенные мгновения — огромное счастье для нас. Ваши добрые пожелания сделают нашу радость ещё полнее. От всей души ждём Вашего визита.`,
+        "uz-latn": `Aziz do‘stlar!\n${e.latn[0].toUpperCase()}${e.latn.slice(1)}da Sizning ovozingiz va samimiy tilaklaringiz bo‘lsin. Kelib, oilaviy quvonchimizni bo‘lishing — har bir mehmon biz uchun qadrli.`,
+        "uz-cyrl": `Азиз дўстлар!\n${e.cyrl[0].toUpperCase()}${e.cyrl.slice(1)}да Сизнинг овозингиз ва самимий тилакларингиз бўлсин. Келиб, оилавий қувончимизни бўлинг — ҳар бир меҳмон биз учун қадрли.`,
+        ru: `Дорогие друзья!\nПусть на ${e.ru} звучат Ваш голос и искренние пожелания. Приходите разделить семейную радость — каждый гость для нас дорог.`,
       },
     },
     {
@@ -265,18 +314,18 @@ function eventDrafts(slug: string): Draft[] {
         ru: "Торжественный",
       },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizni yuksak hurmat va ehtirom ila ${e.aboutLatn}ga taklif etamiz. Ushbu quvonchli kunimizda tashrifingiz biz uchun alohida mamnuniyat bag‘ishlaydi. Quvonchimizni baham ko‘rishingizni so‘raymiz. Ushbu tantanaga tashrifingiz biz uchun yuksak ehtiromdir.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизни юксак ҳурмат ва эҳтиром ила ${e.aboutCyrl}га таклиф этамиз. Ушбу қувончли кунимизда ташрифингиз биз учун алоҳида мамнуният бағишлайди. Қувончимизни баҳам кўришингизни сўраймиз. Ушбу тантанага ташрифингиз биз учун юксак эҳтиромдир.`,
-        ru: `Дорогие гости!\nС глубоким уважением приглашаем Вас на ${e.aboutRu}. Ваш визит в этот радостный день будет для нас особой честью. Просим Вас разделить с нами нашу радость. Ваше присутствие на этом торжестве — для нас высокая честь.`,
+        "uz-latn": `Hurmatli mehmonlar!\nYuqori ehtirom bilan Sizni ${e.aboutLatn}ga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzatdir. Marhamat qilib, tantanamizda ishtirok eting.`,
+        "uz-cyrl": `Ҳурматли меҳмонлар!\nЮқори эҳтиром билан Сизни ${e.aboutCyrl}га таклиф этамиз. Ташрифингиз оиламиз учун юксак иззатдир. Марҳамат қилиб, тантанамизда иштирок этинг.`,
+        ru: `Уважаемые гости!\nС глубоким почтением приглашаем Вас на ${e.aboutRu}. Ваш визит — высокая честь для нашей семьи. Просим принять участие в торжестве.`,
       },
     },
     {
       id: "dua",
       title: { "uz-latn": "Duoli", "uz-cyrl": "Дуоли", ru: "С дуа" },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizni ${e.aboutLatn}ga samimiy taklif etamiz. Yaratgandan oilamizga baraka, mehr va saodat ato etishini so‘raymiz. Sizning duolaringiz va ezgu tilaklaringiz ushbu kunimizning eng qimmatli bezagi bo‘ladi. Quvonchimizga sherik bo‘lishingizni intizorlik bilan kutamiz.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизни ${e.aboutCyrl}га самимий таклиф этамиз. Яратгандан оиламизга барака, меҳр ва саодат ато этишини сўраймиз. Сизнинг дуоларингиз ва эзгу тилакларингиз ушбу кунимизнинг энг қимматли безаги бўлади. Қувончимизга шерик бўлишингизни интизорлик билан кутамиз.`,
-        ru: `Дорогие гости!\nИскренне приглашаем Вас на ${e.aboutRu}. Просим Всевышнего даровать нашей семье благословение, любовь и благополучие. Ваши молитвы и добрые пожелания станут самым ценным украшением этого дня. С нетерпением ждём, что Вы разделите с нами нашу радость.`,
+        "uz-latn": `Bismillahir rohmanir rohiym.\n${e.aboutLatn[0].toUpperCase()}${e.aboutLatn.slice(1)}da Allohdan ${e.duaLatn} so‘raymiz. Sizning duolarigiz — shu kunning eng ulug‘ sovg‘asi. Kelib, ezgu tilaklaringiz bilan birga bo‘ling.`,
+        "uz-cyrl": `Бисмиллаҳир роҳманир роҳийм.\n${e.aboutCyrl[0].toUpperCase()}${e.aboutCyrl.slice(1)}да Аллоҳдан ${e.duaCyrl} сўраймиз. Сизнинг дуоларингиз — шу куннинг энг улуғ совғаси. Келиб, эзгу тилакларингиз билан бирга бўлинг.`,
+        ru: `Бисмилляхи р-рахмани р-рахим.\nНа ${e.aboutRu} просим у Всевышнего ${e.duaRu}. Ваши молитвы — самый великий дар этого дня. Приходите вместе с добрыми пожеланиями.`,
       },
     },
     {
@@ -287,9 +336,9 @@ function eventDrafts(slug: string): Draft[] {
         ru: "Кратко",
       },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizni ${e.aboutLatn}ga taklif etamiz. Qadrli mehmonimiz sifatida tashrif buyurishingizdan mamnun bo‘lamiz. Quvonchli kunimizda Siz bilan birga bo‘lish biz uchun katta baxtdir. Tashrifingizni intizorlik bilan kutamiz.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизни ${e.aboutCyrl}га таклиф этамиз. Қадрли меҳмонимиз сифатида ташриф буюришингиздан мамнун бўламиз. Қувончли кунимизда Сиз билан бирга бўлиш биз учун катта бахтдир. Ташрифингизни интизорлик билан кутамиз.`,
-        ru: `Дорогие гости!\nПриглашаем Вас на ${e.aboutRu}. Будем рады видеть Вас как дорогого гостя. Для нас большое счастье провести этот радостный день вместе с Вами. С нетерпением ждём Вашего визита.`,
+        "uz-latn": `Aziz mehmonlar!\n${e.aboutLatn[0].toUpperCase()}${e.aboutLatn.slice(1)}ga taklif etamiz. Kutamiz!`,
+        "uz-cyrl": `Азиз меҳмонлар!\n${e.aboutCyrl[0].toUpperCase()}${e.aboutCyrl.slice(1)}га таклиф этамиз. Кутамиз!`,
+        ru: `Дорогие гости!\nПриглашаем Вас на ${e.aboutRu}. Ждём!`,
       },
     },
     {
@@ -300,9 +349,9 @@ function eventDrafts(slug: string): Draft[] {
         ru: "Современный",
       },
       text: {
-        "uz-latn": `Aziz mehmonlar!\nSizning tashrifingiz ${e.latn}ni yanada go‘zal va fayzli qiladi. Keling, birgalikda unutilmas xotiralar yarataylik. Quvonchli kunimizni Siz bilan baham ko‘rishdan mamnun bo‘lamiz. Samimiy davra va quvonchli lahzalar Sizni kutmoqda.`,
-        "uz-cyrl": `Азиз меҳмонлар!\nСизнинг ташрифингиз ${e.cyrl}ни янада гўзал ва файзли қилади. Келинг, биргаликда унутилмас хотиралар яратайлик. Қувончли кунимизни Сиз билан баҳам кўришдан мамнун бўламиз. Самимий давра ва қувончли лаҳзалар Сизни кутмоқда.`,
-        ru: `Дорогие гости!\nВаш визит сделает ${e.ru} ещё прекраснее и теплее. Давайте вместе создадим незабываемые воспоминания. Будем рады разделить с Вами этот радостный день. Вас ждут тёплая компания и радостные мгновения.`,
+        "uz-latn": `Salom!\n${e.latn[0].toUpperCase()}${e.latn.slice(1)} — va Siz unda bo‘lishingizni xohlaymiz. Kelib, birga kulaylik, suratga tushaylik va yaxshi kayfiyat ulashaylik.`,
+        "uz-cyrl": `Салом!\n${e.cyrl[0].toUpperCase()}${e.cyrl.slice(1)} — ва Сиз унда бўлишингизни хоҳлаймиз. Келиб, бирга кулайлик, суратга тушайлик ва яхши кайфият улашайлик.`,
+        ru: `Привет!\n${e.ru[0].toUpperCase()}${e.ru.slice(1)} — и мы хотим, чтобы Вы были с нами. Приходите: посмеёмся, сделаем фото и поделимся хорошим настроением.`,
       },
     },
     {
@@ -313,9 +362,9 @@ function eventDrafts(slug: string): Draft[] {
         ru: "Премиум",
       },
       text: {
-        "uz-latn": `Aziz va qadrli mehmonlar!\nSizni hayotimizdagi eng quvonchli kunlardan biri — ${e.aboutLatn}ga samimiy taklif etamiz. Ushbu qutlug‘ lahzalarda Sizning tashrifingiz biz uchun alohida ahamiyatga ega. Ezgu tilak va duolaringiz bilan quvonchimizga sherik bo‘lishingizni chin dildan istaymiz. Ushbu baxtiyor kunimizni Siz bilan birga nishonlash biz uchun katta sharaf va baxtdir.`,
-        "uz-cyrl": `Азиз ва қадрли меҳмонлар!\nСизни ҳаётимиздаги энг қувончли кунлардан бири — ${e.aboutCyrl}га самимий таклиф этамиз. Ушбу қутлуғ лаҳзаларда Сизнинг ташрифингиз биз учун алоҳида аҳамиятга эга. Эзгу тилак ва дуоларингиз билан қувончимизга шерик бўлишингизни чин дилдан истаймиз. Ушбу бахтиёр кунимизни Сиз билан бирга нишонлаш биз учун катта шараф ва бахтдир.`,
-        ru: `Дорогие и уважаемые гости!\nИскренне приглашаем Вас на один из самых радостных дней нашей жизни — ${e.aboutRu}. В эти благословенные мгновения Ваш визит имеет для нас особое значение. От всей души желаем, чтобы Вы разделили нашу радость добрыми пожеланиями и молитвами. Разделить с Вами этот счастливый день — для нас большая честь и радость.`,
+        "uz-latn": `Aziz va qadrli mehmonlar!\nOilamizning eng muhim kunlaridan biri — ${e.aboutLatn}. Shu tantanada Sizning ishtirokingiz biz uchun sharaf va baxtning to‘liqligidir. Ezgu niyatlaringiz bilan kelib, oilaviy quvonchimizga mehr bag‘ishlang.`,
+        "uz-cyrl": `Азиз ва қадрли меҳмонлар!\nОиламизнинг энг муҳим кунларидан бири — ${e.aboutCyrl}. Шу тантанада Сизнинг иштирокингиз биз учун шараф ва бахтнинг тўлиқлигидир. Эзгу ниятларингиз билан келиб, оилавий қувончимизга меҳр бағишланг.`,
+        ru: `Дорогие и уважаемые гости!\nОдин из самых важных дней нашей семьи — ${e.aboutRu}. Ваше присутствие на этом торжестве для нас честь и полнота счастья. Приходите с добрыми намерениями и подарите тепло нашей семейной радости.`,
       },
     },
   ];
@@ -333,7 +382,7 @@ export function mergeReadyTextTemplates(
   serverTemplates: TextTemplate[],
   localTemplates: TextTemplate[],
 ): TextTemplate[] {
-  // Prefer admin/API templates; fill gaps from local catalog only.
+  // Prefer diversified local catalog; keep uniquely titled admin/API templates.
   const seen = new Set<string>();
   const out: TextTemplate[] = [];
   const push = (tpl: TextTemplate) => {
@@ -342,7 +391,7 @@ export function mergeReadyTextTemplates(
     seen.add(key);
     out.push(tpl);
   };
-  serverTemplates.forEach(push);
   localTemplates.forEach(push);
+  serverTemplates.forEach(push);
   return out;
 }

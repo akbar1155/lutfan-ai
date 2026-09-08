@@ -40,7 +40,7 @@ import {
   getSubtypeMode,
   hayitOccasionName,
 } from "../utils/eventSubtypes";
-import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody } from "../utils/textBlocks";
+import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
@@ -527,6 +527,14 @@ export function DataPage() {
       ...((event.fields_schema.required || []) as FieldDef[]),
       ...((event.fields_schema.optional || []) as FieldDef[]),
     ];
+    // Always offer optional personal note — some older event schemas omit it.
+    if (!all.some((f) => f.key === "personal_message")) {
+      all.push({
+        key: "personal_message",
+        type: "text",
+        maxLength: 200,
+      });
+    }
     if (multiCeremony) {
       return all.filter(
         (f) => f.key !== "event_date" && f.key !== "event_time",
@@ -904,9 +912,11 @@ export function TextPage() {
               );
         setScheduleDateTime(dateTimeFromSchedule);
         const multiSchedule = dateTimeFromSchedule.includes("\n");
+        const personalMessage = cleanFieldValue(
+          String(fields.personal_message || fields.personalMessage || ""),
+        );
         const defaultBody =
-          fields.personal_message ||
-          (inv.event_slug === "hayit"
+          inv.event_slug === "hayit"
             ? applyHayitOccasion(
                 t("defaultBody_hayit", {
                   occasion,
@@ -916,7 +926,7 @@ export function TextPage() {
               )
             : t(`defaultBody_${inv.event_slug}`, {
                 defaultValue: t("defaultBody"),
-              }));
+              });
         const venueLine = cleanFieldValue(
           [fields.venue_name, fields.venue_address]
             .map((v) => String(v || "").trim())
@@ -951,6 +961,7 @@ export function TextPage() {
           if (inv.event_slug === "hayit") {
             body = applyHayitOccasion(body, occasion);
           }
+          body = ensurePersonalMessageInBody(body, personalMessage);
           if (isJunkFieldValue(dateTime) && inv.event_slug !== "hayit") {
             dateTime = dateTimeFromSchedule;
           }
@@ -964,7 +975,7 @@ export function TextPage() {
         } else {
           setBlocks({
             header: t("defaultGreeting"),
-            body:
+            body: ensurePersonalMessageInBody(
               inv.event_slug === "hayit"
                 ? applyHayitOccasion(
                     ensureChildNameInBody(
@@ -979,6 +990,8 @@ export function TextPage() {
                     fields.child_name,
                     inv.language,
                   ),
+              personalMessage,
+            ),
             date_time: dateTimeFromSchedule,
             address: venueLine,
           });
@@ -1069,11 +1082,14 @@ export function TextPage() {
                           structuredFields.person_name ||
                           structuredFields.personName ||
                           "",
-                        personal_message:
-                          structuredFields.personal_message ||
-                          structuredFields.personalMessage ||
-                          fallbackBody,
                       };
+                      const personalMessage = cleanFieldValue(
+                        String(
+                          structuredFields.personal_message ||
+                            structuredFields.personalMessage ||
+                            "",
+                        ),
+                      );
                       setBlocks(() => {
                         const next = splitTemplateBlocks(
                           tpl.preview_text,
@@ -1084,10 +1100,11 @@ export function TextPage() {
                             fallbackBody,
                           },
                         );
-                        const body =
+                        let body =
                           invitation.event_slug === "hayit"
                             ? applyHayitOccasion(next.body, occasion)
                             : next.body;
+                        body = ensurePersonalMessageInBody(body, personalMessage);
                         // Multi-ceremony: keep the full ready-text body; only replace date block.
                         if (scheduleDateTime.includes("\n")) {
                           return {

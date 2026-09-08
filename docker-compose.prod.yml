@@ -141,6 +141,7 @@ services:
       - "8080:80"
     volumes:
       - media_data:/var/lutfan-media:ro
+      - static_data:/var/lutfan-static:ro
     depends_on:
       - backend
     networks:

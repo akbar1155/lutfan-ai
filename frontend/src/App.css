@@ -2216,6 +2216,47 @@ button.card-link:disabled {
   color: var(--accent);
 }
 
+/* Force localized Now/Today when Ant Design still paints English. */
+.app-picker-dropdown .ant-picker-now-btn {
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+.app-picker-dropdown .ant-picker-now-btn::after {
+  font-size: 14px;
+  line-height: 1.5;
+  color: inherit;
+  /* Date panel footer = Today; time panel footer = Now */
+  content: var(--picker-today-label, "Bugun");
+}
+.app-picker-dropdown:has(.ant-picker-time-panel) .ant-picker-now-btn::after,
+.app-picker-dropdown .ant-picker-time-panel ~ * .ant-picker-now-btn::after,
+.app-picker-dropdown.ant-picker-dropdown-range .ant-picker-now-btn::after {
+  content: var(--picker-now-label, "Hozir");
+}
+/* TimePicker-only popup has time panel as main content */
+.app-picker-dropdown:has(.ant-picker-time-panel-column) .ant-picker-now-btn::after {
+  content: var(--picker-now-label, "Hozir");
+}
+
+html[lang="uz-latn"] .app-picker-dropdown .ant-picker-now-btn::after {
+  content: var(--picker-today-label, "Bugun");
+}
+html[lang="uz-latn"] .app-picker-dropdown:has(.ant-picker-time-panel-column) .ant-picker-now-btn::after {
+  content: var(--picker-now-label, "Hozir");
+}
+html[lang="uz-cyrl"] .app-picker-dropdown .ant-picker-now-btn::after {
+  content: var(--picker-today-label, "Бугун");
+}
+html[lang="uz-cyrl"] .app-picker-dropdown:has(.ant-picker-time-panel-column) .ant-picker-now-btn::after {
+  content: var(--picker-now-label, "Ҳозир");
+}
+html[lang="ru"] .app-picker-dropdown .ant-picker-now-btn::after {
+  content: var(--picker-today-label, "Сегодня");
+}
+html[lang="ru"] .app-picker-dropdown:has(.ant-picker-time-panel-column) .ant-picker-now-btn::after {
+  content: var(--picker-now-label, "Сейчас");
+}
+
 select:not(.ui-select):not(.ui-select-native) {
   appearance: none;
   -webkit-appearance: none;
@@ -3156,6 +3197,74 @@ details p {
   color: var(--admin-ink, #18181b);
 }
 
+.admin-table th.col-index,
+.admin-table td.col-index {
+  width: 44px;
+  min-width: 44px;
+  max-width: 56px;
+  padding-left: 10px;
+  padding-right: 6px;
+  text-align: center;
+  color: var(--admin-muted, #71717a);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-list-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #52525b;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.admin-media-card {
+  position: relative;
+}
+
+.admin-media-card > .admin-list-index {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+}
+
+.admin-users-card {
+  position: relative;
+}
+
+.admin-users-card > .admin-list-index {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.admin-users-session-card,
+.admin-users-invite-list li,
+.admin-users-timeline li {
+  position: relative;
+  padding-left: 36px;
+}
+
+.admin-users-session-card > .admin-list-index,
+.admin-users-invite-list li > .admin-list-index,
+.admin-users-timeline li > .admin-list-index {
+  position: absolute;
+  left: 8px;
+  top: 10px;
+}
+
 .admin-table thead th {
   position: sticky;
   top: 0;
@@ -3558,6 +3667,7 @@ details p {
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--bg-accent);
+  position: relative;
 }
 
 .admin-media-card img {
@@ -4082,6 +4192,7 @@ details p {
   font: inherit;
   color: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
 }
 
 .admin-users-card:hover {
@@ -4502,10 +4613,11 @@ details p {
 .admin-users-session-card {
   display: grid;
   gap: 2px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 40px;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
   background: var(--admin-bg);
+  position: relative;
 }
 
 .admin-users-session-card strong {
@@ -4547,11 +4659,12 @@ details p {
 .admin-users-timeline li {
   display: grid;
   gap: 2px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 40px;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
   background: var(--admin-bg);
   font-size: 13px;
+  position: relative;
 }
 
 .admin-users-timeline time {

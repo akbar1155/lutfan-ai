@@ -115,3 +115,16 @@ export function ensureChildNameInBody(
   }
   return `${trimmed.replace(/[.]+$/, "")} ${child}.`;
 }
+
+/** Append optional personal message without duplicating it. */
+export function ensurePersonalMessageInBody(
+  body: string,
+  message?: string,
+): string {
+  const msg = cleanFieldValue(String(message || "")).trim();
+  if (!msg) return body;
+  const trimmed = (body || "").trim();
+  if (!trimmed) return msg;
+  if (trimmed.toLowerCase().includes(msg.toLowerCase())) return trimmed;
+  return `${trimmed}\n\n${msg}`;
+}

@@ -101,7 +101,7 @@ def _cache_key(
     )
     payload = "|".join(
         [
-            "overlay-v9-ai-corner-guard",
+            "overlay-v11-ai-paints-text",
             invitation.generation_path or "",
             str(invitation.template_id or invitation.ai_preset_id or ""),
             ",".join(sorted(invitation.selected_mood_tags or [])),
@@ -131,8 +131,8 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
         id=invitation_id
     )
     fmt = extra_format or invitation.primary_format
-    prompt, negative, model_params = build_prompt(invitation)
     blocks = build_text_blocks(invitation)
+    prompt, negative, model_params = build_prompt(invitation, blocks=blocks)
 
     generation = AIGeneration.objects.create(
         invitation=invitation,
@@ -191,6 +191,9 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
                     language=invitation.language,
                 )
             else:
+                # AI-from-scratch: Gemini paints décor + exact text (no PIL overlay).
+                # Do not silently fall back to local placeholder (looks identical to old PIL cards).
+                ai_paints_text = invitation.generation_path != GenerationPath.TEMPLATE
                 gen_result = generate_image_bytes(
                     prompt,
                     fmt=fmt,
@@ -200,8 +203,11 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
                     model_params=model_params,
                     style_tags=list(invitation.selected_mood_tags or []),
                     language=invitation.language,
+                    overlay_text=not ai_paints_text,
+                    verify_text=ai_paints_text,
+                    require_gemini=ai_paints_text,
                 )
-            # Exact PIL overlay makes spelling deterministic — always cacheable.
+            # Exact PIL overlay (template) or AI-painted text — mark as text-ready.
             if not getattr(gen_result, "text_overlay", False):
                 logger.warning(
                     "Generation for %s missing text overlay flag", invitation_id

@@ -119,7 +119,7 @@ function UsersTableSkeleton({ rows = 8 }: { rows?: number }) {
       <table className="admin-table admin-users-table">
         <thead>
           <tr>
-            {Array.from({ length: 7 }).map((_, i) => (
+            {Array.from({ length: 8 }).map((_, i) => (
               <th key={i}>
                 <div className="admin-users-skeleton cell" />
               </th>
@@ -129,10 +129,10 @@ function UsersTableSkeleton({ rows = 8 }: { rows?: number }) {
         <tbody>
           {Array.from({ length: rows }).map((_, r) => (
             <tr key={r}>
-              {Array.from({ length: 7 }).map((_, c) => (
+              {Array.from({ length: 8 }).map((_, c) => (
                 <td key={c}>
                   <div
-                    className={`admin-users-skeleton cell ${c === 0 ? "wide" : ""}`}
+                    className={`admin-users-skeleton cell ${c === 1 ? "wide" : ""}`}
                   />
                 </td>
               ))}
@@ -626,6 +626,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                 <table className="admin-table admin-users-table">
                   <thead>
                     <tr>
+                      <th className="col-index">{t("adminColIndex")}</th>
                       <th>{t("adminColUser")}</th>
                       <th className="hide-tablet">Telegram</th>
                       <th>{t("adminColRole")}</th>
@@ -637,11 +638,12 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                   </thead>
                   <tbody>
                     {users.length ? (
-                      users.map((u) => {
+                      users.map((u, idx) => {
                         const id = String(u.id);
                         const status = userStatus(u);
                         const activity = lastActivityAt(u);
                         const selected = selectedUserId === id;
+                        const rowNo = (page - 1) * PAGE_SIZE + idx + 1;
                         return (
                           <tr
                             key={id}
@@ -655,6 +657,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                               }
                             }}
                           >
+                            <td className="col-index">{rowNo}</td>
                             <td>
                               <div className="admin-users-user-cell">
                                 <UserAvatar user={u} />
@@ -710,7 +713,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       })
                     ) : (
                       <tr>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           <UsersEmptyBlock
                             filtersActive={filtersActive}
                             t={t}
@@ -725,10 +728,11 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
 
               <div className="admin-users-cards" aria-label={t("adminNavUsers")}>
                 {users.length ? (
-                  users.map((u) => {
+                  users.map((u, idx) => {
                     const id = String(u.id);
                     const status = userStatus(u);
                     const activity = lastActivityAt(u);
+                    const rowNo = (page - 1) * PAGE_SIZE + idx + 1;
                     return (
                       <button
                         key={id}
@@ -736,6 +740,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                         className={`admin-users-card ${selectedUserId === id ? "is-selected" : ""}`}
                         onClick={() => openUser(id)}
                       >
+                        <span className="admin-list-index">{rowNo}</span>
                         <div className="admin-users-user-cell">
                           <UserAvatar user={u} />
                           <div>
@@ -992,11 +997,12 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       <h3>{t("adminColSessions")}</h3>
                       {activeSessions.length ? (
                         <ul className="admin-users-session-list">
-                          {activeSessions.map((s) => {
+                          {activeSessions.map((s, idx) => {
                             const { browser, os } = parseUserAgent(String(s.user_agent || ""));
                             const label = [browser, os].filter(Boolean).join(" · ");
                             return (
                               <li key={String(s.id)} className="admin-users-session-card">
+                                <span className="admin-list-index">{idx + 1}</span>
                                 <strong>{label || "—"}</strong>
                                 <span className="mono muted">{String(s.ip_address || "—")}</span>
                                 <span className="muted">
@@ -1016,11 +1022,12 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                           <ul className="admin-users-session-list muted-list">
                             {(userDetail.sessions || [])
                               .filter((s) => !s.is_active)
-                              .map((s) => {
+                              .map((s, idx) => {
                                 const { browser, os } = parseUserAgent(String(s.user_agent || ""));
                                 const label = [browser, os].filter(Boolean).join(" · ");
                                 return (
                                   <li key={String(s.id)} className="admin-users-session-card">
+                                    <span className="admin-list-index">{idx + 1}</span>
                                     <strong>{label || "—"}</strong>
                                     <span className="mono muted">{String(s.ip_address || "—")}</span>
                                     <span className="muted">
@@ -1043,8 +1050,9 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       </div>
                       {userDetail.invitations.length ? (
                         <ul className="admin-users-invite-list">
-                          {userDetail.invitations.map((inv) => (
+                          {userDetail.invitations.map((inv, idx) => (
                             <li key={String(inv.id)}>
+                              <span className="admin-list-index">{idx + 1}</span>
                               <div className="admin-users-invite-head">
                                 <strong>{String(inv.event_slug)}</strong>
                                 <InviteStatusBadge status={inv.status} />
@@ -1065,8 +1073,9 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                     <section className="admin-users-drawer-section">
                       {userDetail.history.length ? (
                         <ul className="admin-users-timeline">
-                          {userDetail.history.map((h) => (
+                          {userDetail.history.map((h, idx) => (
                             <li key={String(h.id)}>
+                              <span className="admin-list-index">{idx + 1}</span>
                               <time>{formatDisplayDateTimeStamp(h.created_at)}</time>
                               <span>{String(h.action)}</span>
                             </li>

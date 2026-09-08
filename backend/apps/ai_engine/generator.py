@@ -442,17 +442,23 @@ def generate_image_bytes(
     model_params: dict | None = None,
     style_tags: list[str] | None = None,
     language: str | None = None,
+    overlay_text: bool = True,
+    verify_text: bool = False,
+    require_gemini: bool = False,
 ) -> GenerationResult:
     api_key = settings.GOOGLE_AI_API_KEY
     model_name = settings.NANO_BANANA_MODEL
     width, height = FORMAT_SIZES.get(fmt, (2400, 3000))
 
     if not api_key:
-        logger.warning("GOOGLE_AI_API_KEY missing — using placeholder image")
+        msg = "GOOGLE_AI_API_KEY sozlanmagan — AI rasm yaratib bo‘lmaydi."
+        logger.warning(msg)
+        if require_gemini:
+            raise RuntimeError(msg)
         return _placeholder_image(
             prompt,
             fmt=fmt,
-            blocks=blocks,
+            blocks=blocks if overlay_text else None,
             style_tags=style_tags,
             language=language,
         )
@@ -469,6 +475,7 @@ def generate_image_bytes(
     if model_params and model_params.get("aspect_ratio"):
         aspect = str(model_params["aspect_ratio"])
 
+    last_error: Exception | None = None
     try:
         from google import genai
         from google.genai import types
@@ -481,29 +488,48 @@ def generate_image_bytes(
             ),
         )
 
-        contents: list[Any] = [full_prompt]
-        if base_image_bytes:
-            ref = _prepare_style_reference(base_image_bytes)
-            contents = [
-                types.Part.from_bytes(data=ref, mime_type="image/jpeg"),
-                full_prompt,
-            ]
+        def _one_shot() -> bytes | None:
+            contents: list[Any] = [full_prompt]
+            if base_image_bytes:
+                ref = _prepare_style_reference(base_image_bytes)
+                contents = [
+                    types.Part.from_bytes(data=ref, mime_type="image/jpeg"),
+                    full_prompt,
+                ]
+            config = types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(aspect_ratio=aspect),
+            )
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=config,
+            )
+            return _extract_image_bytes(response)
 
-        config = types.GenerateContentConfig(
-            response_modalities=["IMAGE"],
-            image_config=types.ImageConfig(aspect_ratio=aspect),
-        )
-
-        response = client.models.generate_content(
-            model=model_name,
-            contents=contents,
-            config=config,
-        )
-
-        data = _extract_image_bytes(response)
+        data = _one_shot()
         if data and len(data) >= 8_000:
             data = _normalize_jpeg(data, width=width, height=height)
-            if blocks:
+
+            # AI-painted text path: optional OCR verify + one retry.
+            if (
+                not overlay_text
+                and verify_text
+                and blocks
+                and any((blocks.get(k) or "").strip() for k in blocks)
+            ):
+                ok, reason = verify_invitation_text(
+                    data, blocks, language=language or "uz-latn"
+                )
+                if not ok:
+                    logger.warning(
+                        "AI text verify failed (%s) — regenerating once", reason
+                    )
+                    retry = _one_shot()
+                    if retry and len(retry) >= 8_000:
+                        data = _normalize_jpeg(retry, width=width, height=height)
+
+            if overlay_text and blocks:
                 data = overlay_exact_invitation_text(
                     data,
                     blocks,
@@ -519,7 +545,7 @@ def generate_image_bytes(
                     source="gemini",
                     width=img.width,
                     height=img.height,
-                    text_overlay=bool(blocks),
+                    text_overlay=bool(blocks) if overlay_text else True,
                 )
             except Exception:
                 return GenerationResult(
@@ -527,16 +553,25 @@ def generate_image_bytes(
                     source="gemini",
                     width=width,
                     height=height,
-                    text_overlay=bool(blocks),
+                    text_overlay=bool(blocks) if overlay_text else True,
                 )
 
         logger.warning("Gemini returned no usable image")
-    except Exception:
+    except Exception as exc:
+        last_error = exc
         logger.exception("Gemini generation failed")
+
+    if require_gemini:
+        detail = str(last_error)[:300] if last_error else "Gemini rasm qaytarmadi"
+        raise RuntimeError(
+            "AI rasm yaratilmadi (Gemini). Kod o‘zgargan, lekin API ishlamayapti. "
+            f"Tafsilot: {detail}"
+        )
 
     return _placeholder_image(
         prompt,
         fmt=fmt,
+        # Fallback placeholder always typesets so the user still gets readable copy.
         blocks=blocks,
         style_tags=style_tags,
         language=language,

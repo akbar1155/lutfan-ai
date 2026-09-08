@@ -233,14 +233,31 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
 
 def _style_only_payload() -> str:
     """AI draws décor only — invitation words are typeset later in PIL."""
+    return STYLE_ONLY_CONSTRAINT
+
+
+def format_exact_text_for_prompt(blocks: dict[str, str] | None) -> str:
+    """Exact invitation copy Gemini must paint onto the card."""
+    blocks = blocks or {}
+    sections: list[str] = []
+    mapping = (
+        ("header", "HEADER (greeting / title)"),
+        ("body", "BODY (main invitation message)"),
+        ("date_time", "DATE & TIME"),
+        ("address", "VENUE / ADDRESS"),
+        ("footer", "FOOTER (host / signature)"),
+    )
+    for key, label in mapping:
+        value = (blocks.get(key) or "").strip()
+        if value:
+            sections.append(f'{label}:\n"""\n{value}\n"""')
+    if not sections:
+        return ""
     return (
-        "CRITICAL: NO TEXT on the image at all.\n"
-        "Do NOT draw letters, numbers, words, titles, dates, names, watermarks, "
-        "or fake typography in any language/script.\n"
-        "Leave a calm, mostly empty center area (soft paper/texture) for text "
-        "to be added later by software.\n"
-        "Only decorative stationery: paper texture, elegant frame, florals, "
-        "ornaments, soft lighting."
+        "Render this EXACT text on the invitation card "
+        "(character-by-character — no paraphrasing, no translation, no invented lines):\n\n"
+        + "\n\n".join(sections)
+        + "\n\nOmit empty sections entirely. Do not invent missing names, dates, or addresses."
     )
 
 
@@ -285,65 +302,226 @@ def _subtype_count(invitation: Invitation) -> int:
     return len(slugs)
 
 
-STYLE_ONLY = """
-STYLE-ONLY BACKGROUND (text is NOT rendered by the image model):
-- Zero letters/numbers/glyphs anywhere on the card.
-- Empty readable center (cream/ivory paper continuous with the page — NO floating white card panel, NO drop-shadow card, NO frosted glass plate behind text).
-- ONE elegant outer frame only (avoid double heavy framing).
-- Frame and florals stay in borders/corners — never crowd the center.
-- Corner florals must match each other in style and weight (or use a single strong corner).
-- At most 1–2 cultural motifs total; never a mixed sticker row of unrelated icons.
-- No fake "Lorem" or sample invitation wording.
-- Do NOT draw an inner rectangle, parchment card, or shadowed box in the middle.
+ART_DIRECTOR_ROLE = """
+You are a senior invitation art director for a premium Central Asian stationery house.
+Design a COMPLETE visual composition for a print-ready digital taklifnoma (invitation card).
+
+You are NOT filling a blank rectangle with text.
+You are designing the entire card as a cohesive luxury editorial piece:
+frame + corner florals + ornaments + paper atmosphere + visual balance.
+
+Think like a professional wedding invitation designer — modern luxury, not a generic AI template.
 """.strip()
 
 
-EVENT_STYLE = {
-    "nikoh": (
-        "Uzbek wedding taklifnoma: cream ivory paper, thin gold frame, matching corner roses, "
-        "deep green accents, gold flourishes. No icon sticker packs. "
-        "Palette cream #FDF8EE, gold #C5A059, green #0B2B24."
-    ),
-    "aqiqa": (
-        "Aqiqa card: white-to-blush wash, rose-gold frame, fine-line roses, "
-        "calm open center. Palette blush, white, rose-gold."
-    ),
-    "sunnat": (
-        "Sunnat toʻyi: sage + ivory paper, ONE thin gold frame, matching geometric or "
-        "fine floral corners only. Optional single crest (crescent OR geometric medallion) — "
-        "never a row of mixed icons (no mosque+drum+mandala sticker pack). "
-        "Dignified, formal, empty center for text."
-    ),
-    "birthday": (
-        "Birthday invite: refined modern celebration, soft accents, elegant not childish."
-    ),
-    "hudoyi": (
-        "Hudoyi: calm spiritual elegance, soft neutrals, minimal ornament."
-    ),
-    "hayit": (
-        "Hayit / Eid gathering: festive warm cream paper, deep green and copper "
-        "accents, soft floral or geometric border, premium feel. No animals, no text."
-    ),
-    "ramazon_hayiti": (
-        "Eid al-Fitr (Ramazon hayiti): joyful feast mood, lantern or crescent "
-        "ornaments only at the edges, warm festive light."
-    ),
-    "qurbon_hayiti": (
-        "Eid al-Adha (Qurbon hayiti): dignified festive feast, geometric Islamic "
-        "corner ornaments, no animals, no text."
-    ),
-}
+STYLE_ONLY_CONSTRAINT = """
+TEXT CONSTRAINT (absolute):
+- Draw ZERO letters, numbers, words, titles, dates, names, calligraphy, watermarks,
+  logos, QR codes, or fake typography in ANY language or script.
+- Software will typeset the real invitation text later onto a TEXT-SAFE ZONE.
+
+TEXT-SAFE ZONE (center ~38–45% of the card, continuous paper — NOT a floating panel):
+- Soft ivory/cream paper texture only in the middle.
+- NO floating white card, NO drop-shadow plate, NO frosted glass box, NO inner parchment rectangle.
+- Keep the center calm enough to read overlay text, but the REST of the card must feel richly designed.
+""".strip()
+
+
+TEXT_IN_IMAGE_CONSTRAINT = """
+TEXT RENDERING (absolute — the AI paints the full card including typography):
+- Paint the EXACT invitation text provided in this prompt — character by character.
+- Do NOT invent, paraphrase, translate, shorten, or omit any provided line.
+- Do NOT add slogans, fake dates, watermarks, logos, QR codes, or extra names.
+- Elegant centered hierarchy: greeting/title larger; body readable; date/time clear; venue below.
+- High-contrast dark ink on light cream/ivory paper — crisp, print-ready lettering.
+- Correct alphabet exactly as given (Uzbek Latin / Uzbek Cyrillic / Russian).
+- Numbers, times, and punctuation must match exactly (e.g. 18:00, apostrophes o‘/g‘).
+- Florals/ornaments stay at frame and corners — never cover or muddy the letters.
+- Continuous paper center (NO floating white card, NO drop-shadow plate, NO frosted box).
+""".strip()
+
+
+BASE_DESIGN_PROMPT = """
+COMPOSITION BRIEF:
+- Full-bleed invitation stationery, print-ready, ~8–12% outer margin.
+- Design the whole page as one balanced composition (not a sparse template).
+- Decorative energy concentrates at frame, corners, and edges; center holds the typography.
+- Organic variation: each corner related but NOT copy-pasted identical.
+- Motifs should feel hand-composed for THIS occasion — not a sticker pack.
+- Aim for luxury wedding/event invitation density: rich but readable.
+""".strip()
+
+
+CORNER_DECORATION_SYSTEM = """
+CORNER DECORATION SYSTEM (mandatory):
+- All four corners must carry botanical / floral / ornamental presence.
+- TOP-LEFT: strongest floral or botanical cluster (roses, peonies, leaves, gold flourishes)
+  flowing inward from the edge.
+- TOP-RIGHT: balancing cluster of related flora with organic variation (different arrangement).
+- BOTTOM-LEFT: floral continuation / trailing stems / soft foliage.
+- BOTTOM-RIGHT: floral continuation that closes the composition.
+- Décor must grow naturally FROM the frame edges INTO the card — not tiny floating stickers.
+- Forbidden: four identical corner circles, tiny sparse sprigs, empty corners, clip-art icons.
+""".strip()
+
+
+FRAME_SYSTEM = """
+FRAME SYSTEM (premium stationery):
+- Prefer a double-line or multi-layer elegant frame (thin outer + slightly stronger inner line),
+  OR an ornamental gold filigree frame with refined corner joins.
+- Optional subtle mid ornaments at top-center and bottom-center (scrollwork, small heart, medallion).
+- Frame must have breathing room from the paper edge and from the text-safe center.
+- Forbidden as the ONLY decoration: a single plain thin border, border-radius card with no corners,
+  thick cheap gold stroke, neon outline.
+""".strip()
 
 
 LAYOUT_SINGLE = """
-Layout: elegant centered stationery — ornate border/corners, soft open middle (same paper, not a separate card).
-Equal left/right margins; florals only at edges; keep top and bottom motifs fully visible.
+LAYOUT:
+- Centered stationery hierarchy space: middle column reserved for invitation typography.
+- Equal left/right margins; florals and ornaments hug the perimeter.
+- Optional thin gold separators above/below text blocks (ornament only — not fake words).
+- Keep top and bottom motifs fully visible (not cropped).
+""".strip()
+
+
+LAYOUT_SINGLE_WITH_TEXT = """
+LAYOUT (full card with painted text):
+- Center the invitation copy in a calm middle column with clear vertical rhythm:
+  HEADER → BODY → DATE/TIME → ADDRESS → optional FOOTER.
+- Comfortable line spacing; body wraps naturally; no cramped edges.
+- Equal left/right margins; florals and ornaments hug the perimeter only.
+- Optional thin gold rules between sections — never covering letters.
+- Keep top and bottom motifs fully visible (not cropped).
 """.strip()
 
 
 LAYOUT_MULTI = """
-Layout: same elegant stationery with a clear open center; optional subtle side motifs.
-Still no text or labels for ceremony parts; no floating white panel.
+LAYOUT (multi-ceremony card):
+- Same perimeter richness; slightly taller open center for multiple date rows.
+- Optional subtle side botanical accents.
+- No floating white panel.
+""".strip()
+
+
+LAYOUT_MULTI_WITH_TEXT = """
+LAYOUT (multi-ceremony card with painted text):
+- Same perimeter richness; taller center column for multiple ceremony date/time rows.
+- Paint each ceremony row clearly (label + date/time) using the EXACT lines provided.
+- Optional subtle side botanical accents that never cover text.
+- No floating white panel.
+""".strip()
+
+
+DECORATION_DENSITY = """
+DECORATION DENSITY TARGET: LUXURY (about 40–50% decorative presence on the card).
+- Corners and frame must feel filled and intentional.
+- Do NOT leave large unexplained empty regions near the edges.
+- Do NOT let décor invade or muddy the readable text center.
+- If the design looks sparse or "empty template", intensify corners/frame/ornaments.
+""".strip()
+
+
+COLOR_PALETTES = {
+    "emerald_gold": (
+        "Palette EMERALD_GOLD: ivory/cream paper #FDF8EE, antique muted gold #C5A059, "
+        "deep forest green #0B2B24 / #1A4540. Gold must be champagne/antique — never neon."
+    ),
+    "champagne_olive": (
+        "Palette CHAMPAGNE_OLIVE: warm cream, champagne gold, soft olive and sage leaves."
+    ),
+    "dusty_rose": (
+        "Palette DUSTY_ROSE: warm white, dusty rose florals, muted rose-gold accents."
+    ),
+    "sage_antique": (
+        "Palette SAGE_ANTIQUE: ivory, sage green foliage, antique gold ornaments."
+    ),
+    "burgundy_gold": (
+        "Palette BURGUNDY_GOLD: warm white paper, deep burgundy accents, antique gold."
+    ),
+    "blush_pearl": (
+        "Palette BLUSH_PEARL: soft blush wash, pearl cream, rose-gold fine lines."
+    ),
+}
+
+
+EVENT_STYLE_PROMPTS = {
+    "nikoh": (
+        "EVENT — NIKOH (Uzbek wedding): romantic luxury. Cream ivory paper, deep green + "
+        "antique gold, rose/peony corner compositions, elegant double gold frame, soft "
+        "filigree. Optional subtle rings or couple silhouette ONLY as tiny edge ornaments "
+        "(never large faces). Modern luxury + delicate Uzbek floral sensibility."
+    ),
+    "aqiqa": (
+        "EVENT — AQIQA: soft, warm, family-oriented elegance. Blush-to-ivory wash, "
+        "rose-gold fine frame, fine-line roses, gentle botanical corners. Calm premium, "
+        "not childish."
+    ),
+    "sunnat": (
+        "EVENT — SUNNAT TOʻYI: festive yet dignified Uzbek celebration. Sage + ivory, "
+        "thin gold multi-line frame, matching geometric OR floral corners (pick one language). "
+        "Optional single crest (crescent OR geometric medallion) — never a mixed icon row."
+    ),
+    "birthday": (
+        "EVENT — TUGʻILGAN KUN: refined celebration stationery. Elegant accents, soft florals "
+        "or botanical corners, premium not cartoonish, no balloons overload."
+    ),
+    "hudoyi": (
+        "EVENT — HUDOYI: respectful, restrained traditional elegance. Soft neutrals, "
+        "subtle islimiy-inspired geometric or botanical ornaments, calm spiritual luxury."
+    ),
+    "hayit": (
+        "EVENT — HAYIT: festive warm cream paper, deep green and copper/gold accents, "
+        "soft floral or geometric ornamental border. Premium Eid gathering feel. No animals."
+    ),
+    "ramazon_hayiti": (
+        "OCCASION — Ramazon hayiti (Eid al-Fitr): joyful feast mood; lantern or crescent "
+        "ornaments only at edges; warm festive light; rich but orderly corners."
+    ),
+    "qurbon_hayiti": (
+        "OCCASION — Qurbon hayiti (Eid al-Adha): dignified festive feast; geometric Islamic "
+        "corner ornaments; no animals; refined gold frame."
+    ),
+}
+
+
+ANTI_PLAIN_RULES = """
+NOT ALLOWED (reject these looks):
+- Plain white/cream page with only a simple thin border
+- Only one weak border and empty corners
+- Four tiny identical corner dots/circles
+- Generic empty AI template appearance
+- Excessive unexplained empty space at edges
+- Neon colors, purple glow, cheap gradients, comic/3D plastic
+- Mixed sticker icon rows, clipped badges
+- Decoration covering the text-safe center
+- Floating white card panel / drop-shadow plate in the middle
+""".strip()
+
+
+QUALITY_CONTROL_PROMPT = """
+INTERNAL SELF-CRITIQUE before finalizing the image:
+1) Is the composition visually rich enough for a premium invitation?
+2) Are all four corners properly decorated with organic variation?
+3) Is the frame multi-layer / ornamental enough (not a lone thin stroke)?
+4) Does it look professionally designed (not a blank template)?
+5) Is event type visually suggested through motifs/palette?
+6) Is decorative density ~luxury without crushing the center?
+7) Any forbidden plain-border / empty-corner look? If yes — enrich and redraw mentally.
+Then output the final richly composed BACKGROUND with ZERO text.
+""".strip()
+
+
+QUALITY_CONTROL_WITH_TEXT = """
+INTERNAL SELF-CRITIQUE before finalizing the image:
+1) Is the composition visually rich enough for a premium invitation?
+2) Are all four corners properly decorated with organic variation?
+3) Is the frame multi-layer / ornamental enough (not a lone thin stroke)?
+4) Is every provided text line painted exactly (spelling, numbers, alphabet)?
+5) Is typography crisp, centered, high-contrast, and not covered by florals?
+6) Is decorative density ~luxury without crushing readability?
+7) Any gibberish, wrong alphabet mix, or invented extra text? If yes — fix mentally.
+Then output the final COMPLETE invitation card WITH the exact text painted in.
 """.strip()
 
 
@@ -351,15 +529,184 @@ DEFAULT_NEGATIVE = (
     "any text, letters, numbers, typography, calligraphy writing, watermark, logo, "
     "QR, faces, gibberish glyphs, neon/purple glow, comic/3D plastic, cluttered center, "
     "floating white card panel, drop shadow card, mixed sticker icon row, "
-    "clipped/cropped badges, placeholder lorem text, aaaa"
+    "clipped/cropped badges, placeholder lorem text, aaaa, plain empty template, "
+    "single thin border only, empty corners, sparse decoration, neon gold"
 )
 
 
-QUALITY_RULES = """
-Print-ready full-bleed invitation background; ~8–12% margins; premium paper feel;
-sharp florals/frame; high-end Central Asian celebration stationery aesthetic.
-Center must stay soft and empty for later text overlay.
-""".strip()
+DEFAULT_NEGATIVE_WITH_TEXT = (
+    "gibberish glyphs, misspelled words, mixed Latin and Cyrillic in the same word, "
+    "watermark, logo, QR, faces, neon/purple glow, comic/3D plastic, "
+    "floating white card panel, drop shadow card, mixed sticker icon row, "
+    "clipped/cropped badges, placeholder lorem text, aaaa, plain empty template, "
+    "single thin border only, empty corners, sparse decoration, neon gold, "
+    "blurry unreadable letters, text cut off by flowers"
+)
+
+
+# Mood-tag slug → design preset hints (optional enrichment)
+MOOD_PRESET_HINTS: dict[str, dict[str, str]] = {
+    "rose_gold": {"palette": "dusty_rose", "decoration": "rose"},
+    "emerald": {"palette": "emerald_gold", "decoration": "botanical"},
+    "ivory": {"palette": "champagne_olive", "decoration": "minimal_luxury"},
+    "peonies": {"palette": "dusty_rose", "decoration": "floral"},
+    "fine_line": {"palette": "sage_antique", "decoration": "minimal_luxury"},
+    "ornament": {"palette": "emerald_gold", "decoration": "uzbek_ornament"},
+    "velvet": {"palette": "burgundy_gold", "decoration": "luxury_wedding"},
+    "watercolor": {"palette": "blush_pearl", "decoration": "botanical"},
+    "silk": {"palette": "champagne_olive", "decoration": "floral"},
+    "marble": {"palette": "sage_antique", "decoration": "gold_ornamental"},
+}
+
+
+DECORATION_STYLE_LINES = {
+    "floral": "Decoration language: lush floral bouquets (roses/peonies), soft leaves, natural stems.",
+    "botanical": "Decoration language: botanical sprigs, leaves, branches, elegant green foliage.",
+    "rose": "Decoration language: cream and blush roses with gold-tinted leaves.",
+    "gold_ornamental": "Decoration language: antique-gold filigree, scrollwork, refined ornaments.",
+    "luxury_wedding": "Decoration language: luxury wedding florals + soft gold filigree accents.",
+    "uzbek_ornament": (
+        "Decoration language: delicate modern-Uzbek ornamental motifs / islimiy-inspired "
+        "patterns (subtle, contemporary — not Soviet-era kitsch)."
+    ),
+    "romantic": "Decoration language: romantic florals, soft hearts only as tiny ornaments, airy gold lines.",
+    "minimal_luxury": "Decoration language: restrained luxury — refined frame, sparse but intentional corner flora.",
+}
+
+
+def resolve_design_preset(
+    *,
+    event_slug: str,
+    mood_slugs: list[str] | None = None,
+) -> dict[str, str]:
+    """
+    Modular design preset for Gemini composition.
+
+    Example:
+      {style, decoration, frame, palette, density}
+    Extend by adding keys to COLOR_PALETTES / DECORATION_STYLE_LINES / MOOD_PRESET_HINTS.
+    """
+    mood_slugs = mood_slugs or []
+    preset = {
+        "style": "luxury",
+        "decoration": "floral",
+        "frame": "ornamental",
+        "palette": "emerald_gold",
+        "density": "rich",
+    }
+    event_defaults = {
+        "nikoh": {"decoration": "luxury_wedding", "palette": "emerald_gold"},
+        "aqiqa": {"decoration": "rose", "palette": "blush_pearl", "frame": "fine"},
+        "sunnat": {"decoration": "uzbek_ornament", "palette": "sage_antique"},
+        "birthday": {"decoration": "botanical", "palette": "champagne_olive"},
+        "hudoyi": {"decoration": "uzbek_ornament", "palette": "sage_antique", "style": "restrained"},
+        "hayit": {"decoration": "uzbek_ornament", "palette": "emerald_gold"},
+    }
+    preset.update(event_defaults.get(event_slug, {}))
+    for slug in mood_slugs:
+        hint = MOOD_PRESET_HINTS.get(slug)
+        if hint:
+            preset.update(hint)
+            break
+    return preset
+
+
+def _palette_line(palette_key: str) -> str:
+    return COLOR_PALETTES.get(palette_key, COLOR_PALETTES["emerald_gold"])
+
+
+def _decoration_line(decoration_key: str) -> str:
+    return DECORATION_STYLE_LINES.get(
+        decoration_key, DECORATION_STYLE_LINES["floral"]
+    )
+
+
+def _frame_line(frame_key: str) -> str:
+    if frame_key == "fine":
+        return (
+            "Frame: elegant thin double-line gold frame with refined corner joins; "
+            "still decorate all four corners florally."
+        )
+    return FRAME_SYSTEM
+
+
+def compose_design_modules(
+    *,
+    event_slug: str,
+    fmt: str,
+    multi: bool,
+    subtype_label: str,
+    mood: str,
+    preset: dict[str, str],
+    user_request: str = "",
+    include_text: bool = False,
+    text_payload: str = "",
+) -> str:
+    """Assemble modular Art-Director prompt blocks for Gemini."""
+    hayit_extra = ""
+    if event_slug == "hayit" and subtype_label:
+        lowered = subtype_label.lower()
+        if "ramazon" in lowered or "ramadan" in lowered or "fitr" in lowered:
+            hayit_extra = EVENT_STYLE_PROMPTS["ramazon_hayiti"]
+        elif "qurbon" in lowered or "qurban" in lowered or "adha" in lowered:
+            hayit_extra = EVENT_STYLE_PROMPTS["qurbon_hayiti"]
+
+    event_line = EVENT_STYLE_PROMPTS.get(
+        event_slug,
+        "EVENT: Premium Central Asian celebration invitation — elegant, modern, culturally rooted.",
+    )
+
+    if include_text:
+        text_constraint = TEXT_IN_IMAGE_CONSTRAINT
+        layout = LAYOUT_MULTI_WITH_TEXT if multi else LAYOUT_SINGLE_WITH_TEXT
+        quality = QUALITY_CONTROL_WITH_TEXT
+        occasion = (
+            f"Occasion: {subtype_label}." if subtype_label else ""
+        )
+        final = (
+            "FINAL OUTPUT: a COMPLETE premium invitation card WITH the exact provided "
+            "text painted into the design (décor + typography together)."
+        )
+    else:
+        text_constraint = STYLE_ONLY_CONSTRAINT
+        layout = LAYOUT_MULTI if multi else LAYOUT_SINGLE
+        quality = QUALITY_CONTROL_PROMPT
+        occasion = (
+            f"Occasion mood for: {subtype_label} (visual only — still zero text)."
+            if subtype_label
+            else ""
+        )
+        final = "FINAL OUTPUT: a richly composed invitation BACKGROUND with ZERO readable text."
+
+    parts = [
+        ART_DIRECTOR_ROLE,
+        BASE_DESIGN_PROMPT,
+        text_constraint,
+        CORNER_DECORATION_SYSTEM,
+        _frame_line(preset.get("frame", "ornamental")),
+        layout,
+        DECORATION_DENSITY,
+        _palette_line(preset.get("palette", "emerald_gold")),
+        _decoration_line(preset.get("decoration", "floral")),
+        event_line,
+        f"Design preset: style={preset.get('style')}, decoration={preset.get('decoration')}, "
+        f"frame={preset.get('frame')}, palette={preset.get('palette')}, density={preset.get('density')}.",
+        f"One image, aspect ratio {fmt}.",
+        f"Visual style cues from user/mood: {mood}." if mood else "",
+        occasion,
+        hayit_extra,
+        f"Additional art direction: {user_request}" if user_request else "",
+        text_payload if include_text and text_payload else "",
+        ANTI_PLAIN_RULES,
+        quality,
+        final,
+    ]
+    return "\n\n".join(p for p in parts if p)
+
+
+QUALITY_RULES = DECORATION_DENSITY  # backwards-compatible alias
+STYLE_ONLY = STYLE_ONLY_CONSTRAINT
+EVENT_STYLE = EVENT_STYLE_PROMPTS
 
 
 def _compose_quality_tail(
@@ -369,36 +716,31 @@ def _compose_quality_tail(
     subtype_label: str,
     event_slug: str,
     multi: bool,
+    mood: str = "",
+    mood_slugs: list[str] | None = None,
+    user_request: str = "",
+    include_text: bool = False,
+    text_payload: str = "",
 ) -> str:
-    del lang  # Script handled when PIL overlays final copy
-    parts = [
-        STYLE_ONLY,
-        QUALITY_RULES,
-        LAYOUT_MULTI if multi else LAYOUT_SINGLE,
-        f"One image, aspect {fmt}.",
-        EVENT_STYLE.get(
-            event_slug,
-            "Premium Central Asian celebration invitation, elegant and modern.",
-        ),
-    ]
-    hayit_slug = ""
-    if event_slug == "hayit" and subtype_label:
-        lowered = subtype_label.lower()
-        if "ramazon" in lowered or "ramadan" in lowered or "fitr" in lowered:
-            hayit_slug = "ramazon_hayiti"
-        elif "qurbon" in lowered or "qurban" in lowered or "adha" in lowered:
-            hayit_slug = "qurbon_hayiti"
-    if hayit_slug and hayit_slug in EVENT_STYLE:
-        parts.append(EVENT_STYLE[hayit_slug])
-    if subtype_label:
-        parts.append(
-            f"Occasion mood for: {subtype_label} "
-            "(visual mood only — still draw zero text)."
-        )
-    return "\n".join(parts)
+    del lang
+    preset = resolve_design_preset(event_slug=event_slug, mood_slugs=mood_slugs)
+    return compose_design_modules(
+        event_slug=event_slug,
+        fmt=fmt,
+        multi=multi,
+        subtype_label=subtype_label,
+        mood=mood,
+        preset=preset,
+        user_request=user_request,
+        include_text=include_text,
+        text_payload=text_payload,
+    )
 
 
-def build_prompt(invitation: Invitation) -> tuple[str, str | None, dict | None]:
+def build_prompt(
+    invitation: Invitation,
+    blocks: dict[str, str] | None = None,
+) -> tuple[str, str | None, dict | None]:
     lang = invitation.language
     subtype_label = _subtype_label(invitation)
     multi = _subtype_count(invitation) >= 2
@@ -409,98 +751,147 @@ def build_prompt(invitation: Invitation) -> tuple[str, str | None, dict | None]:
         event_slug = str(invitation.event_id)
     fmt = invitation.primary_format or "4:5"
 
+    # AI-from-scratch paints the full card (décor + exact text). Templates stay style-only.
+    include_text = invitation.generation_path != GenerationPath.TEMPLATE
+    text_blocks = blocks if blocks is not None else (
+        build_text_blocks(invitation) if include_text else {}
+    )
+    text_payload = format_exact_text_for_prompt(text_blocks) if include_text else ""
+
     model_params: dict = {"aspect_ratio": fmt}
     if invitation.ai_preset and invitation.ai_preset.model_params:
         model_params.update(dict(invitation.ai_preset.model_params))
     model_params["aspect_ratio"] = fmt
 
-    style_payload = _style_only_payload()
-    quality_tail = _compose_quality_tail(
-        lang=lang,
-        fmt=fmt,
-        subtype_label=subtype_label,
+    mood_slugs = list(invitation.selected_mood_tags or [])
+    mood_snippets: list[str] = []
+    if mood_slugs:
+        mood_snippets = list(
+            MoodTag.objects.filter(slug__in=mood_slugs, is_active=True).values_list(
+                "prompt_snippet", flat=True
+            )
+        )
+    custom_note = ""
+    if invitation.custom_style_note:
+        custom_note = sanitize_user_text(invitation.custom_style_note, 200)
+        mood_snippets.append(custom_note)
+    mood = ", ".join(mood_snippets) or (
+        "cream ivory paper, antique gold double frame, lush rose corner compositions, deep green accents"
+        if event_slug == "nikoh"
+        else "soft blush wash, rose-gold frame, fine-line rose corners"
+        if event_slug == "aqiqa"
+        else "ivory paper, antique gold ornamental frame, rich botanical corners"
+    )
+
+    preset = resolve_design_preset(event_slug=event_slug, mood_slugs=mood_slugs)
+    design_modules = compose_design_modules(
         event_slug=event_slug,
+        fmt=fmt,
         multi=multi,
+        subtype_label=subtype_label,
+        mood=mood,
+        preset=preset,
+        user_request=custom_note,
+        include_text=include_text,
+        text_payload=text_payload,
     )
 
     if invitation.generation_path == GenerationPath.TEMPLATE and invitation.template:
         composition = invitation.template.ai_composition_prompt
         prompt = (
+            f"{ART_DIRECTOR_ROLE}\n\n"
             f"{composition}\n\n"
             "Style board attached. Create a NEW invitation BACKGROUND in the same "
-            "visual language (palette, florals, frame) — not a photocopy.\n\n"
-            f"{style_payload}\n\n"
-            f"{quality_tail}\n\n"
-            "FINAL CHECK: the image must contain ZERO readable text."
+            "visual language (palette, florals, frame) — not a photocopy. "
+            "Keep corner decoration and frame richness at luxury density.\n\n"
+            f"{design_modules}"
         )
         negative = (
             invitation.ai_preset.negative_prompt if invitation.ai_preset else DEFAULT_NEGATIVE
         )
-        # Always forbid text even if preset negative is soft
         neg = (negative or DEFAULT_NEGATIVE).strip()
         if "any text" not in neg.lower():
             neg = f"{DEFAULT_NEGATIVE}; {neg}"
         return prompt, neg, model_params
 
-    mood_snippets = []
-    if invitation.selected_mood_tags:
-        mood_snippets = list(
-            MoodTag.objects.filter(
-                slug__in=invitation.selected_mood_tags, is_active=True
-            ).values_list("prompt_snippet", flat=True)
-        )
-    if invitation.custom_style_note:
-        mood_snippets.append(sanitize_user_text(invitation.custom_style_note, 200))
-    mood = ", ".join(mood_snippets) or (
-        "cream ivory paper, thin gold frame, corner roses, deep green accents"
-        if event_slug == "nikoh"
-        else "soft blush pink wash, rose-gold double frame, fine-line roses"
-        if event_slug == "aqiqa"
-        else "elegant classic ivory and soft gold"
-    )
+    header = (text_blocks.get("header") or "").strip()
+    body = (text_blocks.get("body") or "").strip()
+    date_time = (text_blocks.get("date_time") or "").strip()
+    address = (text_blocks.get("address") or "").strip()
+    footer = (text_blocks.get("footer") or "").strip()
 
     if invitation.ai_preset and invitation.ai_preset.base_prompt:
         base = invitation.ai_preset.base_prompt
-        for token in (
-            'HEADER: "{header_text}"',
-            'BODY: "{body_text}"',
-            'DATE_TIME: "{date_time_text}"',
-            'ADDRESS: "{address_text}"',
-            'HEADER (greeting / title): "{header_text}"',
-            'BODY (main message): "{body_text}"',
-            'ADDRESS (venue): "{address_text}"',
-            "Render this EXACT text (character-by-character, no paraphrasing):\n",
-            "Render this exact text on the card:\n",
-            "Render this exact text with clear hierarchy:\n",
-        ):
-            base = base.replace(token, "")
-        base = (
-            base.replace("{mood_snippets}", mood)
-            .replace("{header_text}", "")
-            .replace("{body_text}", "")
-            .replace("{date_time_text}", "")
-            .replace("{address_text}", "")
-            .replace("{footer_text}", "")
-        )
+        if include_text:
+            base = (
+                base.replace("{mood_snippets}", mood)
+                .replace("{header_text}", header)
+                .replace("{body_text}", body)
+                .replace("{date_time_text}", date_time)
+                .replace("{address_text}", address)
+                .replace("{footer_text}", footer)
+            )
+            # Drop legacy "BACKGROUND (no text)" wording from older presets.
+            base = (
+                base.replace("BACKGROUND (no text)", "invitation card with exact text")
+                .replace("background (no text)", "invitation card with exact text")
+                .replace("(no text)", "with exact invitation text")
+            )
+        else:
+            for token in (
+                'HEADER: "{header_text}"',
+                'BODY: "{body_text}"',
+                'DATE_TIME: "{date_time_text}"',
+                'ADDRESS: "{address_text}"',
+                'HEADER (greeting / title): "{header_text}"',
+                'BODY (main message): "{body_text}"',
+                'ADDRESS (venue): "{address_text}"',
+                "Render this EXACT text (character-by-character, no paraphrasing):\n",
+                "Render this exact text on the card:\n",
+                "Render this exact text with clear hierarchy:\n",
+            ):
+                base = base.replace(token, "")
+            base = (
+                base.replace("{mood_snippets}", mood)
+                .replace("{header_text}", "")
+                .replace("{body_text}", "")
+                .replace("{date_time_text}", "")
+                .replace("{address_text}", "")
+                .replace("{footer_text}", "")
+            )
+        prompt = f"{base.rstrip()}\n\n{design_modules}"
     else:
-        base = (
-            "Create a premium print-ready Uzbek taklifnoma BACKGROUND (no text). "
-            f"Visual style: {mood}."
-        )
+        if include_text:
+            prompt = (
+                "Create a premium print-ready Uzbek taklifnoma — complete card with "
+                "décor AND the exact invitation text painted in.\n\n"
+                f"{design_modules}"
+            )
+        else:
+            prompt = (
+                "Create a premium print-ready Uzbek taklifnoma BACKGROUND (no text).\n\n"
+                f"{design_modules}"
+            )
 
-    prompt = (
-        base.rstrip()
-        + "\n\n"
-        + style_payload
-        + "\n\n"
-        + quality_tail
-        + "\n\n"
-        + "FINAL CHECK: the image must contain ZERO readable text of any kind."
-    )
-    negative = (
-        invitation.ai_preset.negative_prompt if invitation.ai_preset else None
-    ) or DEFAULT_NEGATIVE
-    neg = negative.strip()
-    if "any text" not in neg.lower():
-        neg = f"{DEFAULT_NEGATIVE}; {neg}"
+    if include_text:
+        negative = (
+            invitation.ai_preset.negative_prompt if invitation.ai_preset else None
+        ) or DEFAULT_NEGATIVE_WITH_TEXT
+        neg = negative.strip()
+        # Strip legacy "no text" bans from older seeded negatives.
+        for ban in (
+            "any text, letters, numbers, watermark, logo, faces,",
+            "any text, letters, numbers,",
+            "any text,",
+        ):
+            neg = neg.replace(ban, "")
+        if "gibberish" not in neg.lower():
+            neg = f"{DEFAULT_NEGATIVE_WITH_TEXT}; {neg}".strip("; ")
+    else:
+        negative = (
+            invitation.ai_preset.negative_prompt if invitation.ai_preset else None
+        ) or DEFAULT_NEGATIVE
+        neg = negative.strip()
+        if "any text" not in neg.lower():
+            neg = f"{DEFAULT_NEGATIVE}; {neg}"
     return prompt, neg, model_params

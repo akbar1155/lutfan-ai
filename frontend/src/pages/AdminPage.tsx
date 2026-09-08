@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Children, cloneElement, isValidElement, type FormEvent, type ReactElement, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -766,8 +766,11 @@ export default function AdminPage() {
               )}
               {templates.length ? (
                 <div className="admin-card-grid">
-                  {templates.map((tpl) => (
+                  {templates.map((tpl, idx) => (
                     <article key={String(tpl.id)} className="admin-media-card">
+                      <span className="admin-list-index" aria-hidden>
+                        {idx + 1}
+                      </span>
                       {tpl.bg_url_preview ? (
                         <img src={String(tpl.bg_url_preview)} alt={String(tpl.theme_name)} />
                       ) : (
@@ -1050,22 +1053,36 @@ function AdminTable({
   empty: string;
   hasData: boolean;
 }) {
+  const { t } = useTranslation();
+  const allHeaders = [t("adminColIndex"), ...headers];
   return (
     <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
-            {headers.map((label) => (
-              <th key={label}>{label}</th>
+            {allHeaders.map((label) => (
+              <th key={label} className={label === t("adminColIndex") ? "col-index" : undefined}>
+                {label}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {hasData ? (
-            children
+            Children.map(children, (child, idx) => {
+              if (!isValidElement<{ children?: ReactNode }>(child)) return child;
+              return cloneElement(child as ReactElement<{ children?: ReactNode }>, {
+                children: (
+                  <>
+                    <td className="col-index">{idx + 1}</td>
+                    {child.props.children}
+                  </>
+                ),
+              });
+            })
           ) : (
             <tr>
-              <td colSpan={headers.length}>
+              <td colSpan={allHeaders.length}>
                 <div className="admin-empty">{empty}</div>
               </td>
             </tr>
@@ -1087,11 +1104,14 @@ function SimpleTable({
   renderExtra?: (row: Record<string, unknown>) => ReactNode;
   empty: string;
 }) {
+  const { t } = useTranslation();
+  const colCount = columns.length + (renderExtra ? 1 : 0) + 1;
   return (
     <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
+            <th className="col-index">{t("adminColIndex")}</th>
             {columns.map(([, label]) => (
               <th key={label}>{label}</th>
             ))}
@@ -1101,6 +1121,7 @@ function SimpleTable({
         <tbody>
           {rows.map((row, idx) => (
             <tr key={String(row.id || idx)}>
+              <td className="col-index">{idx + 1}</td>
               {columns.map(([key]) => (
                 <td key={key}>
                   {key === "created_at" || key === "updated_at" || key === "expires_at"
@@ -1130,7 +1151,7 @@ function SimpleTable({
           ))}
           {!rows.length && (
             <tr>
-              <td colSpan={columns.length + (renderExtra ? 1 : 0)}>
+              <td colSpan={colCount}>
                 <div className="admin-empty">{empty}</div>
               </td>
             </tr>

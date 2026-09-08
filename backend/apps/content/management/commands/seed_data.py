@@ -125,7 +125,9 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [],
+            "optional": [
+                {"key": "personal_message", "type": "text", "maxLength": 200},
+            ],
         },
     },
     {
@@ -162,7 +164,9 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [],
+            "optional": [
+                {"key": "personal_message", "type": "text", "maxLength": 200},
+            ],
         },
     },
     {
@@ -197,7 +201,9 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [],
+            "optional": [
+                {"key": "personal_message", "type": "text", "maxLength": 200},
+            ],
         },
         "is_active": False,
     },
@@ -888,15 +894,20 @@ class Command(BaseCommand):
                 event=event,
                 defaults={
                     "base_prompt": (
-                        f"Create a premium print-ready Uzbek {item['slug']} taklifnoma, "
-                        "stationery quality. Visual style: {mood_snippets}. "
+                        f"Art-direct a premium print-ready Uzbek {item['slug']} taklifnoma "
+                        "with décor AND exact invitation text painted in. "
+                        "Visual style: {mood_snippets}. "
                         f"Event-specific look: {primary['composition']} "
-                        "Full-bleed card, refined florals and metallic accents, never cartoonish. "
-                        "Large sharp readable typography. No watermark or logo."
+                        "Full-bleed luxury stationery with rich floral/botanical corners, "
+                        "elegant multi-layer gold frame, antique metallic accents. "
+                        "Paint the exact user text with clear hierarchy. "
+                        "Never cartoonish, never a plain empty template."
                     ),
                     "negative_prompt": (
-                        "blurry/misspelled text, invented dates, watermark, logo, "
-                        "faces, neon, purple glow, comic, florals covering text, "
+                        "gibberish glyphs, misspelled words, mixed Latin/Cyrillic, "
+                        "watermark, logo, faces, neon, purple glow, comic, "
+                        "plain thin border only, empty corners, sparse template, "
+                        "floating white card panel, blurry unreadable letters, "
                         "generic identical layout for every event type"
                     ),
                     "model_params": {"aspect_ratio": "4:5"},

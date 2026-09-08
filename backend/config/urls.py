@@ -23,12 +23,18 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 else:
-    # Production: nginx serves /media/ from the shared volume; this is fallback.
+    # Production: nginx may proxy /static/ and /media/ here as fallback.
     urlpatterns += [
         re_path(
             r"^media/(?P<path>.*)$",
             serve,
             {"document_root": str(settings.MEDIA_ROOT)},
+        ),
+        re_path(
+            r"^static/(?P<path>.*)$",
+            serve,
+            {"document_root": str(settings.STATIC_ROOT)},
         ),
     ]

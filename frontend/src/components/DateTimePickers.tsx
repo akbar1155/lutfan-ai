@@ -1,11 +1,13 @@
 import { ConfigProvider, DatePicker, TimePicker, theme } from "antd";
 import type { Locale } from "antd/es/locale";
+import type { PickerLocale } from "antd/es/date-picker/generatePicker";
+import type { CSSProperties, ReactNode } from "react";
+import { useMemo, useRef } from "react";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/ru";
 import "dayjs/locale/uz-latn";
-import { useMemo, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import ruRU from "antd/locale/ru_RU";
 import enGB from "antd/locale/en_GB";
@@ -22,9 +24,27 @@ function dayjsLocale(lang: UiLang): string {
   return "uz-latn";
 }
 
-function antdLocale(lang: UiLang): Locale {
-  // Stable default locale. Placeholder/button texts are handled via props/CSS.
-  return lang === "ru" ? ruRU : enGB;
+function buildLocales(
+  lang: UiLang,
+  labels: { now: string; today: string },
+): { configLocale: Locale; pickerLocale: PickerLocale } {
+  // Vite ESM may wrap locale modules; unwrap `.default` when present.
+  const raw = (lang === "ru" ? ruRU : enGB) as Locale & { default?: Locale };
+  const base = (raw?.default ?? raw) as Locale;
+  const datePicker = (base.DatePicker || {}) as PickerLocale;
+  const langPack = (datePicker.lang || {}) as PickerLocale["lang"];
+  const pickerLocale: PickerLocale = {
+    ...datePicker,
+    lang: {
+      ...langPack,
+      now: labels.now,
+      today: labels.today,
+    },
+  };
+  return {
+    configLocale: { ...base, DatePicker: pickerLocale },
+    pickerLocale,
+  };
 }
 
 const appTheme = {
@@ -51,16 +71,30 @@ const appTheme = {
   },
 };
 
-function PickerShell({ children }: { children: ReactNode }) {
-  const { i18n } = useTranslation();
+function useLocalizedPicker() {
+  const { i18n, t } = useTranslation();
   const lang = normalizeUiLang(i18n.language);
-  const locale = useMemo(() => {
+  return useMemo(() => {
     dayjs.locale(dayjsLocale(lang));
-    return antdLocale(lang);
-  }, [lang]);
+    const labels = {
+      now: t("pickerNow", {
+        defaultValue:
+          lang === "ru" ? "Сейчас" : lang === "uz-cyrl" ? "Ҳозир" : "Hozir",
+      }),
+      today: t("pickerToday", {
+        defaultValue:
+          lang === "ru" ? "Сегодня" : lang === "uz-cyrl" ? "Бугун" : "Bugun",
+      }),
+    };
+    const { configLocale, pickerLocale } = buildLocales(lang, labels);
+    return { lang, labels, configLocale, pickerLocale };
+  }, [lang, t, i18n.language]);
+}
 
+function PickerShell({ children }: { children: ReactNode }) {
+  const { lang, configLocale } = useLocalizedPicker();
   return (
-    <ConfigProvider locale={locale} theme={appTheme}>
+    <ConfigProvider key={lang} locale={configLocale} theme={appTheme}>
       {children}
     </ConfigProvider>
   );
@@ -79,6 +113,13 @@ function scrollFieldIntoView(el: HTMLElement | null) {
   el?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
+function popupLabelStyle(labels: { now: string; today: string }): CSSProperties {
+  return {
+    ["--picker-now-label" as string]: JSON.stringify(labels.now),
+    ["--picker-today-label" as string]: JSON.stringify(labels.today),
+  };
+}
+
 export function DateField({
   label,
   required,
@@ -88,6 +129,7 @@ export function DateField({
   disabled,
 }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
+  const { pickerLocale, labels } = useLocalizedPicker();
   const parsed =
     value && dayjs(value, ISO_DATE, true).isValid()
       ? dayjs(value, ISO_DATE)
@@ -103,6 +145,7 @@ export function DateField({
         <DatePicker
           className="app-datepicker"
           popupClassName="app-picker-dropdown"
+          locale={pickerLocale}
           value={parsed}
           format={DATE_FMT}
           allowClear={!required}
@@ -111,10 +154,13 @@ export function DateField({
           placeholder={DATE_FMT.toLowerCase()}
           placement="bottomLeft"
           getPopupContainer={() => document.body}
+          showNow
+          styles={{ popup: { root: popupLabelStyle(labels) } }}
           disabledDate={
             minToday
               ? (current) =>
-                  !!current && current.startOf("day").isBefore(dayjs().startOf("day"))
+                  !!current &&
+                  current.startOf("day").isBefore(dayjs().startOf("day"))
               : undefined
           }
           onOpenChange={(open) => {
@@ -131,6 +177,7 @@ export function DateField({
 
 export function TimeField({ label, required, value, onChange, disabled }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
+  const { pickerLocale, labels } = useLocalizedPicker();
   const parsed =
     value && dayjs(value, [TIME_FMT, "HH:mm:ss"], true).isValid()
       ? dayjs(value, [TIME_FMT, "HH:mm:ss"])
@@ -146,6 +193,7 @@ export function TimeField({ label, required, value, onChange, disabled }: FieldP
         <TimePicker
           className="app-datepicker"
           popupClassName="app-picker-dropdown"
+          locale={pickerLocale}
           value={parsed}
           format={TIME_FMT}
           minuteStep={5}
@@ -157,6 +205,7 @@ export function TimeField({ label, required, value, onChange, disabled }: FieldP
           showNow
           placement="bottomLeft"
           getPopupContainer={() => document.body}
+          styles={{ popup: { root: popupLabelStyle(labels) } }}
           onOpenChange={(open) => {
             if (open) scrollFieldIntoView(wrapRef.current);
           }}
