@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { IconEye, IconEyeOff } from "../components/ActionIcons";
 import { useAuth } from "./AuthContext";
 
 type Mode = "login" | "register";
@@ -8,13 +9,64 @@ type Props = {
   onSuccess?: () => void;
 };
 
+function PasswordField({
+  label,
+  name,
+  value,
+  onChange,
+  autoComplete,
+  visible,
+  onToggleVisible,
+  showLabel,
+  hideLabel,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  autoComplete: string;
+  visible: boolean;
+  onToggleVisible: () => void;
+  showLabel: string;
+  hideLabel: string;
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <div className="password-field">
+        <input
+          name={name}
+          type={visible ? "text" : "password"}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required
+          minLength={6}
+        />
+        <button
+          type="button"
+          className="password-toggle"
+          onClick={onToggleVisible}
+          aria-label={visible ? hideLabel : showLabel}
+          aria-pressed={visible}
+        >
+          {visible ? <IconEyeOff /> : <IconEye />}
+        </button>
+      </div>
+    </label>
+  );
+}
+
 export default function PhoneAuthForm({ onSuccess }: Props) {
   const { t } = useTranslation();
   const { loginPhone, registerPhone } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +76,11 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
     setError(null);
     try {
       if (mode === "register") {
+        if (password !== passwordConfirm) {
+          setError(t("authPasswordMismatch"));
+          setBusy(false);
+          return;
+        }
         await registerPhone({ phone, password, first_name: firstName });
       } else {
         await loginPhone({ phone, password });
@@ -94,18 +151,31 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
         />
       </label>
 
-      <label className="field">
-        <span>{t("authPassword")}</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete={mode === "register" ? "new-password" : "current-password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
+      <PasswordField
+        label={t("authPassword")}
+        name="password"
+        value={password}
+        onChange={setPassword}
+        autoComplete={mode === "register" ? "new-password" : "current-password"}
+        visible={showPassword}
+        onToggleVisible={() => setShowPassword((v) => !v)}
+        showLabel={t("authShowPassword")}
+        hideLabel={t("authHidePassword")}
+      />
+
+      {mode === "register" ? (
+        <PasswordField
+          label={t("authPasswordConfirm")}
+          name="password_confirm"
+          value={passwordConfirm}
+          onChange={setPasswordConfirm}
+          autoComplete="new-password"
+          visible={showPasswordConfirm}
+          onToggleVisible={() => setShowPasswordConfirm((v) => !v)}
+          showLabel={t("authShowPassword")}
+          hideLabel={t("authHidePassword")}
         />
-      </label>
+      ) : null}
 
       {error ? (
         <p className="field-error" role="alert">

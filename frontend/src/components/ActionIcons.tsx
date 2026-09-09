@@ -142,6 +142,32 @@ export function IconEye() {
   );
 }
 
+export function IconEyeOff() {
+  return (
+    <Svg>
+      <path
+        d="M3 3l18 18"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.6 6.3A10.3 10.3 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16.6 16.6 0 0 1-3.3 3.8M6.2 6.7C3.9 8.4 2.5 12 2.5 12S6 18.5 12 18.5c1.1 0 2.1-.2 3-.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.9 9.9a2.6 2.6 0 0 0 3.7 3.7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 export function IconUser() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
