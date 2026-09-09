@@ -2,8 +2,9 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { IconEye, IconEyeOff } from "../components/ActionIcons";
 import {
-  formatUzLocalPhone,
+  formatUzPhoneMask,
   toE164Uz,
+  UZ_PHONE_PLACEHOLDER,
   uzLocalDigits,
 } from "../utils/phone";
 import { useAuth } from "./AuthContext";
@@ -150,23 +151,19 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
 
       <label className="field">
         <span>{t("authPhone")}</span>
-        <div className="phone-field">
-          <span className="phone-prefix" aria-hidden>
-            +998
-          </span>
-          <input
-            name="phone"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel-national"
-            placeholder="90 123 45 67"
-            value={formatUzLocalPhone(phoneLocal)}
-            onChange={(e) => setPhoneLocal(uzLocalDigits(e.target.value))}
-            required
-            maxLength={12}
-            aria-label={t("authPhone")}
-          />
-        </div>
+        <input
+          className="phone-mask-input"
+          name="phone"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel"
+          placeholder={UZ_PHONE_PLACEHOLDER}
+          value={formatUzPhoneMask(phoneLocal)}
+          onChange={(e) => setPhoneLocal(uzLocalDigits(e.target.value))}
+          required
+          maxLength={19}
+          aria-label={t("authPhone")}
+        />
       </label>
 
       <PasswordField

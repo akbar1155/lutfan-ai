@@ -1,4 +1,4 @@
-/** Uzbekistan phone input helpers: display +998 XX XXX XX XX, value +998XXXXXXXXX. */
+/** Uzbekistan phone mask: +998 (__) ___-__-__ → +998XXXXXXXXX */
 
 export function digitsOnly(value: string): string {
   return String(value || "").replace(/\D+/g, "");
@@ -12,17 +12,31 @@ export function uzLocalDigits(raw: string): string {
   return d.slice(0, 9);
 }
 
-export function formatUzLocalPhone(local9: string): string {
+/** Progressive display: +998 (90) 123-45-67 */
+export function formatUzPhoneMask(local9: string): string {
   const d = uzLocalDigits(local9);
-  const parts: string[] = [];
-  if (d.length > 0) parts.push(d.slice(0, 2));
-  if (d.length > 2) parts.push(d.slice(2, 5));
-  if (d.length > 5) parts.push(d.slice(5, 7));
-  if (d.length > 7) parts.push(d.slice(7, 9));
-  return parts.join(" ");
+  if (!d) return "";
+
+  let out = "+998 (";
+  out += d.slice(0, Math.min(2, d.length));
+  if (d.length < 2) return out;
+
+  out += ")";
+  if (d.length === 2) return out;
+
+  out += ` ${d.slice(2, Math.min(5, d.length))}`;
+  if (d.length <= 5) return out;
+
+  out += `-${d.slice(5, Math.min(7, d.length))}`;
+  if (d.length <= 7) return out;
+
+  out += `-${d.slice(7, 9)}`;
+  return out;
 }
+
+export const UZ_PHONE_PLACEHOLDER = "+998 (__) ___-__-__";
 
 export function toE164Uz(raw: string): string {
   const local = uzLocalDigits(raw);
-  return local.length === 9 ? `+998${local}` : `+998${local}`;
+  return `+998${local}`;
 }
