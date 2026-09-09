@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Layout from "./components/Layout";
-import { AccountPage, SettingsPage } from "./pages/AccountPages";
+import { AccountPage } from "./pages/AccountPages";
 import AdminPage from "./pages/AdminPage";
 import {
   CreateEventPage,
@@ -39,7 +39,7 @@ export default function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/i/:id" element={<PublicInvitationPage />} />
             <Route path="/account" element={<AccountPage />} />
-            <Route path="/account/settings" element={<SettingsPage />} />
+            <Route path="/account/settings" element={<Navigate to="/account" replace />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/create" element={<CreateEventPage />} />
             <Route path="/create/:id/details" element={<DetailsPage />} />

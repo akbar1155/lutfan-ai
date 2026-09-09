@@ -81,9 +81,9 @@
       "ru": "Ассаламу алейкум!\nС глубоким уважением приглашаем Вас на нашу свадьбу. В этот светлый день, когда соединяются радость и судьбы двух семей, Ваше присутствие особенно ценно для нас. Пожалуйста, разделите с нами торжество."
     },
     "warm1": {
-      "uz-latn": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi cheksiz samimiyat va mehr bilan Sizni oilaviy dasturxonimizga chorlaymiz. Tashrifingiz, ezgu so‘zlaringiz hamda shirin tabassumingiz xonadonimizni quvonchga to‘ldirsin. Ushbu unutilmas kunni Siz bilan birga o‘tkazish biz uchun ulkan baxtdir.",
-      "uz-cyrl": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги чексиз самимият ва меҳр билан Сизни оилавий дастурхонимизга чорлаймиз. Ташрифингиз, эзгу сўзларингиз ҳамда ширин табассумингиз хонадонимизни қувончга тўлдирсин. Ушбу унутилмас кунни Сиз билан бирга ўтказиш биз учун улкан бахтдир.",
-      "ru": "Дорогой и уважаемый гость!\nОт всего сердца приглашаем Вас за наш семейный дастархан. Пусть Ваш визит, добрые пожелания и улыбки наполнят наш дом радостью. Провести этот знаменательный день с Вами — огромное счастье для нас."
+      "uz-latn": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.",
+      "uz-cyrl": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.",
+      "ru": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье."
     },
     "classic2": {
       "uz-latn": "Aziz mehmonlar!\nHayotimizda eng go‘zal va yangi sahifa ochilmoqda — ikki qalbning muqaddas nikoh rishtasi. Shu munosabat bilan Sizni qutlug‘ tantanamizga taklif etamiz. E’zozli mehmonlarimiz safida Sizni ko‘rish oilamizga alohida mamnuniyat bag‘ishlaydi.",
@@ -200,9 +200,9 @@
       "ru": "Ассаламу алейкум!\nС уважением приглашаем Вас на {aboutRu}. Ваше присутствие в этот день чрезвычайно важно для нашей семьи. Пожалуйста, будьте нашим дорогим гостем."
     },
     "warm1": {
-      "uz-latn": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni {warmLatn}ga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.",
-      "uz-cyrl": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни {warmCyrl}га чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.",
-      "ru": "Дорогой гость!\nОт всей души приглашаем Вас на {warmRu}. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас."
+      "uz-latn": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.",
+      "uz-cyrl": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.",
+      "ru": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье."
     },
     "classic2": {
       "uz-latn": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — {aboutLatn}dir. Shu munosabat bilan Sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida Sizni ko‘rishdan behad mamnun bo‘lamiz.",

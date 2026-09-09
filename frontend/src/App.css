@@ -2033,6 +2033,28 @@ textarea::placeholder {
 .form-stack > label:first-child,
 .form-stack > .ui-field:first-child { margin-top: 0; }
 
+label.field-invalid,
+.ui-field.field-invalid .ui-field-label {
+  color: var(--error);
+}
+label.field-invalid input,
+label.field-invalid textarea,
+.ui-field.field-invalid .ui-select-trigger,
+.ui-field.field-invalid .ant-picker,
+.ui-select-wrap.is-invalid .ui-select-trigger {
+  border-color: color-mix(in srgb, var(--error) 55%, var(--line)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--error) 35%, transparent);
+}
+.check-group.field-invalid {
+  border-color: color-mix(in srgb, var(--error) 45%, var(--line));
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, var(--error) 6%, white);
+}
+.check-group.field-invalid > legend {
+  color: var(--error);
+}
+
 .actions .ghost,
 .actions .cta { margin-top: 0; }
 

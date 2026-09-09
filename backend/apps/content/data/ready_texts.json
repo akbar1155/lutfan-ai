@@ -7,7 +7,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi cheksiz samimiyat va mehr bilan Sizni oilaviy dasturxonimizga chorlaymiz. Tashrifingiz, ezgu so‘zlaringiz hamda shirin tabassumingiz xonadonimizni quvonchga to‘ldirsin. Ushbu unutilmas kunni Siz bilan birga o‘tkazish biz uchun ulkan baxtdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -45,7 +45,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги чексиз самимият ва меҳр билан Сизни оилавий дастурхонимизга чорлаймиз. Ташрифингиз, эзгу сўзларингиз ҳамда ширин табассумингиз хонадонимизни қувончга тўлдирсин. Ушбу унутилмас кунни Сиз билан бирга ўтказиш биз учун улкан бахтдир.\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -83,7 +83,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой и уважаемый гость!\nОт всего сердца приглашаем Вас за наш семейный дастархан. Пусть Ваш визит, добрые пожелания и улыбки наполнят наш дом радостью. Провести этот знаменательный день с Вами — огромное счастье для нас.\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",
@@ -123,7 +123,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni jigargoshangiz sharafiga uyushtirilgan aqiqa dasturxoniga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -161,7 +161,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни жигаргошамиз шарафига уюштирилган ақиқа дастурхонига чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.\n{child_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{child_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -199,7 +199,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой гость!\nОт всей души приглашаем Вас на дастархан акика в честь нашего малыша. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас.\n{child_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{child_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",
@@ -239,7 +239,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni o‘g‘limiz uchun yozilgan sunnat to‘yi dasturxoniga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -277,7 +277,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни ўғлимиз учун ёзилган суннат тўйи дастурхонига чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.\n{child_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{child_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -315,7 +315,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой гость!\nОт всей души приглашаем Вас на праздничный дастархан в честь суннат тоя нашего сына. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас.\n{child_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{child_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",
@@ -355,7 +355,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni quvonchli va ko‘tarinki kayfiyatdagi tug‘ilgan kun oqshomiga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -393,7 +393,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни қувончли ва кўтаринки кайфиятдаги туғилган кун оқшомига чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.\n{person_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{person_name}\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -431,7 +431,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой гость!\nОт всей души приглашаем Вас на вечер дня рождения в праздничной атмосфере. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас.\n{person_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{person_name}\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",
@@ -471,7 +471,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni shukronalik va ezgulik belgisi bo‘lgan xudoyi dasturxoniga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -509,7 +509,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни шукроналик ва эзгулик белгиси бўлган худойи дастурхонига чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{event_date}, соат {event_time} да\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -547,7 +547,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой гость!\nОт всей души приглашаем Вас на дастархан худойи в знак благодарности и благих намерений. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас.\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{event_date}, в {event_time}\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",
@@ -587,7 +587,7 @@
       },
       {
         "title": "Samimiy 1",
-        "preview": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni muborak hayit ayyomi munosabati bilan fayzli oilaviy dasturxonga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
@@ -625,7 +625,7 @@
       },
       {
         "title": "Самимий 1",
-        "preview": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни муборак ҳайит айёми муносабати билан файзли оилавий дастурхонга чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.\n{venue_name}, {venue_address}"
+        "preview": "Азиз меҳмонлар!\nБахтли кунлар қувончи энг яқин ва қадрли инсонлар билан баҳам кўрилгандагина мукаммал бўлади. Ҳаётимиздаги энг гўзал тантана қалбимиздаги меҳр ва қувончни Сиз азизлар билан бўлишишни истаймиз. Шундай унутилмас кунда ёнимизда бўлишингиз бизга чексиз бахт бағишлайди.\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классик 2",
@@ -663,7 +663,7 @@
       },
       {
         "title": "Тёплое 1",
-        "preview": "Дорогой гость!\nОт всей души приглашаем Вас на светлый семейный дастархан по случаю хаита. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас.\n{venue_name}, {venue_address}"
+        "preview": "Дорогие гости!\nРадость счастливых дней становится совершенной, лишь когда ею делятся с самыми близкими и дорогими людьми. Мы хотим разделить с Вами, дорогие наши, самое прекрасное торжество нашей жизни и тепло наших сердец. Ваше присутствие в этот незабываемый день подарит нам безграничное счастье.\n{venue_name}, {venue_address}"
       },
       {
         "title": "Классика 2",

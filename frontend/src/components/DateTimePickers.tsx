@@ -107,6 +107,7 @@ type FieldProps = {
   value?: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  invalid?: boolean;
 };
 
 function scrollFieldIntoView(el: HTMLElement | null) {
@@ -127,6 +128,7 @@ export function DateField({
   value,
   onChange,
   disabled,
+  invalid,
 }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
   const { pickerLocale, labels } = useLocalizedPicker();
@@ -136,7 +138,10 @@ export function DateField({
       : null;
 
   return (
-    <label className="ui-field date-time-field" ref={wrapRef}>
+    <label
+      className={`ui-field date-time-field${invalid ? " field-invalid" : ""}`}
+      ref={wrapRef}
+    >
       <span className="ui-field-label">
         {label}
         {required ? " *" : ""}
@@ -150,6 +155,7 @@ export function DateField({
           format={DATE_FMT}
           allowClear={!required}
           disabled={disabled}
+          status={invalid ? "error" : undefined}
           inputReadOnly
           placeholder={DATE_FMT.toLowerCase()}
           placement="bottomLeft"
@@ -175,7 +181,14 @@ export function DateField({
   );
 }
 
-export function TimeField({ label, required, value, onChange, disabled }: FieldProps) {
+export function TimeField({
+  label,
+  required,
+  value,
+  onChange,
+  disabled,
+  invalid,
+}: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
   const { pickerLocale, labels } = useLocalizedPicker();
   const parsed =
@@ -184,7 +197,10 @@ export function TimeField({ label, required, value, onChange, disabled }: FieldP
       : null;
 
   return (
-    <label className="ui-field date-time-field" ref={wrapRef}>
+    <label
+      className={`ui-field date-time-field${invalid ? " field-invalid" : ""}`}
+      ref={wrapRef}
+    >
       <span className="ui-field-label">
         {label}
         {required ? " *" : ""}
@@ -200,6 +216,7 @@ export function TimeField({ label, required, value, onChange, disabled }: FieldP
           needConfirm={false}
           allowClear={!required}
           disabled={disabled}
+          status={invalid ? "error" : undefined}
           inputReadOnly
           placeholder="HH:mm"
           showNow

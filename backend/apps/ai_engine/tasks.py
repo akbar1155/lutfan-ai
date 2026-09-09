@@ -101,7 +101,7 @@ def _cache_key(
     )
     payload = "|".join(
         [
-            "overlay-v13-no-oval-shadow",
+            "overlay-v14-inset-text",
             invitation.generation_path or "",
             str(invitation.template_id or invitation.ai_preset_id or ""),
             ",".join(sorted(invitation.selected_mood_tags or [])),

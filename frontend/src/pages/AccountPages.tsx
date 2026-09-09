@@ -5,7 +5,6 @@ import { api, type Invitation } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import TelegramLoginWidget from "../auth/TelegramLoginWidget";
 import { loginHintKey, showDevLogin } from "../auth/flags";
-import UiSelect from "../components/UiSelect";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import { eventDisplayName, normalizeUiLang } from "../i18n/lang";
 import { EventIcon } from "../components/EventIcons";
@@ -70,9 +69,6 @@ export function AccountPage() {
       <div className="row-between">
         <h1>{t("account")}</h1>
         <div className="row-actions">
-          <Link className="ghost" to="/account/settings">
-            {t("settings")}
-          </Link>
           <Link className="cta" to="/create">
             {t("cta")}
           </Link>
@@ -101,66 +97,6 @@ export function AccountPage() {
           actionLabel={t("cta")}
         />
       )}
-    </main>
-  );
-}
-
-export function SettingsPage() {
-  const { t, i18n } = useTranslation();
-  const { user, refreshMe, loginDev, loading: authLoading } = useAuth();
-  const current = normalizeUiLang(i18n.language);
-
-  if (authLoading) {
-    return (
-      <main className="page narrow">
-        <PageLoader label={t("loading")} />
-      </main>
-    );
-  }
-
-  if (!user) {
-    return (
-      <main className="page narrow">
-        <header className="page-head">
-          <h1>{t("settings")}</h1>
-          <p className="hint">{t(loginHintKey())}</p>
-        </header>
-        <div className="login-block">
-          <TelegramLoginWidget />
-          {showDevLogin && (
-            <button type="button" className="cta" onClick={() => void loginDev(false)}>
-              {t("loginDev")}
-            </button>
-          )}
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="page narrow">
-      <div className="row-between">
-        <h1>{t("settings")}</h1>
-        <Link className="ghost" to="/account">
-          {t("back")}
-        </Link>
-      </div>
-      <p className="hint">{t("settingsHint")}</p>
-      <UiSelect
-        label={t("languageLabel")}
-        name="ui_language"
-        value={current}
-        onChange={(e) => {
-          const lang = normalizeUiLang(e.target.value);
-          void i18n.changeLanguage(lang);
-          localStorage.setItem("ui_lang", lang);
-          void api.updateProfile({ language: lang }).then(() => refreshMe());
-        }}
-      >
-        <option value="uz-latn">{t("langUzLatn")}</option>
-        <option value="uz-cyrl">{t("langUzCyrl")}</option>
-        <option value="ru">{t("langRu")}</option>
-      </UiSelect>
     </main>
   );
 }

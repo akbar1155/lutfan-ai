@@ -132,14 +132,15 @@ def analyze_safe_region(
     """
     w, h = img.size
     tall = h / max(w, 1) > 1.5
+    # Keep generous side inset so type never hugs the decorative frame on mobile.
     if corner_guard:
-        side = 0.168 if tall else 0.155
+        side = 0.178 if tall else 0.165
         top = 0.195
         bottom = 0.188
     else:
-        side = 0.118 if tall else 0.108
-        top = 0.132
-        bottom = 0.128
+        side = 0.148 if tall else 0.138
+        top = 0.138
+        bottom = 0.134
     return SafeRegion(
         x0=int(w * side),
         y0=int(h * top),
@@ -629,8 +630,8 @@ def measure_and_layout(
     Hierarchy: greeting → body → ornament → schedule → venue → host
     """
     # Slightly wider than before so body wraps into cleaner 3–5 lines
-    content_w = int(safe.width * (0.86 if narrow else 0.90))
-    body_w = int(safe.width * (0.84 if narrow else 0.88))
+    content_w = int(safe.width * (0.78 if narrow else 0.82))
+    body_w = int(safe.width * (0.76 if narrow else 0.80))
     ops: list[tuple] = []
     y = 0
 

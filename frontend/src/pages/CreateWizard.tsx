@@ -364,6 +364,7 @@ export function DetailsPage() {
   const [language, setLanguage] = useState(uiLang);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [subtypeInvalid, setSubtypeInvalid] = useState(false);
 
   useEffect(() => {
     if (!id || authLoading) return;
@@ -386,6 +387,7 @@ export function DetailsPage() {
   }, [id, authLoading]);
 
   const toggleSubtype = (slug: string) => {
+    setSubtypeInvalid(false);
     setSubtypes((prev) =>
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
     );
@@ -393,6 +395,7 @@ export function DetailsPage() {
 
   const subtypeMode = getSubtypeMode(event);
   const pickSingleSubtype = (slug: string) => {
+    setSubtypeInvalid(false);
     setSubtypes([slug]);
   };
 
@@ -418,7 +421,7 @@ export function DetailsPage() {
       error={error}
     >
       {!!event.subtypes?.length && (
-        <fieldset className="check-group">
+        <fieldset className={`check-group${subtypeInvalid ? " field-invalid" : ""}`}>
           <legend>{t("subtype")}</legend>
           <p className="hint">
             {subtypeMode === "single" ? t("subtypeSingleHint") : t("subtypeMultiHint")}
@@ -465,13 +468,20 @@ export function DetailsPage() {
           disabled={busy}
           onClick={() => {
             if (subtypeMode === "single" && subtypes.length !== 1) {
+              setSubtypeInvalid(true);
               setError(t("subtypeRequired"));
+              window.setTimeout(() => {
+                document
+                  .querySelector<HTMLElement>(".check-group.field-invalid")
+                  ?.scrollIntoView({ block: "center", behavior: "smooth" });
+              }, 0);
               return;
             }
             const chosen =
               subtypeMode === "single" ? subtypes.slice(0, 1) : subtypes;
             setBusy(true);
             setError(null);
+            setSubtypeInvalid(false);
             void api
               .patchInvitation(invitation.id, {
                 subtype_slugs: chosen,
@@ -508,6 +518,7 @@ export function DataPage() {
   const [schedule, setSchedule] = useState<CeremonySchedule>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [invalidKeys, setInvalidKeys] = useState<Set<string>>(new Set());
   const skipAutosave = useRef(true);
 
   const subtypeSlugs = useMemo(
@@ -630,13 +641,22 @@ export function DataPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    const mark = (key: string, message: string) => {
+      setInvalidKeys(new Set([key]));
+      setError(message);
+      window.setTimeout(() => {
+        document
+          .querySelector<HTMLElement>(".field-invalid, .check-group.field-invalid")
+          ?.scrollIntoView({ block: "center", behavior: "smooth" });
+      }, 0);
+    };
     for (const key of requiredKeys) {
       if (!form[key]?.trim()) {
-        setError(`${t(fieldLabelKey(key))} — ${t("required")}`);
+        mark(key, `${t(fieldLabelKey(key))} — ${t("required")}`);
         return;
       }
       if (!skipJunkKeys.has(key) && isJunkFieldValue(form[key])) {
-        setError(`${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
+        mark(key, `${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
         return;
       }
     }
@@ -644,7 +664,7 @@ export function DataPage() {
     for (const [key, value] of Object.entries(form)) {
       if (!value?.trim() || requiredKeys.has(key) || skipJunkKeys.has(key)) continue;
       if (isJunkFieldValue(value)) {
-        setError(`${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
+        mark(key, `${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
         return;
       }
     }
@@ -657,29 +677,33 @@ export function DataPage() {
             uiLang,
           ) || slug;
         if (!isIsoDate(slot.date)) {
-          setError(`${label}: ${t("dateFormatError")}`);
+          mark(`sched:${slug}:date`, `${label}: ${t("dateFormatError")}`);
           return;
         }
         if (!slot.time?.trim()) {
-          setError(`${label}: ${t(fieldLabelKey("event_time"))} — ${t("required")}`);
+          mark(
+            `sched:${slug}:time`,
+            `${label}: ${t(fieldLabelKey("event_time"))} — ${t("required")}`,
+          );
           return;
         }
       }
     } else if (form.event_date && !isIsoDate(form.event_date)) {
-      setError(t("dateFormatError"));
+      mark("event_date", t("dateFormatError"));
       return;
     }
     if (multiCeremony) {
       for (const slug of subtypeSlugs) {
         if (isPastIsoDate(schedule[slug]?.date)) {
-          setError(t("dateMinToday"));
+          mark(`sched:${slug}:date`, t("dateMinToday"));
           return;
         }
       }
     } else if (form.event_date && isPastIsoDate(form.event_date)) {
-      setError(t("dateMinToday"));
+      mark("event_date", t("dateMinToday"));
       return;
     }
+    setInvalidKeys(new Set());
     setBusy(true);
     const structured = { ...form };
     if (multiCeremony) {
@@ -744,24 +768,36 @@ export function DataPage() {
                       label={t(fieldLabelKey("event_date"))}
                       required
                       minToday
+                      invalid={invalidKeys.has(`sched:${slug}:date`)}
                       value={slot.date}
-                      onChange={(next) =>
+                      onChange={(next) => {
+                        setInvalidKeys((prev) => {
+                          const n = new Set(prev);
+                          n.delete(`sched:${slug}:date`);
+                          return n;
+                        });
                         setSchedule((prev) => ({
                           ...prev,
                           [slug]: { ...slot, date: next },
-                        }))
-                      }
+                        }));
+                      }}
                     />
                     <TimeField
                       label={t(fieldLabelKey("event_time"))}
                       required
+                      invalid={invalidKeys.has(`sched:${slug}:time`)}
                       value={slot.time}
-                      onChange={(next) =>
+                      onChange={(next) => {
+                        setInvalidKeys((prev) => {
+                          const n = new Set(prev);
+                          n.delete(`sched:${slug}:time`);
+                          return n;
+                        });
                         setSchedule((prev) => ({
                           ...prev,
                           [slug]: { ...slot, time: next },
-                        }))
-                      }
+                        }));
+                      }}
                     />
                   </div>
                 </fieldset>
@@ -775,6 +811,14 @@ export function DataPage() {
           const type = String(field.type || "string");
           const label = t(fieldLabelKey(key), { defaultValue: key });
           const required = requiredKeys.has(key);
+          const invalid = invalidKeys.has(key);
+          const clearInvalid = () =>
+            setInvalidKeys((prev) => {
+              if (!prev.has(key)) return prev;
+              const n = new Set(prev);
+              n.delete(key);
+              return n;
+            });
 
           if (type === "enum" && field.options) {
             return (
@@ -784,9 +828,11 @@ export function DataPage() {
                 name={key}
                 value={form[key] || ""}
                 required={required}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, [key]: e.target.value }))
-                }
+                invalid={invalid}
+                onChange={(e) => {
+                  clearInvalid();
+                  setForm((prev) => ({ ...prev, [key]: e.target.value }));
+                }}
               >
                 <option value="">—</option>
                 {field.options.map((opt) => (
@@ -805,10 +851,12 @@ export function DataPage() {
                 label={label}
                 required={required}
                 minToday={field.min === "today"}
+                invalid={invalid}
                 value={form[key] || ""}
-                onChange={(next) =>
-                  setForm((prev) => ({ ...prev, [key]: next }))
-                }
+                onChange={(next) => {
+                  clearInvalid();
+                  setForm((prev) => ({ ...prev, [key]: next }));
+                }}
               />
             );
           }
@@ -819,42 +867,48 @@ export function DataPage() {
                 key={key}
                 label={label}
                 required={required}
+                invalid={invalid}
                 value={form[key] || ""}
-                onChange={(next) =>
-                  setForm((prev) => ({ ...prev, [key]: next }))
-                }
+                onChange={(next) => {
+                  clearInvalid();
+                  setForm((prev) => ({ ...prev, [key]: next }));
+                }}
               />
             );
           }
 
           if (type === "text") {
             return (
-              <label key={key}>
+              <label key={key} className={invalid ? "field-invalid" : undefined}>
                 {label}
                 {required ? " *" : ""}
                 <textarea
                   rows={3}
                   maxLength={field.maxLength || 200}
                   value={form[key] || ""}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, [key]: e.target.value }))
-                  }
+                  aria-invalid={invalid || undefined}
+                  onChange={(e) => {
+                    clearInvalid();
+                    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+                  }}
                 />
               </label>
             );
           }
 
           return (
-            <label key={key}>
+            <label key={key} className={invalid ? "field-invalid" : undefined}>
               {label}
               {required ? " *" : ""}
               <input
                 type="text"
                 maxLength={field.maxLength || 200}
                 value={form[key] || ""}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, [key]: e.target.value }))
-                }
+                aria-invalid={invalid || undefined}
+                onChange={(e) => {
+                  clearInvalid();
+                  setForm((prev) => ({ ...prev, [key]: e.target.value }));
+                }}
               />
             </label>
           );
@@ -1016,15 +1070,59 @@ export function TextPage() {
             subtype_slug: inv.subtype_slug || inv.subtype_slugs?.[0] || undefined,
           }),
           Promise.resolve(inv),
+          Promise.resolve({
+            fields,
+            personalMessage,
+            occasion,
+            dateTimeFromSchedule,
+            defaultBody,
+            hasSavedText: Boolean(
+              existing &&
+                ((existing.body || "").trim() || (existing.header || "").trim()),
+            ),
+          }),
         ]);
       })
-      .then(([serverTemplates, inv]) => {
-        setTemplates(
-          mergeReadyTextTemplates(
-            serverTemplates,
-            buildLocalReadyTemplates(t, inv.event_slug, inv.language),
-          ),
+      .then(([serverTemplates, inv, ctx]) => {
+        const merged = mergeReadyTextTemplates(
+          serverTemplates,
+          buildLocalReadyTemplates(t, inv.event_slug, inv.language),
         );
+        setTemplates(merged);
+        const first = merged[0];
+        if (!first || ctx.hasSavedText) return;
+
+        // Default: first ready-text style is selected and applied.
+        setSelectedTemplateId(first.id);
+        const vars = {
+          ...ctx.fields,
+          hayit_occasion: ctx.occasion,
+          child_name: ctx.fields.child_name || ctx.fields.childName || "",
+          person_name: ctx.fields.person_name || ctx.fields.personName || "",
+        };
+        const next = splitTemplateBlocks(
+          first.preview_text,
+          vars,
+          inv.language,
+          {
+            skipDate: inv.event_slug === "hayit",
+            fallbackBody: ctx.defaultBody,
+          },
+        );
+        let body =
+          inv.event_slug === "hayit"
+            ? applyHayitOccasion(next.body, ctx.occasion)
+            : next.body;
+        body = ensurePersonalMessageInBody(body, ctx.personalMessage);
+        if (ctx.dateTimeFromSchedule.includes("\n")) {
+          setBlocks({
+            ...next,
+            body,
+            date_time: ctx.dateTimeFromSchedule,
+          });
+        } else {
+          setBlocks({ ...next, body });
+        }
       })
       .catch((err: Error) => setError(err.message));
   }, [id, t, authLoading]);
@@ -1144,8 +1242,8 @@ export function TextPage() {
           <div className="text-blocks">
             {(
               invitation.event_slug === "hayit"
-                ? (["header", "body", "address"] as const)
-                : (["header", "body", "date_time", "address"] as const)
+                ? (["header", "body"] as const)
+                : (["header", "body", "date_time"] as const)
             ).map((key) => (
               <label key={key} className={`text-block text-block-${key}`}>
                 <span>{t(`block_${key}`)}</span>

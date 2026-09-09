@@ -127,19 +127,11 @@ export function buildLocalReadyTemplates(
 }
 
 export function mergeReadyTextTemplates(
-  serverTemplates: TextTemplate[],
+  _serverTemplates: TextTemplate[],
   localTemplates: TextTemplate[],
 ): TextTemplate[] {
-  // Prefer diversified local catalog; keep uniquely titled admin/API templates.
-  const seen = new Set<string>();
-  const out: TextTemplate[] = [];
-  const push = (tpl: TextTemplate) => {
-    const key = `${tpl.title}`.trim().toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
-    out.push(tpl);
-  };
-  localTemplates.forEach(push);
-  serverTemplates.forEach(push);
-  return out;
+  // Local catalog is the source of truth per event — never mix server/legacy
+  // templates (e.g. nikoh wording showing up under aqiqa).
+  if (localTemplates.length) return localTemplates;
+  return _serverTemplates;
 }
