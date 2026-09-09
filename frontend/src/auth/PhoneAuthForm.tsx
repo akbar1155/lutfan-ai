@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { IconEye, IconEyeOff } from "../components/ActionIcons";
+import {
+  formatUzLocalPhone,
+  toE164Uz,
+  uzLocalDigits,
+} from "../utils/phone";
 import { useAuth } from "./AuthContext";
 
 type Mode = "login" | "register";
@@ -61,7 +66,7 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
   const { t } = useTranslation();
   const { loginPhone, registerPhone } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
-  const [phone, setPhone] = useState("");
+  const [phoneLocal, setPhoneLocal] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -75,6 +80,12 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
     setBusy(true);
     setError(null);
     try {
+      if (phoneLocal.length !== 9) {
+        setError(t("authPhoneInvalid"));
+        setBusy(false);
+        return;
+      }
+      const phone = toE164Uz(phoneLocal);
       if (mode === "register") {
         if (password !== passwordConfirm) {
           setError(t("authPasswordMismatch"));
@@ -139,16 +150,23 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
 
       <label className="field">
         <span>{t("authPhone")}</span>
-        <input
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="+998 90 123 45 67"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          required
-        />
+        <div className="phone-field">
+          <span className="phone-prefix" aria-hidden>
+            +998
+          </span>
+          <input
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            placeholder="90 123 45 67"
+            value={formatUzLocalPhone(phoneLocal)}
+            onChange={(e) => setPhoneLocal(uzLocalDigits(e.target.value))}
+            required
+            maxLength={12}
+            aria-label={t("authPhone")}
+          />
+        </div>
       </label>
 
       <PasswordField
