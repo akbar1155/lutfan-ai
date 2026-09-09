@@ -229,11 +229,26 @@ export function formatDatesInText(
   return ensureTimeDaSuffix(out, lang);
 }
 
+/** Parse API datetimes as UTC when timezone is missing (Django USE_TZ). */
+export function parseServerDate(value: unknown): Date | null {
+  if (value == null || value === "") return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const hasZone = /[zZ]|[+-]\d{2}:?\d{2}$/.test(raw);
+  const normalized =
+    !hasZone && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw) ? `${raw}Z` : raw;
+  const d = new Date(normalized);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 /** Full timestamp for admin/account: 28.07.2026, 14:28:08 */
 export function formatDisplayDateTimeStamp(value: unknown): string {
   if (value == null || value === "") return "—";
-  const d = new Date(String(value));
-  if (Number.isNaN(d.getTime())) {
+  const d = parseServerDate(value);
+  if (!d) {
     return formatDatesInText(String(value)) || String(value);
   }
   const date = `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
@@ -260,35 +275,36 @@ export function formatRelativeTime(
   language?: string | null,
 ): string {
   if (value == null || value === "") return "—";
-  const d = new Date(String(value));
-  if (Number.isNaN(d.getTime())) return String(value);
+  const d = parseServerDate(value);
+  if (!d) return String(value);
 
   const lang = relativeLang(language);
   const diffMs = Date.now() - d.getTime();
   if (diffMs < 0) return formatDisplayDateTimeStamp(value);
 
+  const secs = Math.floor(diffMs / 1000);
   const mins = Math.floor(diffMs / 60_000);
   const hours = Math.floor(diffMs / 3_600_000);
   const days = Math.floor(diffMs / 86_400_000);
 
   if (lang === "ru") {
-    if (mins < 1) return "только что";
-    if (mins < 60) return `${mins} мин. назад`;
+    if (secs < 45) return "только что";
+    if (mins < 60) return `${Math.max(1, mins)} мин. назад`;
     if (hours < 24) return `${hours} ч. назад`;
     if (days < 30) return `${days} дн. назад`;
     return formatDisplayDateTimeStamp(value);
   }
 
   if (lang === "uz-cyrl") {
-    if (mins < 1) return "ҳозир";
-    if (mins < 60) return `${mins} дақиқа oldin`;
-    if (hours < 24) return `${hours} соат oldin`;
-    if (days < 30) return `${days} kun oldin`;
+    if (secs < 45) return "ҳозир";
+    if (mins < 60) return `${Math.max(1, mins)} дақиқа олдин`;
+    if (hours < 24) return `${hours} соат олдин`;
+    if (days < 30) return `${days} кун олдин`;
     return formatDisplayDateTimeStamp(value);
   }
 
-  if (mins < 1) return "hozirgina";
-  if (mins < 60) return `${mins} daqiqa oldin`;
+  if (secs < 45) return "hozirgina";
+  if (mins < 60) return `${Math.max(1, mins)} daqiqa oldin`;
   if (hours < 24) return `${hours} soat oldin`;
   if (days < 30) return `${days} kun oldin`;
   return formatDisplayDateTimeStamp(value);
@@ -300,8 +316,8 @@ export function formatSessionActivity(
   language?: string | null,
 ): string {
   if (value == null || value === "") return "—";
-  const d = new Date(String(value));
-  if (Number.isNaN(d.getTime())) return String(value);
+  const d = parseServerDate(value);
+  if (!d) return String(value);
 
   const lang = relativeLang(language);
   const time = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, UserSession
+from .last_seen import mark_user_login, touch_user_last_seen
 from .serializers import (
     TelegramAuthSerializer,
     UserProfileUpdateSerializer,
@@ -88,12 +89,14 @@ class TelegramAuthView(APIView):
         serializer.is_valid(raise_exception=True)
         payload = verify_telegram_login(serializer.validated_data)
 
+        now = timezone.now()
         defaults = {
             "first_name": payload.get("first_name") or "User",
             "last_name": payload.get("last_name") or None,
             "username": payload.get("username") or None,
             "photo_url": payload.get("photo_url") or None,
-            "last_login_at": timezone.now(),
+            "last_login_at": now,
+            "last_seen_at": now,
         }
         user, _created = User.objects.update_or_create(
             telegram_id=int(payload["id"]),
@@ -151,6 +154,7 @@ class RefreshView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        touch_user_last_seen(user.id)
         access = token.access_token
         response = Response(
             {
@@ -214,6 +218,7 @@ class DevLoginView(APIView):
 
         telegram_id = int(request.data.get("telegram_id", 1001))
         as_admin = bool(request.data.get("as_admin", False))
+        now = timezone.now()
         user, _ = User.objects.update_or_create(
             telegram_id=telegram_id,
             defaults={
@@ -222,7 +227,8 @@ class DevLoginView(APIView):
                 "role": "admin" if as_admin else "user",
                 "is_staff": as_admin,
                 "is_superuser": as_admin,
-                "last_login_at": timezone.now(),
+                "last_login_at": now,
+                "last_seen_at": now,
             },
         )
         return _issue_auth_response(request, user)
@@ -279,6 +285,5 @@ class AdminPasswordLoginView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        user.last_login_at = timezone.now()
-        user.save(update_fields=["last_login_at", "updated_at"])
+        mark_user_login(user)
         return _issue_auth_response(request, user)

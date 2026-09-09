@@ -92,7 +92,8 @@ function userStatus(u: UserRow): "banned" | "inactive" | "active" {
 }
 
 function lastActivityAt(u: UserRow): unknown {
-  return u.last_login_at || u.updated_at || u.created_at;
+  // Prefer server-computed activity. Never use updated_at (admin edits).
+  return u.last_activity_at || u.last_seen_at || u.last_login_at || null;
 }
 
 function formatCount(n: number): string {
@@ -956,12 +957,16 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                           value={formatDisplayDateTimeStamp(drawerUser?.created_at)}
                         />
                         <MetaRow
-                          label={t("adminColLastLogin")}
+                          label={t("adminColLastActivity")}
                           value={
-                            drawerUser?.last_login_at
-                              ? formatDisplayDateTimeStamp(drawerUser.last_login_at)
+                            lastActivityAt(drawerUser || {})
+                              ? formatDisplayDateTimeStamp(lastActivityAt(drawerUser || {}))
                               : "—"
                           }
+                        />
+                        <MetaRow
+                          label={t("adminColLastLogin")}
+                          value={formatDisplayDateTimeStamp(drawerUser?.last_login_at)}
                         />
                         <MetaRow
                           label={t("adminColUpdated")}

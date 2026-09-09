@@ -6,7 +6,7 @@ import re
 import uuid
 from pathlib import Path
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -24,6 +24,7 @@ from apps.ai_engine.models import AIGeneration, AdminAction, SystemLog
 from apps.ai_engine.storage import resolve_media_url, upload_bytes
 from apps.content.models import AIPromptPreset, EventConfig, MoodTag, Template, TextTemplate
 from apps.invitations.models import DailyMetric, Invitation, InvitationHistory, InvitationStatus
+from apps.users.last_seen import resolve_last_activity_at
 from apps.users.models import Role, User
 from apps.users.permissions import IsAdminRole
 
@@ -193,6 +194,7 @@ class AdminDashboardView(APIView):
 
 
 def _admin_user_payload(user: User, *, invitation_count: int | None = None) -> dict:
+    last_invitation_at = getattr(user, "last_invitation_at", None)
     payload = {
         "id": str(user.id),
         "telegram_id": user.telegram_id,
@@ -208,6 +210,13 @@ def _admin_user_payload(user: User, *, invitation_count: int | None = None) -> d
         "is_active": user.is_active,
         "is_staff": user.is_staff,
         "last_login_at": user.last_login_at,
+        "last_seen_at": user.last_seen_at,
+        "last_activity_at": resolve_last_activity_at(
+            last_seen_at=user.last_seen_at,
+            last_login_at=user.last_login_at,
+            last_login=user.last_login,
+            last_invitation_at=last_invitation_at,
+        ),
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
@@ -253,7 +262,11 @@ class AdminUsersView(APIView):
             invitation_count=Count(
                 "invitations",
                 filter=Q(invitations__deleted_at__isnull=True),
-            )
+            ),
+            last_invitation_at=Max(
+                "invitations__updated_at",
+                filter=Q(invitations__deleted_at__isnull=True),
+            ),
         )
         total = qs.count()
         offset = (page - 1) * limit
@@ -299,6 +312,13 @@ class AdminUserDetailView(APIView):
         invitation_count = Invitation.objects.filter(
             user=user, deleted_at__isnull=True
         ).count()
+        last_invitation_at = (
+            Invitation.objects.filter(user=user, deleted_at__isnull=True)
+            .order_by("-updated_at")
+            .values_list("updated_at", flat=True)
+            .first()
+        )
+        user.last_invitation_at = last_invitation_at
         active_sessions = user.sessions.filter(
             revoked_at__isnull=True, expires_at__gt=timezone.now()
         ).count()

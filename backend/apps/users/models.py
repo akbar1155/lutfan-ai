@@ -48,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     last_login_at = models.DateTimeField(blank=True, null=True)
+    last_seen_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -60,6 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         indexes = [
             models.Index(fields=["role"]),
             models.Index(fields=["created_at"]),
+            models.Index(fields=["last_seen_at"]),
         ]
 
     def __str__(self):
