@@ -433,7 +433,10 @@ export function DetailsPage() {
     >
       {!!event.subtypes?.length && (
         <fieldset className={`check-group${subtypeInvalid ? " field-invalid" : ""}`}>
-          <legend>{t("subtype")}</legend>
+          <legend>
+            {t("subtype")}
+            {" *"}
+          </legend>
           <p className="hint">
             {subtypeMode === "single" ? t("subtypeSingleHint") : t("subtypeMultiHint")}
           </p>
@@ -483,7 +486,13 @@ export function DetailsPage() {
           className="cta"
           disabled={busy}
           onClick={() => {
-            if (subtypeMode === "single" && subtypes.length !== 1) {
+            const needsSubtype = subtypeMode !== "none" && !!event.subtypes?.length;
+            const subtypeOk =
+              !needsSubtype ||
+              (subtypeMode === "single"
+                ? subtypes.length === 1
+                : subtypes.length >= 1);
+            if (!subtypeOk) {
               setSubtypeInvalid(true);
               setError(null);
               window.setTimeout(() => {

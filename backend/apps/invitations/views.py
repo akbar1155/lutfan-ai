@@ -140,7 +140,7 @@ class InvitationDetailView(APIView):
         )
         if (
             incoming_details_done
-            and event_subtype_mode(invitation.event) == "single"
+            and event_subtype_mode(invitation.event) != "none"
             and not normalized
         ):
             from rest_framework.exceptions import ValidationError

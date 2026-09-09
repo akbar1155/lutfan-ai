@@ -180,6 +180,41 @@ class InvitationValidationTests(TestCase):
         self.assertEqual(invitation.subtype_slugs, ["ramazon_hayiti"])
         self.assertEqual(invitation.subtype_slug, "ramazon_hayiti")
 
+    def test_multi_details_require_a_subtype(self):
+        self.event.subtypes = [
+            {"slug": "qiz_bazmi", "names": {"uz-latn": "Qiz bazmi"}},
+            {"slug": "nikoh_oqshomi", "names": {"uz-latn": "Nikoh oqshomi"}},
+        ]
+        self.event.fields_schema = {
+            **(self.event.fields_schema or {}),
+            "subtype_mode": "multi",
+        }
+        self.event.save(update_fields=["subtypes", "fields_schema", "updated_at"])
+        invitation = Invitation.objects.create(
+            user=self.user,
+            event=self.event,
+            language="uz-latn",
+            event_data={},
+        )
+        missing = self.client.patch(
+            f"/api/v1/invitations/{invitation.id}",
+            {"subtype_slugs": [], "event_data": {"details_done": True}},
+            format="json",
+        )
+        self.assertEqual(missing.status_code, 400)
+
+        ok = self.client.patch(
+            f"/api/v1/invitations/{invitation.id}",
+            {
+                "subtype_slugs": ["qiz_bazmi", "nikoh_oqshomi"],
+                "event_data": {"details_done": True},
+            },
+            format="json",
+        )
+        self.assertEqual(ok.status_code, 200)
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.subtype_slugs, ["qiz_bazmi", "nikoh_oqshomi"])
+
     def test_public_unknown_id_is_404(self):
         anon = APIClient()
         res = anon.get(f"/api/v1/public/invitations/{uuid4()}")
