@@ -1572,7 +1572,14 @@ export function GeneratingPage() {
 
     const fail = (msg: string) => {
       setFailed(true);
-      setMessage(msg || t("generateFailed"));
+      const lower = (msg || "").toLowerCase();
+      if (lower.includes("hourly") || lower.includes("generation_hourly")) {
+        setMessage(t("generateHourlyLimit"));
+      } else if (lower.includes("daily") || lower.includes("generation_daily")) {
+        setMessage(t("generateDailyLimit"));
+      } else {
+        setMessage(msg || t("generateFailed"));
+      }
     };
 
     void api
@@ -1619,12 +1626,27 @@ export function GeneratingPage() {
           if (st.status === "ready") navigate(`/create/${id}/result`);
           else if (st.status === "failed") {
             setFailed(true);
-            setMessage(st.error || t("generateFailed"));
+            const err = st.error || t("generateFailed");
+            const lower = err.toLowerCase();
+            if (lower.includes("hourly") || lower.includes("generation_hourly")) {
+              setMessage(t("generateHourlyLimit"));
+            } else if (lower.includes("daily") || lower.includes("generation_daily")) {
+              setMessage(t("generateDailyLimit"));
+            } else {
+              setMessage(err);
+            }
           }
         })
         .catch((err: Error) => {
           setFailed(true);
-          setMessage(err.message);
+          const lower = (err.message || "").toLowerCase();
+          if (lower.includes("hourly") || lower.includes("generation_hourly")) {
+            setMessage(t("generateHourlyLimit"));
+          } else if (lower.includes("daily") || lower.includes("generation_daily")) {
+            setMessage(t("generateDailyLimit"));
+          } else {
+            setMessage(err.message);
+          }
         });
     };
     poll();

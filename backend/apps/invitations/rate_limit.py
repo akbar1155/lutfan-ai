@@ -16,9 +16,21 @@ def check_generation_rate_limit(user_id: str) -> None:
     day_count = cache.get(day_key, 0)
 
     if hour_max > 0 and hour_count >= hour_max:
-        raise Throttled(detail="Generation hourly limit exceeded")
+        raise Throttled(
+            detail={
+                "code": "GENERATION_HOURLY_LIMIT",
+                "message": "Generation hourly limit exceeded",
+                "limit": hour_max,
+            }
+        )
     if day_max > 0 and day_count >= day_max:
-        raise Throttled(detail="Generation daily limit exceeded")
+        raise Throttled(
+            detail={
+                "code": "GENERATION_DAILY_LIMIT",
+                "message": "Generation daily limit exceeded",
+                "limit": day_max,
+            }
+        )
 
     if hour_max > 0:
         cache.set(hour_key, hour_count + 1, timeout=3600)

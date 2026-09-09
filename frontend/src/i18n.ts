@@ -286,6 +286,10 @@ const resources = {
       customNotePlaceholder: "Масалан: очиқ pushti, замонaviy",
       generate: "Яратиш",
       generateFailed: "Яратиш муваффақиятсиз тугади",
+      generateHourlyLimit:
+        "Соатлик яратиш лимити тугади. Бир соатдан сўнг қайта уриниб кўринг.",
+      generateDailyLimit:
+        "Кунлик яратиш лимити тугади. Эртага қайта уриниб кўринг.",
       generateTimeout: "Яратиш жуда узоқ давом этди. Қайта уриниб кўринг.",
       tryAgain: "Қайта уриниш",
       saving: "Сақланмоқда...",
@@ -638,6 +642,10 @@ const resources = {
       customNotePlaceholder: "Masalan: och pushti, zamonaviy",
       generate: "Yaratish",
       generateFailed: "Yaratish muvaffaqiyatsiz tugadi",
+      generateHourlyLimit:
+        "Soatlik yaratish limiti tugadi. Bir soatdan so‘ng qayta urinib ko‘ring.",
+      generateDailyLimit:
+        "Kunlik yaratish limiti tugadi. Ertaga qayta urinib ko‘ring.",
       generateTimeout: "Yaratish juda uzoq davom etdi. Qayta urinib ko‘ring.",
       tryAgain: "Qayta urinish",
       saving: "Saqlanmoqda...",
@@ -991,6 +999,10 @@ const resources = {
       customNotePlaceholder: "Например: светло-розовый, современно",
       generate: "Создать",
       generateFailed: "Не удалось создать",
+      generateHourlyLimit:
+        "Часовой лимит генерации исчерпан. Попробуйте снова через час.",
+      generateDailyLimit:
+        "Дневной лимит генерации исчерпан. Попробуйте снова завтра.",
       generateTimeout: "Генерация заняла слишком много времени. Попробуйте ещё раз.",
       tryAgain: "Попробовать снова",
       saving: "Сохранение...",

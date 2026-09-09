@@ -25,11 +25,34 @@ def api_exception_handler(exc, context):
     details = response.data
     message = "Request failed"
 
-    if isinstance(response.data, dict):
+    if response.status_code == 429:
+        code = "RATE_LIMITED"
+        if isinstance(response.data, dict):
+            if "detail" in response.data and not isinstance(response.data.get("detail"), dict):
+                message = str(response.data["detail"])
+                details = {}
+            else:
+                # Throttled(detail={...}) becomes the body itself in DRF
+                payload = (
+                    response.data["detail"]
+                    if isinstance(response.data.get("detail"), dict)
+                    else response.data
+                )
+                message = str(payload.get("message") or payload.get("detail") or message)
+                code = str(payload.get("code") or code)
+                details = {
+                    k: v for k, v in payload.items() if k not in ("message", "detail")
+                }
+        elif isinstance(response.data, list):
+            message = str(response.data[0]) if response.data else message
+            details = {"errors": response.data}
+    elif isinstance(response.data, dict):
         if "detail" in response.data:
             message = str(response.data["detail"])
             details = {}
-            code = "AUTHENTICATION_FAILED" if response.status_code in (401, 403) else "ERROR"
+            code = (
+                "AUTHENTICATION_FAILED" if response.status_code in (401, 403) else "ERROR"
+            )
         else:
             code = "VALIDATION_ERROR"
             message = "Validation failed"

@@ -14,8 +14,8 @@ env = environ.Env(
     DJANGO_ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     CORS_ALLOWED_ORIGINS=(list, ["http://localhost:5173"]),
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:5173"]),
-    RATE_LIMIT_GENERATIONS_PER_HOUR=(int, 3),
-    RATE_LIMIT_GENERATIONS_PER_DAY=(int, 10),
+    RATE_LIMIT_GENERATIONS_PER_HOUR=(int, 20),
+    RATE_LIMIT_GENERATIONS_PER_DAY=(int, 50),
 )
 
 environ.Env.read_env(ROOT_DIR / ".env")
