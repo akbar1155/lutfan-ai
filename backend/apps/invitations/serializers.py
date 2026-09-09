@@ -108,4 +108,18 @@ class InvitationUpdateSerializer(serializers.Serializer):
 
 
 class ShareSerializer(serializers.Serializer):
-    platform = serializers.ChoiceField(choices=ShareEvent.Platform.choices)
+    platform = serializers.CharField(max_length=32)
+
+    def validate_platform(self, value: str) -> str:
+        raw = (value or "").strip().lower() or "other"
+        allowed = {c.value for c in ShareEvent.Platform}
+        if raw in allowed:
+            return raw
+        aliases = {
+            "share_image": ShareEvent.Platform.OTHER,
+            "share_link": ShareEvent.Platform.COPY_LINK,
+            "native_share": ShareEvent.Platform.OTHER,
+            "link": ShareEvent.Platform.COPY_LINK,
+            "image": ShareEvent.Platform.OTHER,
+        }
+        return aliases.get(raw, ShareEvent.Platform.OTHER)

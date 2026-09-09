@@ -13,7 +13,9 @@ def normalize_invitation_spelling(text: str, language: str | None = None) -> str
     out = text
     # Unify apostrophe-like marks used in o‘ / g‘
     out = re.sub(r"[ʻ’`´']", "‘", out)
-    out = re.sub(r"[—–]", "-", out)
+    # Em/en dash → comma (invitation copy should not show "—")
+    out = re.sub(r"\s*[—–]\s*", ", ", out)
+    out = re.sub(r",\s*,+", ", ", out)
     # Normalize spaced separators (word - word) but keep date hyphens: 6-avgust
     out = re.sub(r"(?<!\d)\s+-\s+(?!\d)", " - ", out)
     out = re.sub(r"(\d)\s+-\s+([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+)", r"\1-\2", out)
@@ -34,6 +36,8 @@ def normalize_invitation_spelling(text: str, language: str | None = None) -> str
     else:
         # Default: Uzbek Latin (also cleans AI-garbled copy)
         fixes = [
+            (r"\bbollalarni\b", "Bolalarni"),
+            (r"\bkirgizmaymiz\b", "kiritmaymiz"),
             (r"\bkoring\b", "ko‘ring"),
             (r"\bkoringiz\b", "ko‘ringiz"),
             (r"\bkutamis\b", "kutamiz"),

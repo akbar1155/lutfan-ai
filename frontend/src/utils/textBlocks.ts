@@ -111,7 +111,7 @@ export function ensureChildNameInBody(
   const trimmed = (body || "").trim();
   if (!trimmed) return child;
   if ((language || "").startsWith("ru")) {
-    return `${trimmed.replace(/[.]+$/, "")} — ${child}.`;
+    return `${trimmed.replace(/[.]+$/, "")}. ${child}.`;
   }
   return `${trimmed.replace(/[.]+$/, "")} ${child}.`;
 }

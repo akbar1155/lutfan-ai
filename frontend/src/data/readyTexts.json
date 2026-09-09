@@ -1,0 +1,243 @@
+{
+  "$schema_comment": "Ready invitation body texts and catalog. Professional & enhanced version.",
+  "catalog": [
+    {
+      "id": "classic1",
+      "title": {
+        "uz-latn": "Klassik 1",
+        "uz-cyrl": "Классик 1",
+        "ru": "Классика 1"
+      }
+    },
+    {
+      "id": "warm1",
+      "title": {
+        "uz-latn": "Samimiy 1",
+        "uz-cyrl": "Самимий 1",
+        "ru": "Тёплое 1"
+      }
+    },
+    {
+      "id": "classic2",
+      "title": {
+        "uz-latn": "Klassik 2",
+        "uz-cyrl": "Классик 2",
+        "ru": "Классика 2"
+      }
+    },
+    {
+      "id": "warm2",
+      "title": {
+        "uz-latn": "Samimiy 2",
+        "uz-cyrl": "Самимий 2",
+        "ru": "Тёплое 2"
+      }
+    },
+    {
+      "id": "formal",
+      "title": {
+        "uz-latn": "Tantanavor",
+        "uz-cyrl": "Тантанавор",
+        "ru": "Торжественный"
+      }
+    },
+    {
+      "id": "dua",
+      "title": {
+        "uz-latn": "Duoli",
+        "uz-cyrl": "Дуоли",
+        "ru": "С дуа"
+      }
+    },
+    {
+      "id": "minimal",
+      "title": {
+        "uz-latn": "Qisqa va lo‘nda",
+        "uz-cyrl": "Қисқа ва лўнда",
+        "ru": "Кратко"
+      }
+    },
+    {
+      "id": "modern",
+      "title": {
+        "uz-latn": "Zamonaviy",
+        "uz-cyrl": "Замонавий",
+        "ru": "Современный"
+      }
+    },
+    {
+      "id": "premium",
+      "title": {
+        "uz-latn": "Premium variant",
+        "uz-cyrl": "Премиум вариант",
+        "ru": "Премиум"
+      }
+    }
+  ],
+  "nikoh": {
+    "classic1": {
+      "uz-latn": "Assalomu alaykum!\nHurmat va ehtirom ila Sizni nikoh to‘yimizga mehmon bo‘lishga taklif etamiz. Ikki oilaning quvonchi va qalblar rishtasi birlashadigan ushbu shukuhli kunda Sizning ishtirokingiz biz uchun behad muhimdir. Marhamat qilib, to‘yimiz fayziga fayz qo‘shing.",
+      "uz-cyrl": "Ассалому алайкум!\nҲурмат ва эҳтиром ила Сизни никоҳ тўйимизга меҳмон бўлишга таклиф этамиз. Икки оиланинг қувончи ва қалблар риштаси бирлашадиган ушбу шукуҳли кунда Сизнинг иштирокингиз биз учун беҳад муҳимдир. Марҳамат қилиб, тўйимиз файзига файз қўшинг.",
+      "ru": "Ассаламу алейкум!\nС глубоким уважением приглашаем Вас на нашу свадьбу. В этот светлый день, когда соединяются радость и судьбы двух семей, Ваше присутствие особенно ценно для нас. Пожалуйста, разделите с нами торжество."
+    },
+    "warm1": {
+      "uz-latn": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi cheksiz samimiyat va mehr bilan Sizni oilaviy dasturxonimizga chorlaymiz. Tashrifingiz, ezgu so‘zlaringiz hamda shirin tabassumingiz xonadonimizni quvonchga to‘ldirsin. Ushbu unutilmas kunni Siz bilan birga o‘tkazish biz uchun ulkan baxtdir.",
+      "uz-cyrl": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги чексиз самимият ва меҳр билан Сизни оилавий дастурхонимизга чорлаймиз. Ташрифингиз, эзгу сўзларингиз ҳамда ширин табассумингиз хонадонимизни қувончга тўлдирсин. Ушбу унутилмас кунни Сиз билан бирга ўтказиш биз учун улкан бахтдир.",
+      "ru": "Дорогой и уважаемый гость!\nОт всего сердца приглашаем Вас за наш семейный дастархан. Пусть Ваш визит, добрые пожелания и улыбки наполнят наш дом радостью. Провести этот знаменательный день с Вами — огромное счастье для нас."
+    },
+    "classic2": {
+      "uz-latn": "Aziz mehmonlar!\nHayotimizda eng go‘zal va yangi sahifa ochilmoqda — ikki qalbning muqaddas nikoh rishtasi. Shu munosabat bilan Sizni qutlug‘ tantanamizga taklif etamiz. E’zozli mehmonlarimiz safida Sizni ko‘rish oilamizga alohida mamnuniyat bag‘ishlaydi.",
+      "uz-cyrl": "Азиз меҳмонлар!\nҲаётимизда энг гўзал ва янги саҳифа очилмоқда — икки қалбнинг муқаддас никоҳ риштаси. Шу муносабат билан Сизни қутлуғ тантанамизга таклиф этамиз. Эъзозли меҳмонларимиз сафида Сизни кўриш оиламизга алоҳида мамнуният бағишлайди.",
+      "ru": "Дорогие гости!\nВ нашей жизни открывается новая, прекрасная страница — брачный союз двух сердец. По этому случаю приглашаем Вас на наше торжество. Видеть Вас среди дорогих гостей — большая честь и радость для нас."
+    },
+    "warm2": {
+      "uz-latn": "Aziz do‘stlar va qadrdonlar!\nTo‘y kechamizda Sizning ko‘tarinki kayfiyatingiz, kulgingiz hamda samimiy tilaklaringiz yangrab tursin. Kelib, yosh oilamizning baxtiyor kunini birga nishonlang, chunki har biringiz biz uchun behad qadrlisiz. Intizorlik bilan kutamiz!",
+      "uz-cyrl": "Азиз дўстлар ва қадрдонлар!\nТўй кечамизда Сизнинг кўтаринки кайфиятингиз, кулгингиз ҳамда самимий тилакларингиз янграб турсин. Келиб, ёш оиламизнинг бахтиёр кунини бирга нишонланг, чунки ҳар бирингиз биз учун беҳад қадрлисиз. Интизорлик билан кутамиз!",
+      "ru": "Дорогие друзья и близкие!\nПусть на нашем свадебном вечере звучат Ваши искренние пожелания, смех и царит прекрасное настроение. Приходите разделить радость новой семьи, ведь каждый из вас бесконечно дорог нам. Ждём с нетерпением!"
+    },
+    "formal": {
+      "uz-latn": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila Sizni nikoh marosimiga taklif etamiz. Ikki oilaning rasmiy hamda muqaddas birlashuviga guvoh bo‘lishingizni so‘raymiz. Tashrifingiz xonadonimiz uchun yuksak izzatdir.",
+      "uz-cyrl": "Ҳурматли меҳмонлар!\nЮксак эҳтиром ва самимий эъзоз ила Сизни никоҳ маросимига таклиф этамиз. Икки оиланинг расмий ҳамда муқаддас бирлашувига гувоҳ бўлишингизни сўраймиз. Ташрифингиз хонадонимиз учун юксак иззатдир.",
+      "ru": "Уважаемые гости!\nС выражением глубокого почтения приглашаем Вас на свадебную церемонию. Просим Вас стать свидетелями официального и священного союза двух семей. Ваш визит — высокая честь для нас."
+    },
+    "dua": {
+      "uz-latn": "Bismillahir rohmanir rohiym.\nNikoh to‘yimiz munosabati bilan Alloh taolodan yangi barpo etilayotgan oilamizga baraka, sabr va abadiy mehr-muhabbat so‘raymiz. Sizning xolis duolaringiz ushbu kunning eng ulug‘ sovg‘asidir. Tashrif buyurib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.",
+      "uz-cyrl": "Бисмиллаҳир роҳманир роҳийм.\nНикоҳ тўйимиз муносабати билан Аллоҳ таолодан янги барпо этилаётган оиламизга барака, сабр ва абадий меҳр-муҳаббат сўраймиз. Сизнинг холис дуоларингиз ушбу куннинг энг улуғ совғасидир. Ташриф буюриб, эзгу тилакларингиз билан қувончимизга шерик бўлинг.",
+      "ru": "Бисмилляхи р-рахмани р-рахим.\nПо случаю нашего бракосочетания мы молим Всевышнего о благословении, терпении и вечной любви для новой семьи. Ваши искренние молитвы — самый драгоценный дар этого дня. Приходите и разделяйте нашу радость своими добрыми пожеланиями."
+    },
+    "minimal": {
+      "uz-latn": "Aziz mehmonlar!\nSizni nikoh to‘yimizda ko‘rishdan behad mamnun bo‘lamiz. Samimiy intizorlik bilan kutib qolamiz!",
+      "uz-cyrl": "Азиз меҳмонлар!\nСизни никоҳ тўйимизда кўришдан беҳад мамнун бўламиз. Самимий интизорлик билан кутиб қоламиз!",
+      "ru": "Дорогие гости!\nБудем искренне рады видеть Вас на нашей свадьбе. Ждём Вас с нетерпением!"
+    },
+    "modern": {
+      "uz-latn": "Qadrli do‘stlar!\nSevgi tariximizning eng muhim va baxtiyor kechasida yonimizda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, unutilmas lahzalarni muhrlaylik va ajoyib xotiralar yarataylik!",
+      "uz-cyrl": "Қадрли дўстлар!\nСевги тарихимизнинг энг муҳим ва бахтиёр кечасида ёнимизда бўлишингизни жуда хоҳлаймиз. Келиб, бирга қувонайлик, унутилмас лаҳзаларни муҳрлайлик ва ажойиб хотиралар яратайлик!",
+      "ru": "Дорогие друзья!\nМы очень хотим, чтобы в самый важный и счастливый вечер нашей истории любви Вы были рядом с нами. Приходите: будем праздновать, делать красивые фото и создавать незабываемые воспоминания!"
+    },
+    "premium": {
+      "uz-latn": "Aziz va e’zozli mehmonlar!\nOilalarimiz tarixidagi eng sharafli va shodiyona kun — nikoh rishtalarining mustahkamlanishidir. Ushbu tantanada Sizning ishtirokingiz biz uchun nafaqat sharaf, balki baxtimizning mukammalligidir. Ezgu niyatlaringiz ila kelib, yosh juftlikka mehringizni ulashing. Ushbu kechani Siz bilan birga nishonlash biz uchun eng ulug‘ izzatdir.",
+      "uz-cyrl": "Азиз ва эъзозли меҳмонлар!\nОилаларимиз тарихидаги энг шарафли ва шодиёна кун — никоҳ ришталарининг мустаҳкамланишидир. Ушбу тантанада Сизнинг иштирокингиз биз учун нафақат шараф, балки бахтимизнинг мукаммаллигидир. Эзгу ниятларингиз ила келиб, ёш жуфтликка меҳрингизни улашинг. Ушбу кечани Сиз билан бирга нишонлаш биз учун энг улуғ иззатдир.",
+      "ru": "Дорогие и глубоко уважаемые гости!\nСамый почётный и радостный день в истории наших семей — это укрепление священного брачного союза. Ваше присутствие на этом торжестве для нас — не просто честь, но и полнота нашего счастья. Приходите с добрыми намерениями и подарите молодожёнам своё тепло. Разделить этот вечер с Вами — величайшая честь для нас."
+    }
+  },
+  "eventTopics": {
+    "aqiqa": {
+      "latn": "aqiqa marosimi",
+      "cyrl": "ақиқа маросими",
+      "ru": "обряд акика",
+      "aboutLatn": "farzandimizning aqiqa marosimi",
+      "aboutCyrl": "фарзандимизнинг ақиқа маросими",
+      "aboutRu": "обряд акика нашего ребёнка",
+      "warmLatn": "jigargoshangiz sharafiga uyushtirilgan aqiqa dasturxoni",
+      "warmCyrl": "жигаргошамиз шарафига уюштирилган ақиқа дастурхони",
+      "warmRu": "дастархан акика в честь нашего малыша",
+      "duaLatn": "farzandimizga sihat-salomatlik, solih umr va baraka",
+      "duaCyrl": "фарзандимизга сиҳат-саломатлик, солиҳ умр ва барака",
+      "duaRu": "крепкого здоровья, праведной жизни и благословения нашему ребёнку"
+    },
+    "sunnat": {
+      "latn": "sunnat to‘yi",
+      "cyrl": "суннат тўйи",
+      "ru": "суннат той",
+      "aboutLatn": "o‘g‘limizning sunnat to‘yi tantanasi",
+      "aboutCyrl": "ўғлимизнинг суннат тўйи тантанаси",
+      "aboutRu": "торжество суннат той нашего сына",
+      "warmLatn": "o‘g‘limiz uchun yozilgan sunnat to‘yi dasturxoni",
+      "warmCyrl": "ўғлимиз учун ёзилган суннат тўйи дастурхони",
+      "warmRu": "праздничный дастархан в честь суннат тоя нашего сына",
+      "duaLatn": "o‘g‘limizga el koriga yaraydigan baxt, salomatlik va to‘g‘ri yo‘l",
+      "duaCyrl": "ўғлимизга эл корига ярайдиган бахт, саломатлик ва тўғри йўл",
+      "duaRu": "счастья, здоровья и верного жизненного пути нашему сыну"
+    },
+    "birthday": {
+      "latn": "tug‘ilgan kun ayyomi",
+      "cyrl": "туғилган кун айёми",
+      "ru": "день рождения",
+      "aboutLatn": "tug‘ilgan kun bayramimiz",
+      "aboutCyrl": "туғилган кун байрамимиз",
+      "aboutRu": "празднование дня рождения",
+      "warmLatn": "quvonchli va ko‘tarinki kayfiyatdagi tug‘ilgan kun oqshomi",
+      "warmCyrl": "қувончли ва кўтаринки кайфиятдаги туғилган кун оқшоми",
+      "warmRu": "вечер дня рождения в праздничной атмосфере",
+      "duaLatn": "mustahkam sog‘liq, mazmunli umr va omad",
+      "duaCyrl": "мустаҳкам соғлиқ, мазмунли умр ва омад",
+      "duaRu": "крепкого здоровья, долгих лет жизни и успехов"
+    },
+    "hudoyi": {
+      "latn": "xudoyi dasturxoni",
+      "cyrl": "худойи дастурхони",
+      "ru": "благотворительный дастархан (худойи)",
+      "aboutLatn": "xudoyi dasturxonimiz",
+      "aboutCyrl": "худойи дастурхонимиз",
+      "aboutRu": "наш дастархан худойи",
+      "warmLatn": "shukronalik va ezgulik belgisi bo‘lgan xudoyi dasturxoni",
+      "warmCyrl": "шукроналик ва эзгулик белгиси бўлган худойи дастурхони",
+      "warmRu": "дастархан худойи в знак благодарности и благих намерений",
+      "duaLatn": "oilamizga tinchlik, baraka va el-yurtga omonlik",
+      "duaCyrl": "оиламизга тинчлик, барака ва эл-юртга омонлик",
+      "duaRu": "мир, благополучие и милость для нашей семьи"
+    },
+    "hayit": {
+      "latn": "{hayit_occasion} ziyofati",
+      "cyrl": "{hayit_occasion} зиёфати",
+      "ru": "празднование {hayit_occasion}",
+      "aboutLatn": "{hayit_occasion} munosabati bilan yozilgan ziyofatimiz",
+      "aboutCyrl": "{hayit_occasion} муносабати билан ёзилган зиёфатимиз",
+      "aboutRu": "наше празднование по случаю {hayit_occasion}",
+      "warmLatn": "muborak hayit ayyomi munosabati bilan fayzli oilaviy dasturxon",
+      "warmCyrl": "муборак ҳайит айёми муносабати билан файзли оилавий дастурхон",
+      "warmRu": "светлый семейный дастархан по случаю хаита",
+      "duaLatn": "hayit ayyomi barakasi, qalblarga halovat va oilaviy tinchlik",
+      "duaCyrl": "ҳайит айёми баракаси, қалбларга ҳаловат ва оилавий тинчлик",
+      "duaRu": "благословение хаита, душевный покой и семейный мир"
+    }
+  },
+  "templates": {
+    "classic1": {
+      "uz-latn": "Assalomu alaykum!\nHurmat va ehtirom ila Sizni {aboutLatn}ga mehmon bo‘lishga chorlaymiz. Ushbu quvonchli kunda Sizning ishtirokingiz oilamiz uchun behad muhimdir. Marhamat qilib, davramiz ko‘rkiga ko‘rk qo‘shing.",
+      "uz-cyrl": "Ассалому алайкум!\nҲурмат ва эҳтиром ила Сизни {aboutCyrl}га меҳмон бўлишга чорлаймиз. Ушбу қувончли кунда Сизнинг иштирокингиз оиламиз учун беҳад муҳимдир. Марҳамат қилиб, даврамиз кўркига кўрк қўшинг.",
+      "ru": "Ассаламу алейкум!\nС уважением приглашаем Вас на {aboutRu}. Ваше присутствие в этот день чрезвычайно важно для нашей семьи. Пожалуйста, будьте нашим дорогим гостем."
+    },
+    "warm1": {
+      "uz-latn": "Hurmatli va qadrli mehmonimiz!\nQalbimizdagi samimiy mehr bilan Sizni {warmLatn}ga chorlaymiz. Kelib, tabassum va ezgu so‘zlaringiz bilan davramizni to‘ldiring. Bu kunni Siz bilan o‘tkazish biz uchun eng katta baxtdir.",
+      "uz-cyrl": "Ҳурматли ва қадрли меҳмонимиз!\nҚалбимиздаги самимий меҳр билан Сизни {warmCyrl}га чорлаймиз. Келиб, табассум ва эзгу сўзларингиз билан даврамизни тўлдиринг. Бу кунни Сиз билан ўтказиш биз учун энг катта бахтдир.",
+      "ru": "Дорогой гость!\nОт всей души приглашаем Вас на {warmRu}. Приходите и наполните наш круг радостью и добрыми словами. Провести этот день с Вами — огромное счастье для нас."
+    },
+    "classic2": {
+      "uz-latn": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — {aboutLatn}dir. Shu munosabat bilan Sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida Sizni ko‘rishdan behad mamnun bo‘lamiz.",
+      "uz-cyrl": "Азиз меҳмонлар!\nОиламиздаги қутлуғ ва муҳим кун — {aboutCyrl}дир. Шу муносабат билан Сизни тантанага таклиф этамиз. Эъзозли меҳмонларимиз сафида Сизни кўришдан беҳад мамнун бўламиз.",
+      "ru": "Дорогие гости!\nОсобенный день в жизни нашей семьи — это {aboutRu}. По этому случаю приглашаем Вас на торжество. Будем искренне рады видеть Вас среди наших гостей."
+    },
+    "warm2": {
+      "uz-latn": "Aziz do‘stlar!\n{Latn}da Sizning xushkayfiyatingiz va samimiy tilaklaringiz yangrab tursin. Kelib, oilaviy quvonchimizni baham ko‘ring, chunki har bir mehmon biz uchun qadrli va mo‘tabardir.",
+      "uz-cyrl": "Азиз дўстлар!\n{Cyrl}да Сизнинг хушкайфиятингиз ва самимий тилакларингиз янграб турсин. Келиб, оилавий қувончимизни баҳам кўринг, чунки ҳар бир меҳмон биз учун қадрли ва мўътабардир.",
+      "ru": "Дорогие друзья!\nПусть на {ru} звучат Ваши искренние пожелания и царит радостное настроение. Приходите разделить с нами семейную радость, ведь каждый гость бесконечно дорог нам."
+    },
+    "formal": {
+      "uz-latn": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila Sizni {aboutLatn}ga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzat va sharafdir. Marhamat qilib, tantanamizda ishtirok eting.",
+      "uz-cyrl": "Ҳурматли меҳмонлар!\nЮксак эҳтиром ва самимий эъзоз ила Сизни {aboutCyrl}га таклиф этамиз. Ташрифингиз оиламиз учун юксак иззат ва шарафдир. Марҳамат қилиб, тантанамизда иштирок этинг.",
+      "ru": "Уважаемые гости!\nС глубоким почтением приглашаем Вас на {aboutRu}. Ваш визит — высокая честь и радость для нашей семьи. Просим вас принять участие в нашем торжестве."
+    },
+    "dua": {
+      "uz-latn": "Bismillahir rohmanir rohiym.\n{AboutLatn}da Alloh taolodan {duaLatn} so‘raymiz. Sizning chiroyli duolaringiz shu kunning eng ulug‘ sovg‘asidir. Kelib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.",
+      "uz-cyrl": "Бисмиллаҳир роҳманир роҳийм.\n{AboutCyrl}да Аллоҳ таолодан {duaCyrl} сўраймиз. Сизнинг чиройли дуоларингиз шу куннинг энг улуғ совғасидир. Келиб, эзгу тилакларингиз билан қувончимизга шерик бўлинг.",
+      "ru": "Бисмилляхи р-рахмани р-рахим.\nНа {aboutRu} мы просим у Всевышнего {duaRu}. Ваши молитвы — самый драгоценный дар этого дня. Приходите и поделитесь своими добрыми пожеланиями."
+    },
+    "minimal": {
+      "uz-latn": "Aziz mehmonlar!\nSizni {aboutLatn}ga taklif etamiz. Intizorlik bilan kutib qolamiz!",
+      "uz-cyrl": "Азиз меҳмонлар!\nСизни {aboutCyrl}га таклиф этамиз. Интизорлик билан кутиб қоламиз!",
+      "ru": "Дорогие гости!\nПриглашаем Вас на {aboutRu}. Ждём Вас с нетерпением!"
+    },
+    "modern": {
+      "uz-latn": "Qadrli do‘stlar!\n{Latn} bo‘lib o‘tadi va Siz unda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, chiroyli suratga tushaylik va ajoyib kayfiyat ulashaylik!",
+      "uz-cyrl": "Қадрли дўстлар!\n{Cyrl} бўлиб ўтади ва Сиз унда бўлишингизни жуда хоҳлаймиз. Келиб, бирга қувонайлик, чиройли суратга тушайлик ва ажойиб кайфият улашайлик!",
+      "ru": "Дорогие друзья!\n{Ru} состоится совсеми скоро, и мы очень хотим, чтобы Вы были с нами. Приходите: сделаем красивые фото, посмеёмся и поделимся отличным настроением!"
+    },
+    "premium": {
+      "uz-latn": "Aziz va e’zozli mehmonlar!\nOilamiz tarixidagi eng muhim va sharafli kunlardan biri — {aboutLatn}dir. Shu tantanada Sizning ishtirokingiz biz uchun sharaf va baxtimizning to‘liqligidir. Ezgu niyatlaringiz ila kelib, oilaviy quvonchimizga fayz va mehr bag‘ishlang.",
+      "uz-cyrl": "Азиз ва эъзозли меҳмонлар!\nОиламиз тарихидаги энг муҳим ва шарафли кунлардан бири — {aboutCyrl}дир. Шу тантанада Сизнинг иштирокингиз биз учун шараф ва бахтимизнинг тўлиқлигидир. Эзгу ниятларингиз ила келиб, оилавий қувончимизга файз ва меҳр бағишланг.",
+      "ru": "Дорогие и уважаемый гости!\nОдин из самых важных и почётных дней в истории нашей семьи — это {aboutRu}. Ваше присутствие на этом торжестве — огромная честь и полнота нашего счастья. Приходите с добрыми намерениями и подарите тепло нашей семейной радости."
+    }
+  }
+}

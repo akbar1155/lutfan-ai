@@ -44,6 +44,12 @@ import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensu
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
+import {
+  fetchImageFile,
+  publicInviteUrl,
+  shareInviteImage,
+  shareInviteLink,
+} from "../utils/share";
 import { EventIcon } from "../components/EventIcons";
 import {
   IconClose,
@@ -52,8 +58,6 @@ import {
   IconLink,
   IconPalette,
   IconPlus,
-  IconRatio11,
-  IconRatio916,
   IconRefresh,
   IconShare,
   IconUser,
@@ -174,8 +178,8 @@ function normalizeUzbekSpelling(text: string, language?: string): string {
     .replace(/[ʻ’`´]/g, "‘")
     .replace(/g['’`´]/gi, "g‘")
     .replace(/o['’`´]/gi, "o‘")
-    // Use simple hyphen instead of long dashes in invitation copy.
-    .replace(/\s*[—–]\s*/g, " - ");
+    // Em/en dashes → comma pause (no long "—" on the card).
+    .replace(/\s*[—–]\s*/g, ", ");
 
   if (language === "uz-latn") {
     const fixes: Array<[RegExp, string]> = [
@@ -186,6 +190,8 @@ function normalizeUzbekSpelling(text: string, language?: string): string {
       [/\bboslin\b/gi, "bo‘lsin"],
       [/\bbulsin\b/gi, "bo‘lsin"],
       [/\bhayitingiz muborak bo‘lslin\b/gi, "Hayitingiz muborak bo‘lsin"],
+      [/\bbollalarni\b/gi, "Bolalarni"],
+      [/\bkirgizmaymiz\b/gi, "kiritmaymiz"],
     ];
     fixes.forEach(([from, to]) => {
       out = out.replace(from, to);
@@ -1628,34 +1634,41 @@ export function ResultPage() {
     try {
       const d = await api.download(invitation.id);
       void api.share(invitation.id, "share_image").catch(() => undefined);
-      const resp = await fetch(d.url);
-      const blob = await resp.blob();
-      const file = new File([blob], `lutfan-${invitation.id}.jpg`, {
-        type: blob.type || "image/jpeg",
+      const file = await fetchImageFile(
+        d.url,
+        `lutfan-${invitation.id}.jpg`,
+      );
+      const result = await shareInviteImage({
+        file,
+        title: t("brand"),
+        text: t("shareImageHint"),
+        url: publicInviteUrl(invitation.id),
       });
-      const nav = navigator as Navigator & {
-        share?: (data: ShareData) => Promise<void>;
-        canShare?: (data: ShareData) => boolean;
-      };
-      if (nav.share && (!nav.canShare || nav.canShare({ files: [file] }))) {
-        await nav.share({
-          files: [file],
-          title: t("brand"),
-          text: t("shareImageHint"),
-        });
+      if (result === "shared" || result === "downloaded") {
         setSharedImage(true);
         window.setTimeout(() => setSharedImage(false), 2000);
-        return;
       }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name;
-      a.click();
-      URL.revokeObjectURL(url);
-      setSharedImage(true);
-      window.setTimeout(() => setSharedImage(false), 2000);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setError(err instanceof Error ? err.message : t("shareFailed"));
+    }
+  };
+
+  const shareLink = async () => {
+    setError(null);
+    try {
+      void api.share(invitation.id, "copy_link").catch(() => undefined);
+      const result = await shareInviteLink({
+        invitationId: invitation.id,
+        title: t("brand"),
+        text: t("shareImageHint"),
+      });
+      if (result === "copied" || result === "shared") {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : t("shareFailed"));
     }
   };
@@ -1756,29 +1769,11 @@ export function ResultPage() {
               </button>
             </section>
           )}
-          <div className="result-secondary">
-            <AdditionalFormatButtons
-              invitation={invitation}
-              onError={setError}
-              t={t}
-            />
-          </div>
           <div className="result-tertiary">
             <button
               type="button"
               className="ghost btn-with-icon"
-              onClick={() => {
-                void api
-                  .share(invitation.id, "copy_link")
-                  .then(async () => {
-                    await navigator.clipboard.writeText(
-                      `${window.location.origin}/i/${invitation.id}`,
-                    );
-                    setCopied(true);
-                    window.setTimeout(() => setCopied(false), 2000);
-                  })
-                  .catch((err: Error) => setError(err.message));
-              }}
+              onClick={() => void shareLink()}
             >
               <IconLink />
               {copied ? t("copied") : t("shareLink")}
@@ -1795,70 +1790,5 @@ export function ResultPage() {
         </div>
       )}
     </WizardChrome>
-  );
-}
-
-function AdditionalFormatButtons({
-  invitation,
-  t,
-  onError,
-}: {
-  invitation: Invitation;
-  t: (key: string, options?: any) => string;
-  onError: (msg: string | null) => void;
-}) {
-  const navigate = useNavigate();
-  const additional = invitation.additional_formats || {};
-  const url9 = additional["9:16"];
-  const url11 = additional["1:1"];
-
-  const gen = (fmt: "9:16" | "1:1") => {
-    navigate(`/create/${invitation.id}/generating`, {
-      replace: true,
-      state: { pendingFormat: fmt },
-    });
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        className="ghost btn-with-icon"
-        onClick={() => {
-          if (url9) {
-            void api
-              .download(invitation.id, "9:16")
-              .then((d) =>
-                downloadImageFile(d.url, `lutfan-${invitation.id}-9x16.jpg`),
-              )
-              .catch((err: Error) => onError(err.message));
-          } else {
-            gen("9:16");
-          }
-        }}
-      >
-        {url9 ? <IconDownload /> : <IconRatio916 />}
-        {url9 ? `${t("download")} 9:16` : `${t("generate")} 9:16`}
-      </button>
-      <button
-        type="button"
-        className="ghost btn-with-icon"
-        onClick={() => {
-          if (url11) {
-            void api
-              .download(invitation.id, "1:1")
-              .then((d) =>
-                downloadImageFile(d.url, `lutfan-${invitation.id}-1x1.jpg`),
-              )
-              .catch((err: Error) => onError(err.message));
-          } else {
-            gen("1:1");
-          }
-        }}
-      >
-        {url11 ? <IconDownload /> : <IconRatio11 />}
-        {url11 ? `${t("download")} 1:1` : `${t("generate")} 1:1`}
-      </button>
-    </>
   );
 }

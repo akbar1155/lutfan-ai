@@ -98,7 +98,7 @@ def _inject_child_name(body: str, child: str, lang: str) -> str:
     if not body:
         return child
     if lang.startswith("ru"):
-        return f"{body.rstrip('.')} — {child}."
+        return f"{body.rstrip('.')} {child}."
     return f"{body.rstrip('.')} {child}."
 
 

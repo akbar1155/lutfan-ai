@@ -183,11 +183,12 @@ def clear_safe_text_area(
     img: Image.Image, safe: SafeRegion, *, corner_guard: bool = False
 ) -> Image.Image:
     """
-    Do not paint a floating white card / shadow plate.
+    Keep the cream stationery continuous — no floating card and no circular
+    vignette/blob behind the type.
 
-    AI and JPG templates already leave a cream center; a blurred rectangle
-    creates the dark halo users see as a broken 'frame behind the text'.
-    Only apply a near-invisible lightening when the center is truly dark.
+    When the center is already light, leave décor untouched.
+    Only on darker AI washes, apply a soft rounded paper panel plus a faint
+    diagonal stationery weave (naqsh), never an oval shadow.
     """
     paper = _sample_paper(img, safe)
     try:
@@ -202,27 +203,64 @@ def clear_safe_text_area(
         pass
 
     luminance = 0.299 * paper[0] + 0.587 * paper[1] + 0.114 * paper[2]
-    # Keep a soft lightening wash so dark AI décor doesn't mute type.
-    if luminance >= 215 and not corner_guard:
+    # Cream / ivory centers need no wash — the old oval always looked like a stain.
+    if luminance >= 185:
         return img
+
+    # Bias wash toward ivory stationery so dark AI fills actually lighten.
+    cream = (246, 240, 228)
+    wash = (
+        int(paper[0] * 0.35 + cream[0] * 0.65),
+        int(paper[1] * 0.35 + cream[1] * 0.65),
+        int(paper[2] * 0.35 + cream[2] * 0.65),
+    )
 
     base = img.convert("RGBA")
     wipe = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(wipe)
-    pad_x = int(safe.width * 0.10)
-    pad_y = int(safe.height * 0.12)
-    # Soft oval — enough alpha for readable contrast, no hard rectangle.
-    draw.ellipse(
-        (
-            safe.x0 + pad_x,
-            safe.y0 + pad_y,
-            safe.x1 - pad_x,
-            safe.y1 - pad_y,
-        ),
-        fill=(*paper, 140 if corner_guard else 96),
+
+    inset_x = int(safe.width * 0.05)
+    inset_y = int(safe.height * 0.04)
+    box = (
+        safe.x0 + inset_x,
+        safe.y0 + inset_y,
+        safe.x1 - inset_x,
+        safe.y1 - inset_y,
     )
-    soft = wipe.filter(ImageFilter.GaussianBlur(radius=max(40, img.width // 22)))
-    return Image.alpha_composite(base, soft).convert("RGB")
+    radius = max(28, img.width // 36)
+    # Soft rounded paper panel (stationery), not a circular glow.
+    panel_alpha = 72 if corner_guard else 56
+    draw.rounded_rectangle(box, radius=radius, fill=(*wash, panel_alpha))
+
+    soft = wipe.filter(ImageFilter.GaussianBlur(radius=max(14, img.width // 70)))
+    out = Image.alpha_composite(base, soft)
+
+    # Faint diagonal weave / naqsh inside the text zone only.
+    pattern = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    pdraw = ImageDraw.Draw(pattern)
+    x0, y0, x1, y1 = box
+    step = max(22, img.width // 85)
+    tone = (
+        max(0, wash[0] - 22),
+        max(0, wash[1] - 26),
+        max(0, wash[2] - 32),
+        10 if corner_guard else 8,
+    )
+    height = y1 - y0
+    for x in range(x0 - height, x1 + step, step):
+        pdraw.line([(x, y0), (x + height, y1)], fill=tone, width=1)
+    # Opposite diagonal, lighter
+    tone2 = (*tone[:3], max(4, tone[3] - 3))
+    for x in range(x0, x1 + height + step, step):
+        pdraw.line([(x, y0), (x - height, y1)], fill=tone2, width=1)
+
+    # Soft-clip pattern to the same rounded panel so edges stay clean.
+    mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle(box, radius=radius, fill=255)
+    clipped = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    clipped.paste(pattern, (0, 0), mask=mask)
+    out = Image.alpha_composite(out, clipped)
+    return out.convert("RGB")
 
 
 def typography_mode(style_tags: Sequence[str] | None) -> str:
