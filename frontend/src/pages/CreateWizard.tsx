@@ -446,6 +446,11 @@ export function DetailsPage() {
               );
             })}
           </div>
+          {subtypeInvalid ? (
+            <span className="field-error" role="alert">
+              {t("subtypeRequired")}
+            </span>
+          ) : null}
         </fieldset>
       )}
       <UiSelect
@@ -469,7 +474,7 @@ export function DetailsPage() {
           onClick={() => {
             if (subtypeMode === "single" && subtypes.length !== 1) {
               setSubtypeInvalid(true);
-              setError(t("subtypeRequired"));
+              setError(null);
               window.setTimeout(() => {
                 document
                   .querySelector<HTMLElement>(".check-group.field-invalid")
@@ -518,7 +523,7 @@ export function DataPage() {
   const [schedule, setSchedule] = useState<CeremonySchedule>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [invalidKeys, setInvalidKeys] = useState<Set<string>>(new Set());
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const skipAutosave = useRef(true);
 
   const subtypeSlugs = useMemo(
@@ -641,69 +646,59 @@ export function DataPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    const mark = (key: string, message: string) => {
-      setInvalidKeys(new Set([key]));
-      setError(message);
-      window.setTimeout(() => {
-        document
-          .querySelector<HTMLElement>(".field-invalid, .check-group.field-invalid")
-          ?.scrollIntoView({ block: "center", behavior: "smooth" });
-      }, 0);
-    };
+    const nextErrors: Record<string, string> = {};
+    const fieldTypeByKey = new Map(
+      fields.map((f) => [String(f.key), String(f.type || "string")]),
+    );
+
     for (const key of requiredKeys) {
       if (!form[key]?.trim()) {
-        mark(key, `${t(fieldLabelKey(key))} — ${t("required")}`);
-        return;
+        const type = fieldTypeByKey.get(key) || "string";
+        nextErrors[key] =
+          type === "enum" ? t("selectRequired") : t("fieldRequired");
+        continue;
       }
       if (!skipJunkKeys.has(key) && isJunkFieldValue(form[key])) {
-        mark(key, `${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
-        return;
+        nextErrors[key] = t("placeholderFieldError");
       }
     }
-    // Optional-but-present fields also must not be junk
     for (const [key, value] of Object.entries(form)) {
       if (!value?.trim() || requiredKeys.has(key) || skipJunkKeys.has(key)) continue;
-      if (isJunkFieldValue(value)) {
-        mark(key, `${t(fieldLabelKey(key))} — ${t("placeholderFieldError")}`);
-        return;
+      if (isJunkFieldValue(value) && !nextErrors[key]) {
+        nextErrors[key] = t("placeholderFieldError");
       }
     }
     if (multiCeremony) {
       for (const slug of subtypeSlugs) {
         const slot = schedule[slug] || { date: "", time: "" };
-        const label =
-          pickTranslation(
-            event.subtypes?.find((s) => s.slug === slug)?.names || {},
-            uiLang,
-          ) || slug;
         if (!isIsoDate(slot.date)) {
-          mark(`sched:${slug}:date`, `${label}: ${t("dateFormatError")}`);
-          return;
+          nextErrors[`sched:${slug}:date`] = t("dateFormatError");
+        } else if (isPastIsoDate(slot.date)) {
+          nextErrors[`sched:${slug}:date`] = t("dateMinToday");
         }
         if (!slot.time?.trim()) {
-          mark(
-            `sched:${slug}:time`,
-            `${label}: ${t(fieldLabelKey("event_time"))} — ${t("required")}`,
-          );
-          return;
+          nextErrors[`sched:${slug}:time`] = t("fieldRequired");
         }
       }
-    } else if (form.event_date && !isIsoDate(form.event_date)) {
-      mark("event_date", t("dateFormatError"));
-      return;
-    }
-    if (multiCeremony) {
-      for (const slug of subtypeSlugs) {
-        if (isPastIsoDate(schedule[slug]?.date)) {
-          mark(`sched:${slug}:date`, t("dateMinToday"));
-          return;
-        }
+    } else {
+      if (form.event_date && !isIsoDate(form.event_date)) {
+        nextErrors.event_date = t("dateFormatError");
+      } else if (form.event_date && isPastIsoDate(form.event_date)) {
+        nextErrors.event_date = t("dateMinToday");
       }
-    } else if (form.event_date && isPastIsoDate(form.event_date)) {
-      mark("event_date", t("dateMinToday"));
+    }
+
+    if (Object.keys(nextErrors).length) {
+      setFieldErrors(nextErrors);
+      window.setTimeout(() => {
+        document
+          .querySelector<HTMLElement>(".field-invalid")
+          ?.scrollIntoView({ block: "center", behavior: "smooth" });
+      }, 0);
       return;
     }
-    setInvalidKeys(new Set());
+
+    setFieldErrors({});
     setBusy(true);
     const structured = { ...form };
     if (multiCeremony) {
@@ -768,13 +763,13 @@ export function DataPage() {
                       label={t(fieldLabelKey("event_date"))}
                       required
                       minToday
-                      invalid={invalidKeys.has(`sched:${slug}:date`)}
+                      error={fieldErrors[`sched:${slug}:date`]}
                       value={slot.date}
                       onChange={(next) => {
-                        setInvalidKeys((prev) => {
-                          const n = new Set(prev);
-                          n.delete(`sched:${slug}:date`);
-                          return n;
+                        setFieldErrors((prev) => {
+                          if (!prev[`sched:${slug}:date`]) return prev;
+                          const { [`sched:${slug}:date`]: _, ...rest } = prev;
+                          return rest;
                         });
                         setSchedule((prev) => ({
                           ...prev,
@@ -785,13 +780,13 @@ export function DataPage() {
                     <TimeField
                       label={t(fieldLabelKey("event_time"))}
                       required
-                      invalid={invalidKeys.has(`sched:${slug}:time`)}
+                      error={fieldErrors[`sched:${slug}:time`]}
                       value={slot.time}
                       onChange={(next) => {
-                        setInvalidKeys((prev) => {
-                          const n = new Set(prev);
-                          n.delete(`sched:${slug}:time`);
-                          return n;
+                        setFieldErrors((prev) => {
+                          if (!prev[`sched:${slug}:time`]) return prev;
+                          const { [`sched:${slug}:time`]: _, ...rest } = prev;
+                          return rest;
                         });
                         setSchedule((prev) => ({
                           ...prev,
@@ -811,13 +806,12 @@ export function DataPage() {
           const type = String(field.type || "string");
           const label = t(fieldLabelKey(key), { defaultValue: key });
           const required = requiredKeys.has(key);
-          const invalid = invalidKeys.has(key);
-          const clearInvalid = () =>
-            setInvalidKeys((prev) => {
-              if (!prev.has(key)) return prev;
-              const n = new Set(prev);
-              n.delete(key);
-              return n;
+          const fieldError = fieldErrors[key];
+          const clearError = () =>
+            setFieldErrors((prev) => {
+              if (!prev[key]) return prev;
+              const { [key]: _, ...rest } = prev;
+              return rest;
             });
 
           if (type === "enum" && field.options) {
@@ -828,9 +822,9 @@ export function DataPage() {
                 name={key}
                 value={form[key] || ""}
                 required={required}
-                invalid={invalid}
+                error={fieldError}
                 onChange={(e) => {
-                  clearInvalid();
+                  clearError();
                   setForm((prev) => ({ ...prev, [key]: e.target.value }));
                 }}
               >
@@ -851,10 +845,10 @@ export function DataPage() {
                 label={label}
                 required={required}
                 minToday={field.min === "today"}
-                invalid={invalid}
+                error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {
-                  clearInvalid();
+                  clearError();
                   setForm((prev) => ({ ...prev, [key]: next }));
                 }}
               />
@@ -867,10 +861,10 @@ export function DataPage() {
                 key={key}
                 label={label}
                 required={required}
-                invalid={invalid}
+                error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {
-                  clearInvalid();
+                  clearError();
                   setForm((prev) => ({ ...prev, [key]: next }));
                 }}
               />
@@ -879,37 +873,47 @@ export function DataPage() {
 
           if (type === "text") {
             return (
-              <label key={key} className={invalid ? "field-invalid" : undefined}>
+              <label key={key} className={fieldError ? "field-invalid" : undefined}>
                 {label}
                 {required ? " *" : ""}
                 <textarea
                   rows={3}
                   maxLength={field.maxLength || 200}
                   value={form[key] || ""}
-                  aria-invalid={invalid || undefined}
+                  aria-invalid={fieldError ? true : undefined}
                   onChange={(e) => {
-                    clearInvalid();
+                    clearError();
                     setForm((prev) => ({ ...prev, [key]: e.target.value }));
                   }}
                 />
+                {fieldError ? (
+                  <span className="field-error" role="alert">
+                    {fieldError}
+                  </span>
+                ) : null}
               </label>
             );
           }
 
           return (
-            <label key={key} className={invalid ? "field-invalid" : undefined}>
+            <label key={key} className={fieldError ? "field-invalid" : undefined}>
               {label}
               {required ? " *" : ""}
               <input
                 type="text"
                 maxLength={field.maxLength || 200}
                 value={form[key] || ""}
-                aria-invalid={invalid || undefined}
+                aria-invalid={fieldError ? true : undefined}
                 onChange={(e) => {
-                  clearInvalid();
+                  clearError();
                   setForm((prev) => ({ ...prev, [key]: e.target.value }));
                 }}
               />
+              {fieldError ? (
+                <span className="field-error" role="alert">
+                  {fieldError}
+                </span>
+              ) : null}
             </label>
           );
         })}

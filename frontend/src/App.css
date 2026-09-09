@@ -2033,7 +2033,7 @@ textarea::placeholder {
 .form-stack > label:first-child,
 .form-stack > .ui-field:first-child { margin-top: 0; }
 
-label.field-invalid,
+label:not(.check-chip):not(.ui-field).field-invalid,
 .ui-field.field-invalid .ui-field-label {
   color: var(--error);
 }
@@ -2045,8 +2045,16 @@ label.field-invalid textarea,
   border-color: color-mix(in srgb, var(--error) 55%, var(--line)) !important;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--error) 35%, transparent);
 }
+.field-error {
+  display: block;
+  margin: 0;
+  color: var(--error);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
 .check-group.field-invalid {
-  border-color: color-mix(in srgb, var(--error) 45%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--error) 45%, var(--line));
   border-radius: var(--radius);
   padding: 0.65rem 0.75rem;
   background: color-mix(in srgb, var(--error) 6%, white);

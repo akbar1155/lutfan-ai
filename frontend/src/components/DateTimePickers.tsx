@@ -108,6 +108,7 @@ type FieldProps = {
   onChange: (value: string) => void;
   disabled?: boolean;
   invalid?: boolean;
+  error?: string;
 };
 
 function scrollFieldIntoView(el: HTMLElement | null) {
@@ -129,9 +130,11 @@ export function DateField({
   onChange,
   disabled,
   invalid,
+  error,
 }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
   const { pickerLocale, labels } = useLocalizedPicker();
+  const showInvalid = invalid || Boolean(error);
   const parsed =
     value && dayjs(value, ISO_DATE, true).isValid()
       ? dayjs(value, ISO_DATE)
@@ -139,7 +142,7 @@ export function DateField({
 
   return (
     <label
-      className={`ui-field date-time-field${invalid ? " field-invalid" : ""}`}
+      className={`ui-field date-time-field${showInvalid ? " field-invalid" : ""}`}
       ref={wrapRef}
     >
       <span className="ui-field-label">
@@ -155,7 +158,7 @@ export function DateField({
           format={DATE_FMT}
           allowClear={!required}
           disabled={disabled}
-          status={invalid ? "error" : undefined}
+          status={showInvalid ? "error" : undefined}
           inputReadOnly
           placeholder={DATE_FMT.toLowerCase()}
           placement="bottomLeft"
@@ -177,6 +180,11 @@ export function DateField({
           }}
         />
       </PickerShell>
+      {error ? (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -188,9 +196,11 @@ export function TimeField({
   onChange,
   disabled,
   invalid,
+  error,
 }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
   const { pickerLocale, labels } = useLocalizedPicker();
+  const showInvalid = invalid || Boolean(error);
   const parsed =
     value && dayjs(value, [TIME_FMT, "HH:mm:ss"], true).isValid()
       ? dayjs(value, [TIME_FMT, "HH:mm:ss"])
@@ -198,7 +208,7 @@ export function TimeField({
 
   return (
     <label
-      className={`ui-field date-time-field${invalid ? " field-invalid" : ""}`}
+      className={`ui-field date-time-field${showInvalid ? " field-invalid" : ""}`}
       ref={wrapRef}
     >
       <span className="ui-field-label">
@@ -216,7 +226,7 @@ export function TimeField({
           needConfirm={false}
           allowClear={!required}
           disabled={disabled}
-          status={invalid ? "error" : undefined}
+          status={showInvalid ? "error" : undefined}
           inputReadOnly
           placeholder="HH:mm"
           showNow
@@ -231,6 +241,11 @@ export function TimeField({
           }}
         />
       </PickerShell>
+      {error ? (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

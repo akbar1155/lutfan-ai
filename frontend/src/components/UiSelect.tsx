@@ -34,6 +34,7 @@ type Props = {
   disabled?: boolean;
   required?: boolean;
   invalid?: boolean;
+  error?: string;
   children?: ReactNode;
   onChange?: (event: ChangeEventLike) => void;
   /** Compact size for admin filters */
@@ -71,11 +72,13 @@ export default function UiSelect({
   disabled = false,
   required = false,
   invalid = false,
+  error,
   children,
   onChange,
   size = "md",
   "aria-label": ariaLabel,
 }: Props) {
+  const showInvalid = invalid || Boolean(error);
   const reactId = useId();
   const selectId = id || name || reactId;
   const listId = `${selectId}-listbox`;
@@ -286,7 +289,7 @@ export default function UiSelect({
   const field = (
     <div
       ref={rootRef}
-      className={`ui-select-wrap ${size === "sm" ? "is-sm" : ""} ${open ? "is-open" : ""} ${invalid ? "is-invalid" : ""} ${className}`.trim()}
+      className={`ui-select-wrap ${size === "sm" ? "is-sm" : ""} ${open ? "is-open" : ""} ${showInvalid ? "is-invalid" : ""} ${className}`.trim()}
     >
       <select
         id={selectId}
@@ -320,7 +323,7 @@ export default function UiSelect({
         aria-controls={listId}
         aria-label={ariaLabel || label}
         aria-required={required || undefined}
-        aria-invalid={invalid || undefined}
+        aria-invalid={showInvalid || undefined}
         aria-labelledby={label ? `${selectId}-label` : undefined}
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onTriggerKeyDown}
@@ -347,12 +350,18 @@ export default function UiSelect({
   if (!label) return field;
 
   return (
-    <div className={`ui-field${invalid ? " field-invalid" : ""}`}>
+    <div className={`ui-field${showInvalid ? " field-invalid" : ""}`}>
       <span className="ui-field-label" id={`${selectId}-label`}>
         {label}
       </span>
       {field}
-      {hint ? <span className="ui-field-hint">{hint}</span> : null}
+      {error ? (
+        <span className="field-error" role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span className="ui-field-hint">{hint}</span>
+      ) : null}
     </div>
   );
 }
