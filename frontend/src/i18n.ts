@@ -313,17 +313,17 @@ const resources = {
       defaultBody:
         "Сизни тадбиримизга таклиф этамиз. Ҳурматли меҳмонларимиз орасида бўлишингиз биз учун катта қувонч.",
       defaultBody_nikoh:
-        "Сизни никоҳ тўйимизга таклиф этамиз. Бахтли кунимизни Сиз билан бирга нишонлаш биз учун катта шараф.",
+        "Сизни никоҳ тўйимизга таклиф этамиз. Бахтли кунимизни сиз билан бирга нишонлаш биз учун катта шараф.",
       defaultBody_aqiqa:
-        "Фарзандимиз ақиқа маросими муносабати билан Сизни меҳмон бўлишга таклиф этамиз.",
+        "Фарзандимиз ақиқа маросими муносабати билан сизни меҳмон бўлишга таклиф этамиз.",
       defaultBody_sunnat:
-        "Ўғлимизнинг суннат тўйи муносабати билан Сизни тантанамизга таклиф этамиз.",
+        "Ўғлимизнинг суннат тўйи муносабати билан сизни тантанамизга таклиф этамиз.",
       defaultBody_birthday:
-        "Туғилган кунни нишонлашга Сизни самимий таклиф этамиз. Байрам кайфиятини бирга улашайлик!",
+        "Туғилган кунни нишонлашга сизни самимий таклиф этамиз. Байрам кайфиятини бирга улашайлик!",
       defaultBody_hudoyi:
-        "Худога шукроналик учун уюштирилган худойи дастурхонига Сизни таклиф этамиз.",
+        "Худога шукроналик учун уюштирилган худойи дастурхонига сизни таклиф этамиз.",
       defaultBody_hayit:
-        "{{occasion}} муносабати билан Сизни оилавий дастурхонимизга таклиф этамиз.",
+        "{{occasion}} муносабати билан сизни оилавий дастурхонимизга таклиф этамиз.",
       field_child_gender: "Бола жинси",
       field_child_name: "Бола исми",
       field_person_name: "Исм",
@@ -670,17 +670,17 @@ const resources = {
       defaultBody:
         "Sizni tadbirimizga taklif etamiz. Hurmatli mehmonlarimiz orasida boʻlishingiz biz uchun katta quvonch.",
       defaultBody_nikoh:
-        "Sizni nikoh toʻyimizga taklif etamiz. Baxtli kunimizni Siz bilan birga nishonlash biz uchun katta sharaf.",
+        "Sizni nikoh toʻyimizga taklif etamiz. Baxtli kunimizni siz bilan birga nishonlash biz uchun katta sharaf.",
       defaultBody_aqiqa:
-        "Farzandimiz aqiqa marosimi munosabati bilan Sizni mehmon boʻlishga taklif etamiz.",
+        "Farzandimiz aqiqa marosimi munosabati bilan sizni mehmon boʻlishga taklif etamiz.",
       defaultBody_sunnat:
-        "Oʻgʻlimizning sunnat toʻyi munosabati bilan Sizni tantanamizga taklif etamiz.",
+        "Oʻgʻlimizning sunnat toʻyi munosabati bilan sizni tantanamizga taklif etamiz.",
       defaultBody_birthday:
-        "Tugʻilgan kunni nishonlashga Sizni samimiy taklif etamiz. Bayram kayfiyatini birga ulashaylik!",
+        "Tugʻilgan kunni nishonlashga sizni samimiy taklif etamiz. Bayram kayfiyatini birga ulashaylik!",
       defaultBody_hudoyi:
-        "Xudoga shukronalik uchun uyushtirilgan hudoyi dasturxoniga Sizni taklif etamiz.",
+        "Xudoga shukronalik uchun uyushtirilgan hudoyi dasturxoniga sizni taklif etamiz.",
       defaultBody_hayit:
-        "{{occasion}} munosabati bilan Sizni oilaviy dasturxonimizga taklif etamiz.",
+        "{{occasion}} munosabati bilan sizni oilaviy dasturxonimizga taklif etamiz.",
       field_child_gender: "Bola jinsi",
       field_child_name: "Bola ismi",
       field_person_name: "Ism",

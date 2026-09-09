@@ -27,12 +27,27 @@ type EventTopic = {
 
 type ReadyTextsFile = {
   catalog: CatalogItem[];
-  nikoh: Record<string, I18nText>;
+  nikohTopics?: Record<string, EventTopic>;
   eventTopics: Record<string, EventTopic>;
   templates: Record<string, I18nText>;
 };
 
 const data = catalogData as ReadyTextsFile;
+
+const FALLBACK_TOPIC: EventTopic = {
+  latn: "tadbirimiz",
+  cyrl: "тадбиримиз",
+  ru: "наше торжество",
+  aboutLatn: "tadbirimiz",
+  aboutCyrl: "тадбиримиз",
+  aboutRu: "наше торжество",
+  warmLatn: "oilaviy tadbirimiz",
+  warmCyrl: "оилавий тадбиримиз",
+  warmRu: "наше семейное торжество",
+  duaLatn: "oilamizga baraka va tinchlik",
+  duaCyrl: "оиламизга барака ва тинчлик",
+  duaRu: "благословения и мира нашей семье",
+};
 
 function normalizeLang(language: string): Lang {
   return (["uz-latn", "uz-cyrl", "ru"].includes(language)
@@ -60,31 +75,46 @@ function fillTemplate(tpl: string, topic: EventTopic): string {
   );
 }
 
-function bodyFor(eventSlug: string, styleId: string, lang: Lang): string {
+/** Pick wording topic for nikoh subtypes (qiz bazmi ≠ nikoh oqshomi). */
+export function primaryNikohSubtype(subtypeSlugs?: string[] | null): string {
+  const slugs = (subtypeSlugs || []).filter(Boolean);
+  if (!slugs.length) return "nikoh_oqshomi";
+  if (slugs.length === 1) return slugs[0];
+  if (slugs.includes("nikoh_oqshomi")) return "nikoh_oqshomi";
+  return slugs[0];
+}
+
+function topicFor(
+  eventSlug: string,
+  subtypeSlugs?: string[] | null,
+): EventTopic {
   if (eventSlug === "nikoh") {
-    return (data.nikoh[styleId]?.[lang] || "").trim();
+    const key = primaryNikohSubtype(subtypeSlugs);
+    return (
+      data.nikohTopics?.[key] ||
+      data.nikohTopics?.nikoh_oqshomi ||
+      FALLBACK_TOPIC
+    );
   }
-  const topic =
-    data.eventTopics[eventSlug] ||
-    ({
-      latn: "tadbirimiz",
-      cyrl: "тадбиримиз",
-      ru: "наше торжество",
-      aboutLatn: "tadbirimiz",
-      aboutCyrl: "тадбиримиз",
-      aboutRu: "наше торжество",
-      warmLatn: "oilaviy tadbirimiz",
-      warmCyrl: "оилавий тадбиримиз",
-      warmRu: "наше семейное торжество",
-      duaLatn: "oilamizga baraka va tinchlik",
-      duaCyrl: "оиламизга барака ва тинчлик",
-      duaRu: "благословения и мира нашей семье",
-    } satisfies EventTopic);
+  return data.eventTopics[eventSlug] || FALLBACK_TOPIC;
+}
+
+function bodyFor(
+  eventSlug: string,
+  styleId: string,
+  lang: Lang,
+  subtypeSlugs?: string[] | null,
+): string {
+  const topic = topicFor(eventSlug, subtypeSlugs);
   const tpl = data.templates[styleId]?.[lang] || "";
   return fillTemplate(tpl, topic).trim();
 }
 
-function pack(eventSlug: string, language: string): TextTemplate[] {
+function pack(
+  eventSlug: string,
+  language: string,
+  subtypeSlugs?: string[] | null,
+): TextTemplate[] {
   const lang = normalizeLang(language);
   const nameLine =
     eventSlug === "aqiqa" || eventSlug === "sunnat"
@@ -100,11 +130,13 @@ function pack(eventSlug: string, language: string): TextTemplate[] {
         ? "{event_date}, соат {event_time} да\n"
         : "{event_date}, soat {event_time} da\n"
     : "";
+  const subtypeKey =
+    eventSlug === "nikoh" ? primaryNikohSubtype(subtypeSlugs) : "all";
 
   return data.catalog.map((item) => {
-    const body = bodyFor(eventSlug, item.id, lang);
+    const body = bodyFor(eventSlug, item.id, lang, subtypeSlugs);
     return {
-      id: `local-${eventSlug}-${lang}-${item.id}`,
+      id: `local-${eventSlug}-${subtypeKey}-${lang}-${item.id}`,
       title: item.title[lang],
       language: lang,
       tone: "classic",
@@ -122,8 +154,9 @@ export function buildLocalReadyTemplates(
   _t: (key: string, options?: Record<string, unknown>) => string,
   eventSlug: string,
   language: string,
+  subtypeSlugs?: string[] | null,
 ): TextTemplate[] {
-  return pack(eventSlug, language);
+  return pack(eventSlug, language, subtypeSlugs);
 }
 
 export function mergeReadyTextTemplates(

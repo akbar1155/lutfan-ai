@@ -197,16 +197,15 @@ function normalizeUzbekSpelling(text: string, language?: string): string {
       out = out.replace(from, to);
     });
 
-    // Lowercase polite pronouns when they appear in the middle of a sentence.
-    // Sentence starts keep uppercase.
+    // Lowercase polite pronouns mid-sentence (not after .!? or line start).
     const midSentencePronouns: Array<[RegExp, string]> = [
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Sizni\b/gu, "sizni"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Sizning\b/gu, "sizning"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Sizga\b/gu, "sizga"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Sizdan\b/gu, "sizdan"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Sizda\b/gu, "sizda"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Siz bilan\b/gu, "siz bilan"],
-      [/(?<=[\p{L}‘ʻ’,;:]\s)Siz\b/gu, "siz"],
+      [/(?<=[^\s.!?…\n])\s+Sizni\b/g, " sizni"],
+      [/(?<=[^\s.!?…\n])\s+Sizning\b/g, " sizning"],
+      [/(?<=[^\s.!?…\n])\s+Sizga\b/g, " sizga"],
+      [/(?<=[^\s.!?…\n])\s+Sizdan\b/g, " sizdan"],
+      [/(?<=[^\s.!?…\n])\s+Sizda\b/g, " sizda"],
+      [/(?<=[^\s.!?…\n])\s+Siz bilan\b/g, " siz bilan"],
+      [/(?<=[^\s.!?…\n])\s+Siz\b/g, " siz"],
     ];
     midSentencePronouns.forEach(([from, to]) => {
       out = out.replace(from, to);
@@ -218,6 +217,18 @@ function normalizeUzbekSpelling(text: string, language?: string): string {
       [/\bбўслин\b/gi, "бўлсин"],
     ];
     fixes.forEach(([from, to]) => {
+      out = out.replace(from, to);
+    });
+    const midSentencePronouns: Array<[RegExp, string]> = [
+      [/(?<=[^\s.!?…\n])\s+Сизни\b/g, " сизни"],
+      [/(?<=[^\s.!?…\n])\s+Сизнинг\b/g, " сизнинг"],
+      [/(?<=[^\s.!?…\n])\s+Сизга\b/g, " сизга"],
+      [/(?<=[^\s.!?…\n])\s+Сиздан\b/g, " сиздан"],
+      [/(?<=[^\s.!?…\n])\s+Сизда\b/g, " сизда"],
+      [/(?<=[^\s.!?…\n])\s+Сиз билан\b/g, " сиз билан"],
+      [/(?<=[^\s.!?…\n])\s+Сиз\b/g, " сиз"],
+    ];
+    midSentencePronouns.forEach(([from, to]) => {
       out = out.replace(from, to);
     });
   }
@@ -1090,7 +1101,12 @@ export function TextPage() {
       .then(([serverTemplates, inv, ctx]) => {
         const merged = mergeReadyTextTemplates(
           serverTemplates,
-          buildLocalReadyTemplates(t, inv.event_slug, inv.language),
+          buildLocalReadyTemplates(
+            t,
+            inv.event_slug,
+            inv.language,
+            getSelectedSubtypeSlugs(inv),
+          ),
         );
         setTemplates(merged);
         const first = merged[0];
@@ -1118,14 +1134,17 @@ export function TextPage() {
             ? applyHayitOccasion(next.body, ctx.occasion)
             : next.body;
         body = ensurePersonalMessageInBody(body, ctx.personalMessage);
+        body = normalizeUzbekSpelling(body, inv.language);
+        const header = normalizeUzbekSpelling(next.header, inv.language);
         if (ctx.dateTimeFromSchedule.includes("\n")) {
           setBlocks({
             ...next,
+            header,
             body,
             date_time: ctx.dateTimeFromSchedule,
           });
         } else {
-          setBlocks({ ...next, body });
+          setBlocks({ ...next, header, body });
         }
       })
       .catch((err: Error) => setError(err.message));
@@ -1222,15 +1241,21 @@ export function TextPage() {
                             ? applyHayitOccasion(next.body, occasion)
                             : next.body;
                         body = ensurePersonalMessageInBody(body, personalMessage);
+                        body = normalizeUzbekSpelling(body, invitation.language);
+                        const header = normalizeUzbekSpelling(
+                          next.header,
+                          invitation.language,
+                        );
                         // Multi-ceremony: keep the full ready-text body; only replace date block.
                         if (scheduleDateTime.includes("\n")) {
                           return {
                             ...next,
+                            header,
                             body,
                             date_time: scheduleDateTime,
                           };
                         }
-                        return { ...next, body };
+                        return { ...next, header, body };
                       });
                     }}
                   >

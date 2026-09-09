@@ -90,14 +90,30 @@ def normalize_invitation_spelling(text: str, language: str | None = None) -> str
     for pattern, repl in fixes:
         out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
 
-    # Mid-sentence polite pronoun casing (Latin)
-    if language != "uz-cyrl" and language != "ru":
+    # Mid-sentence polite pronoun casing (Latin / Cyrillic)
+    if language == "ru":
+        pass
+    elif language == "uz-cyrl":
         mid = [
-            (r"(?<=[\w‘ʻ’,;:])\sSizni\b", " sizni"),
-            (r"(?<=[\w‘ʻ’,;:])\sSizning\b", " sizning"),
-            (r"(?<=[\w‘ʻ’,;:])\sSizga\b", " sizga"),
-            (r"(?<=[\w‘ʻ’,;:])\sSiz bilan\b", " siz bilan"),
-            (r"(?<=[\w‘ʻ’,;:])\sSiz\b", " siz"),
+            (r"(?<=[^\s.!?…\n])\s+Сизни\b", " сизни"),
+            (r"(?<=[^\s.!?…\n])\s+Сизнинг\b", " сизнинг"),
+            (r"(?<=[^\s.!?…\n])\s+Сизга\b", " сизга"),
+            (r"(?<=[^\s.!?…\n])\s+Сиздан\b", " сиздан"),
+            (r"(?<=[^\s.!?…\n])\s+Сизда\b", " сизда"),
+            (r"(?<=[^\s.!?…\n])\s+Сиз билан\b", " сиз билан"),
+            (r"(?<=[^\s.!?…\n])\s+Сиз\b", " сиз"),
+        ]
+        for pattern, repl in mid:
+            out = re.sub(pattern, repl, out)
+    else:
+        mid = [
+            (r"(?<=[^\s.!?…\n])\s+Sizni\b", " sizni"),
+            (r"(?<=[^\s.!?…\n])\s+Sizning\b", " sizning"),
+            (r"(?<=[^\s.!?…\n])\s+Sizga\b", " sizga"),
+            (r"(?<=[^\s.!?…\n])\s+Sizdan\b", " sizdan"),
+            (r"(?<=[^\s.!?…\n])\s+Sizda\b", " sizda"),
+            (r"(?<=[^\s.!?…\n])\s+Siz bilan\b", " siz bilan"),
+            (r"(?<=[^\s.!?…\n])\s+Siz\b", " siz"),
         ]
         for pattern, repl in mid:
             out = re.sub(pattern, repl, out)
