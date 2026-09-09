@@ -821,19 +821,29 @@ class Command(BaseCommand):
         )
 
         for item in EVENTS:
-            active = bool(item.get("is_active", True))
-            event, _ = EventConfig.objects.update_or_create(
-                slug=item["slug"],
-                defaults={
-                    "sort_order": item["sort_order"],
-                    "name_translations": item["name_translations"],
-                    "description_translations": {},
-                    "subtypes": item.get("subtypes") or [],
-                    "fields_schema": item["fields_schema"],
-                    "color_themes": {},
-                    "is_active": active,
-                },
-            )
+            seed_active = bool(item.get("is_active", True))
+            defaults = {
+                "sort_order": item["sort_order"],
+                "name_translations": item["name_translations"],
+                "description_translations": {},
+                "subtypes": item.get("subtypes") or [],
+                "fields_schema": item["fields_schema"],
+                "color_themes": {},
+            }
+            # Never overwrite admin enable/disable on existing events.
+            # Fresh installs still get is_active from the seed catalog.
+            event = EventConfig.objects.filter(slug=item["slug"]).first()
+            if event is None:
+                event = EventConfig.objects.create(
+                    slug=item["slug"],
+                    is_active=seed_active,
+                    **defaults,
+                )
+            else:
+                for key, value in defaults.items():
+                    setattr(event, key, value)
+                event.save()
+            active = bool(event.is_active)
 
             rich = _load_ready_texts().get(item["slug"]) or {}
             texts = rich if rich else TEXT_BY_EVENT.get(item["slug"], {})

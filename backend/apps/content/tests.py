@@ -1,6 +1,8 @@
-from django.test import SimpleTestCase
+from django.core.management import call_command
+from django.test import SimpleTestCase, TestCase
 
 from apps.content.management.commands.seed_data import EVENTS
+from apps.content.models import EventConfig
 from apps.content.subtypes import event_subtype_mode, normalize_invitation_subtypes
 from apps.content.template_assets import EVENT_TEMPLATE_PICKS, design_meta
 
@@ -56,3 +58,17 @@ class HayitSubtypeConfigTests(SimpleTestCase):
             normalize_invitation_subtypes(event, ["nope"], "qurbon_hayiti"),
             ["qurbon_hayiti"],
         )
+
+
+class SeedPreservesEventActiveFlagTests(TestCase):
+    def test_seed_does_not_reactivate_disabled_events(self):
+        event = EventConfig.objects.create(
+            slug="aqiqa",
+            name_translations={"uz-latn": "Aqiqa"},
+            fields_schema={},
+            is_active=False,
+            sort_order=2,
+        )
+        call_command("seed_data")
+        event.refresh_from_db()
+        self.assertFalse(event.is_active)
