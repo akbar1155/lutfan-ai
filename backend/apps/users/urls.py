@@ -5,6 +5,8 @@ from .views import (
     DevLoginView,
     LogoutView,
     MeView,
+    PhoneLoginView,
+    PhoneRegisterView,
     ProfileView,
     RefreshView,
     TelegramAuthView,
@@ -12,6 +14,8 @@ from .views import (
 
 urlpatterns = [
     path("auth/telegram", TelegramAuthView.as_view()),
+    path("auth/register", PhoneRegisterView.as_view()),
+    path("auth/login", PhoneLoginView.as_view()),
     path("auth/dev-login", DevLoginView.as_view()),
     path("auth/admin-login", AdminPasswordLoginView.as_view()),
     path("auth/refresh", RefreshView.as_view()),

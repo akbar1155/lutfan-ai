@@ -58,3 +58,77 @@ class EnsureAdminLoginCommandTests(TestCase):
         user = User.objects.get(username="panel")
         self.assertEqual(user.role, Role.ADMIN)
         self.assertTrue(user.check_password("Secret123!"))
+
+
+class PhoneAuthTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_and_login(self):
+        reg = self.client.post(
+            "/api/v1/auth/register",
+            {
+                "phone": "90 123 45 67",
+                "password": "secret12",
+                "first_name": "Ali",
+            },
+            format="json",
+        )
+        self.assertEqual(reg.status_code, 200)
+        self.assertEqual(reg.data["user"]["phone"], "+998901234567")
+        self.assertIsNone(reg.data["user"]["telegram_id"])
+        self.assertTrue(reg.data.get("access"))
+
+        login = self.client.post(
+            "/api/v1/auth/login",
+            {"phone": "+998901234567", "password": "secret12"},
+            format="json",
+        )
+        self.assertEqual(login.status_code, 200)
+        self.assertEqual(login.data["user"]["first_name"], "Ali")
+
+    def test_register_rejects_duplicate_phone(self):
+        User.objects.create_user(
+            phone="+998901234567",
+            first_name="Ali",
+            password="secret12",
+        )
+        res = self.client.post(
+            "/api/v1/auth/register",
+            {
+                "phone": "998901234567",
+                "password": "other12",
+                "first_name": "Vali",
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, 400)
+
+    def test_login_rejects_bad_password(self):
+        User.objects.create_user(
+            phone="+998901234567",
+            first_name="Ali",
+            password="secret12",
+        )
+        res = self.client.post(
+            "/api/v1/auth/login",
+            {"phone": "901234567", "password": "wrong"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, 401)
+
+    def test_existing_telegram_user_untouched(self):
+        tg = User.objects.create_user(
+            telegram_id=777001,
+            first_name="Old",
+        )
+        self.assertFalse(tg.has_usable_password())
+        self.assertIsNone(tg.phone)
+        User.objects.create_user(
+            phone="+998909998877",
+            first_name="New",
+            password="secret12",
+        )
+        tg.refresh_from_db()
+        self.assertEqual(tg.telegram_id, 777001)
+        self.assertEqual(User.objects.filter(telegram_id=777001).count(), 1)

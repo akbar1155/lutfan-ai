@@ -11,6 +11,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, UserSession
 from .last_seen import mark_user_login, touch_user_last_seen
 from .serializers import (
+    PhoneLoginSerializer,
+    PhoneRegisterSerializer,
     TelegramAuthSerializer,
     UserProfileUpdateSerializer,
     UserSerializer,
@@ -115,6 +117,69 @@ class TelegramAuthView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        return _issue_auth_response(request, user)
+
+
+class PhoneRegisterView(APIView):
+    """Register with phone + password + name (Telegram login stays available but UI-hidden)."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = PhoneRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = User.objects.create_user(
+            telegram_id=None,
+            first_name=data["first_name"],
+            last_name=(data.get("last_name") or "").strip() or None,
+            phone=data["phone"],
+            password=data["password"],
+        )
+        mark_user_login(user)
+        return _issue_auth_response(request, user)
+
+
+class PhoneLoginView(APIView):
+    """Login with phone + password."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = PhoneLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data["phone"]
+        password = serializer.validated_data["password"]
+
+        user = User.objects.filter(phone=phone, is_active=True).first()
+        if (
+            user is None
+            or not user.has_usable_password()
+            or not user.check_password(password)
+        ):
+            return Response(
+                {
+                    "error": {
+                        "code": "INVALID_CREDENTIALS",
+                        "message": "Invalid phone or password",
+                    }
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if user.is_banned:
+            return Response(
+                {
+                    "error": {
+                        "code": "USER_BANNED",
+                        "message": user.ban_reason or "Account is banned",
+                    }
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        mark_user_login(user)
         return _issue_auth_response(request, user)
 
 

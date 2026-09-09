@@ -14,8 +14,23 @@ function resolveApiBase(): string {
 const API_BASE = resolveApiBase();
 
 type ApiError = {
-  error?: { code?: string; message?: string };
+  error?: {
+    code?: string;
+    message?: string;
+    details?: Record<string, unknown>;
+  };
 };
+
+function formatApiError(body: ApiError, fallback: string): string {
+  const details = body.error?.details;
+  if (details && typeof details === "object") {
+    for (const value of Object.values(details)) {
+      if (Array.isArray(value) && value.length) return String(value[0]);
+      if (typeof value === "string" && value) return value;
+    }
+  }
+  return body.error?.message || fallback;
+}
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem("access_token");
@@ -88,6 +103,8 @@ async function request<T>(
       !path.startsWith("/auth/refresh") &&
       !path.startsWith("/auth/logout") &&
       !path.startsWith("/auth/telegram") &&
+      !path.startsWith("/auth/login") &&
+      !path.startsWith("/auth/register") &&
       !path.startsWith("/auth/dev-login") &&
       !path.startsWith("/auth/admin-login")
     ) {
@@ -99,7 +116,7 @@ async function request<T>(
     let message = `Request failed: ${res.status}`;
     try {
       const body = (await res.json()) as ApiError;
-      message = body.error?.message || message;
+      message = formatApiError(body, message);
     } catch {
       /* ignore */
     }
@@ -128,7 +145,7 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
     let message = `Request failed: ${res.status}`;
     try {
       const body = (await res.json()) as ApiError;
-      message = body.error?.message || message;
+      message = formatApiError(body, message);
     } catch {
       /* ignore */
     }
@@ -156,7 +173,7 @@ async function patchForm<T>(path: string, formData: FormData): Promise<T> {
     let message = `Request failed: ${res.status}`;
     try {
       const body = (await res.json()) as ApiError;
-      message = body.error?.message || message;
+      message = formatApiError(body, message);
     } catch {
       /* ignore */
     }
@@ -255,6 +272,21 @@ export const api = {
     }),
   adminLogin: (payload: { username: string; password: string }) =>
     request<{ user: User; access: string; refresh?: string }>("/auth/admin-login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  phoneLogin: (payload: { phone: string; password: string }) =>
+    request<{ user: User; access: string; refresh?: string }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  phoneRegister: (payload: {
+    phone: string;
+    password: string;
+    first_name: string;
+    last_name?: string;
+  }) =>
+    request<{ user: User; access: string; refresh?: string }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

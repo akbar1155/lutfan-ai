@@ -18,6 +18,8 @@ export default function Layout() {
   const current = normalizeUiLang(i18n.language);
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isAdminAuthed = user?.role === "admin";
+  // Admin chrome only on /admin — never bleed into user pages when role is admin.
+  const showAdminShell = isAdminRoute && isAdminAuthed;
   const isAdmin = isAdminRoute;
   const isWizard = location.pathname.startsWith("/create");
   const isHome = location.pathname === "/";
@@ -36,7 +38,7 @@ export default function Layout() {
     <div
       className={[
         "shell",
-        isAdminAuthed ? "shell-admin" : "",
+        showAdminShell ? "shell-admin" : "",
         isAdminRoute && !isAdminAuthed ? "shell-admin-gate" : "",
         isHome ? "shell-home" : "",
         isWizard ? "shell-wizard" : "",
@@ -48,7 +50,7 @@ export default function Layout() {
         className={[
           "top",
           isHome ? "top-home" : "",
-          isAdminAuthed ? "top-admin" : "",
+          showAdminShell ? "top-admin" : "",
           isAdminRoute && !isAdminAuthed ? "top-admin-gate" : "",
         ]
           .filter(Boolean)
@@ -59,11 +61,6 @@ export default function Layout() {
             <Link to="/" className="brand">
               {t("brand")}
             </Link>
-            {isAdminRoute && (
-              <Link to="/" className="admin-back-link">
-                {t("back")}
-              </Link>
-            )}
           </div>
 
           {!isAdmin && (

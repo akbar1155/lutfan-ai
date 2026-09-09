@@ -9,8 +9,10 @@ import {
   type TextTemplate,
 } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import TelegramLoginWidget from "../auth/TelegramLoginWidget";
-import { canShowTelegramLoginWidget, showDevLogin } from "../auth/flags";
+import PhoneAuthForm from "../auth/PhoneAuthForm";
+// Telegram temporarily disabled — phone/password auth instead.
+// import TelegramLoginWidget from "../auth/TelegramLoginWidget";
+import { showDevLogin } from "../auth/flags";
 import UiSelect from "../components/UiSelect";
 import { DateField, TimeField } from "../components/DateTimePickers";
 import GeneratingScene from "../components/GeneratingScene";
@@ -317,13 +319,12 @@ export function CreateEventPage() {
       <WizardChrome step={1} error={error} gated>
         <div className="wizard-auth">
           <h1>{t("login")}</h1>
-          <p className="hint">
-            {t(canShowTelegramLoginWidget() ? "wizardLoginHint" : "loginLocalHint")}
-          </p>
+          <p className="hint">{t("loginPhoneHint")}</p>
           <div className="login-block">
-            <TelegramLoginWidget />
+            <PhoneAuthForm />
+            {/* <TelegramLoginWidget /> */}
             {showDevLogin && (
-              <button type="button" className="cta" onClick={() => void loginDev(false)}>
+              <button type="button" className="ghost" onClick={() => void loginDev(false)}>
                 {t("loginDev")}
               </button>
             )}

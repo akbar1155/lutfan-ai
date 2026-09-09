@@ -14,6 +14,13 @@ type AuthContextValue = {
   loading: boolean;
   loginDev: (asAdmin?: boolean) => Promise<void>;
   loginAdmin: (username: string, password: string) => Promise<void>;
+  loginPhone: (payload: { phone: string; password: string }) => Promise<void>;
+  registerPhone: (payload: {
+    phone: string;
+    password: string;
+    first_name: string;
+    last_name?: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 };
@@ -103,6 +110,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applyAuth],
   );
 
+  const loginPhone = useCallback(
+    async (payload: { phone: string; password: string }) => {
+      try {
+        const data = await api.phoneLogin(payload);
+        applyAuth(data);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setUser(null);
+        throw err instanceof Error ? err : new Error("Login failed");
+      }
+    },
+    [applyAuth],
+  );
+
+  const registerPhone = useCallback(
+    async (payload: {
+      phone: string;
+      password: string;
+      first_name: string;
+      last_name?: string;
+    }) => {
+      try {
+        const data = await api.phoneRegister(payload);
+        applyAuth(data);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setUser(null);
+        throw err instanceof Error ? err : new Error("Register failed");
+      }
+    },
+    [applyAuth],
+  );
+
   const logout = useCallback(async () => {
     try {
       await api.logout();
@@ -115,8 +157,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, loginDev, loginAdmin, logout, refreshMe }),
-    [user, loading, loginDev, loginAdmin, logout, refreshMe],
+    () => ({
+      user,
+      loading,
+      loginDev,
+      loginAdmin,
+      loginPhone,
+      registerPhone,
+      logout,
+      refreshMe,
+    }),
+    [
+      user,
+      loading,
+      loginDev,
+      loginAdmin,
+      loginPhone,
+      registerPhone,
+      logout,
+      refreshMe,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

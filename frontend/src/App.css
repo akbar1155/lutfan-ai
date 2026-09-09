@@ -192,6 +192,67 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
 }
 
+.phone-auth-form {
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.phone-auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface, #fff) 92%, #000 8%);
+}
+
+.phone-auth-tabs button {
+  border: 0;
+  background: transparent;
+  padding: 0.55rem 0.5rem;
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.phone-auth-tabs button.active {
+  background: var(--surface, #fff);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.phone-auth-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.phone-auth-form .field span {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.phone-auth-form .field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: var(--radius);
+  background: var(--surface, #fff);
+  color: var(--ink);
+  font: inherit;
+}
+
+.phone-auth-form .cta {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
 .telegram-login {
   display: flex;
   justify-content: center;
@@ -773,20 +834,8 @@ select:focus-visible {
   min-width: 0;
 }
 
-.top-brand-cluster .brand,
-.top-brand-cluster .admin-back-link {
+.top-brand-cluster .brand {
   order: 0;
-}
-
-.admin-back-link {
-  color: var(--muted);
-  font-size: 0.9rem;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.admin-back-link:hover {
-  color: var(--ink);
 }
 
 .shell-admin .top-actions {
@@ -2383,8 +2432,7 @@ details p {
     order: 1;
   }
 
-  .shell-admin .top-brand-cluster .brand,
-  .shell-admin .top-brand-cluster .admin-back-link {
+  .shell-admin .top-brand-cluster .brand {
     order: 0;
   }
 
@@ -2679,8 +2727,6 @@ details p {
   font-family: var(--font-body);
 }
 
-.admin-backdrop { display: none; }
-
 .admin-sidebar {
   display: flex;
   flex-direction: column;
@@ -2868,26 +2914,6 @@ details p {
   color: var(--admin-muted);
   font-size: 13px;
   line-height: 1.35;
-}
-
-.admin-menu-btn {
-  display: none;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.admin-menu-icon {
-  width: 1rem;
-  height: 0.75rem;
-  display: block;
-  border-top: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  background: currentColor;
-  background-clip: content-box;
-  padding: 0.28rem 0;
-  box-sizing: border-box;
 }
 
 .admin-topbar-actions {
@@ -3751,30 +3777,16 @@ details p {
     overflow-y: visible;
   }
 
-  .admin-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    border: 0;
-    background: rgba(20, 20, 20, 0.35);
-    cursor: pointer;
-  }
-
   .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: min(280px, 86vw);
-    z-index: 50;
-    transform: translateX(-105%);
-    transition: transform 0.2s ease;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+    position: static;
+    width: 100%;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--admin-border);
+    transform: none;
+    box-shadow: none;
   }
 
-  .admin-sidebar.open { transform: translateX(0); }
-  .admin-menu-btn { display: inline-flex; }
   .admin-topbar { padding: 1rem; }
   .admin-content { padding: 1rem; }
   .admin-table-wrap { max-height: none; }

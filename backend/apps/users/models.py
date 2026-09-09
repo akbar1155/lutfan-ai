@@ -16,11 +16,19 @@ class Role(models.TextChoices):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, telegram_id, first_name, **extra):
-        if telegram_id is None:
-            raise ValueError("telegram_id is required")
-        user = self.model(telegram_id=telegram_id, first_name=first_name, **extra)
-        user.set_unusable_password()
+    def create_user(self, telegram_id=None, first_name="", password=None, **extra):
+        phone = extra.get("phone")
+        if telegram_id is None and not phone:
+            raise ValueError("telegram_id or phone is required")
+        user = self.model(
+            telegram_id=telegram_id,
+            first_name=first_name or "User",
+            **extra,
+        )
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -33,12 +41,14 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    telegram_id = models.BigIntegerField(unique=True)
+    # Nullable so phone/password accounts can exist without Telegram.
+    # Existing Telegram users keep their telegram_id unchanged.
+    telegram_id = models.BigIntegerField(unique=True, blank=True, null=True)
     username = models.CharField(max_length=64, blank=True, null=True)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128, blank=True, null=True)
     photo_url = models.URLField(max_length=512, blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True, unique=True)
     language = models.CharField(
         max_length=16, choices=Language.choices, default=Language.UZ_LATN
     )
@@ -62,10 +72,11 @@ class User(AbstractBaseUser, PermissionsMixin):
             models.Index(fields=["role"]),
             models.Index(fields=["created_at"]),
             models.Index(fields=["last_seen_at"]),
+            models.Index(fields=["phone"]),
         ]
 
     def __str__(self):
-        return self.username or self.first_name or str(self.telegram_id)
+        return self.username or self.first_name or self.phone or str(self.telegram_id)
 
     @property
     def is_admin(self):

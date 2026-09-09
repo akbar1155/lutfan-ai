@@ -131,7 +131,6 @@ export default function AdminPage() {
   const { t } = useTranslation();
   const { user, loginDev, loginAdmin } = useAuth();
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
@@ -332,16 +331,7 @@ export default function AdminPage() {
 
   return (
     <main className="admin-shell">
-      {sidebarOpen && (
-        <button
-          type="button"
-          className="admin-backdrop"
-          aria-label="Close"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
+      <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <span className="admin-sidebar-kicker">{t("brand")}</span>
           <strong>{t("admin")}</strong>
@@ -361,7 +351,6 @@ export default function AdminPage() {
                     className={`admin-nav-item ${tab === item.id ? "active" : ""}`}
                     onClick={() => {
                       setTab(item.id);
-                      setSidebarOpen(false);
                       setShowCreate(false);
                     }}
                   >
@@ -381,14 +370,6 @@ export default function AdminPage() {
       <div className="admin-main">
         <header className="admin-topbar">
           <div className="admin-topbar-left">
-            <button
-              type="button"
-              className="admin-menu-btn ghost"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Menu"
-            >
-              <span className="admin-menu-icon" aria-hidden />
-            </button>
             <div>
               <h1>{t(meta.titleKey)}</h1>
               <p>{t(meta.descKey)}</p>

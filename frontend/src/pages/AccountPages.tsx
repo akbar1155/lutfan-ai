@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api, type Invitation } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import TelegramLoginWidget from "../auth/TelegramLoginWidget";
+import PhoneAuthForm from "../auth/PhoneAuthForm";
+// Telegram temporarily disabled — phone/password auth instead.
+// import TelegramLoginWidget from "../auth/TelegramLoginWidget";
 import { loginHintKey, showDevLogin } from "../auth/flags";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import { eventDisplayName, normalizeUiLang } from "../i18n/lang";
@@ -47,11 +49,12 @@ export function AccountPage() {
           <p className="hint">{t(loginHintKey())}</p>
         </header>
         <div className="login-block">
-          <TelegramLoginWidget />
+          <PhoneAuthForm />
+          {/* <TelegramLoginWidget /> */}
           {showDevLogin && (
             <button
               type="button"
-              className="cta"
+              className="ghost"
               onClick={() => {
                 void loginDev(false).catch(() => undefined);
               }}
