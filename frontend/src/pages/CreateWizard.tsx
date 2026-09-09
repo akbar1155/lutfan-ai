@@ -1095,6 +1095,9 @@ export function TextPage() {
               existing &&
                 ((existing.body || "").trim() || (existing.header || "").trim()),
             ),
+            savedTemplateId: String(
+              inv.event_data?.ready_text_template_id || "",
+            ).trim(),
           }),
         ]);
       })
@@ -1110,10 +1113,20 @@ export function TextPage() {
         );
         setTemplates(merged);
         const first = merged[0];
-        if (!first || ctx.hasSavedText) return;
+        if (!first) return;
 
-        // Default: first ready-text style is selected and applied.
+        const saved =
+          ctx.savedTemplateId &&
+          merged.find((tpl) => tpl.id === ctx.savedTemplateId);
+        // Keep previous pill highlight when returning to this step; never leave none selected.
+        if (saved) {
+          setSelectedTemplateId(saved.id);
+          return;
+        }
         setSelectedTemplateId(first.id);
+        if (ctx.hasSavedText) return;
+
+        // First visit: apply the default ready-text style.
         const vars = {
           ...ctx.fields,
           hayit_occasion: ctx.occasion,
@@ -1190,6 +1203,17 @@ export function TextPage() {
                     className={active ? "choice-pill active" : "choice-pill"}
                     onClick={() => {
                       setSelectedTemplateId(tpl.id);
+                      setInvitation((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              event_data: {
+                                ...(prev.event_data || {}),
+                                ready_text_template_id: tpl.id,
+                              },
+                            }
+                          : prev,
+                      );
                       const occasion = hayitOccasionName(
                         null,
                         getSelectedSubtypeSlugs(invitation),
@@ -1304,6 +1328,11 @@ export function TextPage() {
                   event_data: {
                     ...(invitation.event_data || {}),
                     text_source: "custom",
+                    ready_text_template_id:
+                      selectedTemplateId ||
+                      invitation.event_data?.ready_text_template_id ||
+                      templates[0]?.id ||
+                      null,
                     final_text_blocks: {
                       header: normalizeUzbekSpelling(blocks.header, invitation.language),
                       body: normalizeUzbekSpelling(blocks.body, invitation.language),
