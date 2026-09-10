@@ -128,6 +128,30 @@ services:
     networks:
       - lutfan
 
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "beat", "-l", "info", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+    env_file:
+      - .env.production
+    environment:
+      RUN_MIGRATIONS: "0"
+      RUN_SEED: "0"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lutfan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lutfan}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      S3_ENDPOINT: http://minio:9000
+      CDN_BASE_URL: ${CDN_BASE_URL}
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - lutfan
+
   frontend:
     build:
       context: ./frontend
