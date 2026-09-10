@@ -577,15 +577,7 @@ export function DataPage() {
     const all = [
       ...((event.fields_schema.required || []) as FieldDef[]),
       ...((event.fields_schema.optional || []) as FieldDef[]),
-    ];
-    // Always offer optional personal note — some older event schemas omit it.
-    if (!all.some((f) => f.key === "personal_message")) {
-      all.push({
-        key: "personal_message",
-        type: "text",
-        maxLength: 200,
-      });
-    }
+    ].filter((f) => f.key !== "personal_message" && f.key !== "personalMessage");
     // Nikoh: family signature used in ready-text closings / card footer.
     if (
       event.slug === "nikoh" &&

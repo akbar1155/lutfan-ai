@@ -82,9 +82,7 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [
-                {"key": "personal_message", "type": "text", "maxLength": 200},
-            ],
+            "optional": [],
         },
     },
     {
@@ -106,7 +104,6 @@ EVENTS = [
             ],
             "optional": [
                 {"key": "child_name", "type": "string", "maxLength": 50},
-                {"key": "personal_message", "type": "text", "maxLength": 200},
             ],
         },
     },
@@ -126,9 +123,7 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [
-                {"key": "personal_message", "type": "text", "maxLength": 200},
-            ],
+            "optional": [],
         },
     },
     {
@@ -147,7 +142,7 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [{"key": "personal_message", "type": "text", "maxLength": 200}],
+            "optional": [],
         },
     },
     {
@@ -165,9 +160,7 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [
-                {"key": "personal_message", "type": "text", "maxLength": 200},
-            ],
+            "optional": [],
         },
     },
     {
@@ -202,9 +195,7 @@ EVENTS = [
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [
-                {"key": "personal_message", "type": "text", "maxLength": 200},
-            ],
+            "optional": [],
         },
         "is_active": False,
     },
@@ -804,6 +795,30 @@ def _template_variables(preview: str) -> list[str]:
     return sorted(set(found))
 
 
+RETIRED_FIELD_KEYS = frozenset({"personal_message", "personalMessage"})
+
+
+def _strip_retired_fields(fields_schema: dict | None) -> dict:
+    """Drop retired keys from event field schemas without clobbering other edits."""
+    schema = dict(fields_schema or {})
+    changed = False
+    for bucket in ("required", "optional"):
+        rows = schema.get(bucket)
+        if not isinstance(rows, list):
+            continue
+        cleaned = [
+            row
+            for row in rows
+            if not (
+                isinstance(row, dict)
+                and str(row.get("key") or "") in RETIRED_FIELD_KEYS
+            )
+        ]
+        if cleaned != rows:
+            schema[bucket] = cleaned
+            changed = True
+    return schema if changed or fields_schema is None else (fields_schema or {})
+
 
 class Command(BaseCommand):
     help = (
@@ -863,6 +878,15 @@ class Command(BaseCommand):
                 for key, value in defaults.items():
                     setattr(event, key, value)
                 event.save(update_fields=[*defaults.keys(), "updated_at"])
+
+            # Always drop retired optional fields (e.g. personal_message) from schema.
+            cleaned_schema = _strip_retired_fields(
+                event.fields_schema if isinstance(event.fields_schema, dict) else {}
+            )
+            if cleaned_schema != (event.fields_schema or {}):
+                event.fields_schema = cleaned_schema
+                event.save(update_fields=["fields_schema", "updated_at"])
+
             active = bool(event.is_active)
 
             rich = _load_ready_texts().get(item["slug"]) or {}
