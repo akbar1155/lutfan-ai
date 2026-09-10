@@ -44,9 +44,9 @@ class Command(BaseCommand):
             self.stderr.write("No EventConfig found; cannot recover templates.")
             return
 
-        admin = User.objects.filter(role=Role.ADMIN).order_by("date_joined").first()
+        admin = User.objects.filter(role=Role.ADMIN).order_by("created_at").first()
         if admin is None:
-            admin = User.objects.order_by("date_joined").first()
+            admin = User.objects.order_by("created_at").first()
         if admin is None:
             self.stderr.write("No user found for created_by_admin.")
             return
