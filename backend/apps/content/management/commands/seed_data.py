@@ -866,7 +866,6 @@ class Command(BaseCommand):
                 "color_themes": {},
             }
             # Create missing events only. Never clobber admin edits unless --force.
-            # is_active is always preserved on existing rows.
             event = EventConfig.objects.filter(slug=item["slug"]).first()
             if event is None:
                 event = EventConfig.objects.create(
@@ -878,6 +877,14 @@ class Command(BaseCommand):
                 for key, value in defaults.items():
                     setattr(event, key, value)
                 event.save(update_fields=[*defaults.keys(), "updated_at"])
+
+            # Keep product catalog availability in sync with seed:
+            # if seed says an event should be live, re-enable it (templates
+            # on inactive events are invisible to users even when is_active).
+            # Seed-disabled events (e.g. hayit) stay off.
+            if event.is_active != seed_active:
+                event.is_active = seed_active
+                event.save(update_fields=["is_active", "updated_at"])
 
             # Always drop retired optional fields (e.g. personal_message) from schema.
             cleaned_schema = _strip_retired_fields(

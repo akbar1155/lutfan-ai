@@ -117,14 +117,26 @@ class SeedPreservesCustomTemplatesTests(TestCase):
         self.assertEqual(mood.prompt_snippet, "admin-only snippet")
 
 
-class SeedPreservesEventActiveFlagTests(TestCase):
-    def test_seed_does_not_reactivate_disabled_events(self):
+class SeedCatalogEventActiveTests(TestCase):
+    def test_seed_enables_catalog_active_events(self):
         event = EventConfig.objects.create(
             slug="aqiqa",
             name_translations={"uz-latn": "Aqiqa"},
             fields_schema={},
             is_active=False,
             sort_order=2,
+        )
+        call_command("seed_data")
+        event.refresh_from_db()
+        self.assertTrue(event.is_active)
+
+    def test_seed_keeps_catalog_disabled_events_off(self):
+        event = EventConfig.objects.create(
+            slug="hayit",
+            name_translations={"uz-latn": "Hayit"},
+            fields_schema={},
+            is_active=True,
+            sort_order=6,
         )
         call_command("seed_data")
         event.refresh_from_db()
