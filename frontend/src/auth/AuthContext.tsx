@@ -32,7 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    setLoading(true);
+    const hadUser = Boolean(localStorage.getItem("access_token"));
+    // Only show the global loading gate on first restore (no known session yet).
+    if (!hadUser) setLoading(true);
     try {
       // localStorage may be empty after a hard refresh while httpOnly
       // refresh cookie is still valid — restore before calling /auth/me.

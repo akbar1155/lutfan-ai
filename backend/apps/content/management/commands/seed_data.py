@@ -806,9 +806,28 @@ def _template_variables(preview: str) -> list[str]:
 
 
 class Command(BaseCommand):
-    help = "Seed MVP events, mood tags, text templates, AI presets"
+    help = (
+        "Seed MVP catalog (events, texts, templates, moods, presets). "
+        "By default only creates missing rows — never overwrites or deletes "
+        "admin edits. Use --force to refresh catalog fields; --purge-junk "
+        "to remove known placeholder templates."
+    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Overwrite existing catalog rows with seed values (never deletes)",
+        )
+        parser.add_argument(
+            "--purge-junk",
+            action="store_true",
+            help="Delete known placeholder/demo JPG templates only",
+        )
 
     def handle(self, *args, **options):
+        force = bool(options.get("force"))
+        purge_junk = bool(options.get("purge_junk"))
         _ensure_media_templates()
 
         admin, _ = User.objects.get_or_create(
@@ -831,8 +850,8 @@ class Command(BaseCommand):
                 "fields_schema": item["fields_schema"],
                 "color_themes": {},
             }
-            # Never overwrite admin enable/disable on existing events.
-            # Fresh installs still get is_active from the seed catalog.
+            # Create missing events only. Never clobber admin edits unless --force.
+            # is_active is always preserved on existing rows.
             event = EventConfig.objects.filter(slug=item["slug"]).first()
             if event is None:
                 event = EventConfig.objects.create(
@@ -840,10 +859,10 @@ class Command(BaseCommand):
                     is_active=seed_active,
                     **defaults,
                 )
-            else:
+            elif force:
                 for key, value in defaults.items():
                     setattr(event, key, value)
-                event.save()
+                event.save(update_fields=[*defaults.keys(), "updated_at"])
             active = bool(event.is_active)
 
             rich = _load_ready_texts().get(item["slug"]) or {}
@@ -853,115 +872,143 @@ class Command(BaseCommand):
                 for idx, payload in enumerate(variants):
                     title = payload["title"]
                     preview = payload.get("preview") or payload.get("preview_text") or ""
-                    TextTemplate.objects.update_or_create(
-                        event=event,
-                        language=lang,
-                        title=title,
-                        defaults={
-                            "preview_text": preview,
-                            "variables_used": _template_variables(preview),
-                            "tone": "classic" if idx == 0 else "warm",
-                            "sort_order": idx,
-                            "is_active": active,
-                            "created_by_admin": admin,
-                        },
-                    )
-            # Seed upserts catalog texts only; never deactivate admin-created texts.
+                    text_defaults = {
+                        "preview_text": preview,
+                        "variables_used": _template_variables(preview),
+                        "tone": "classic" if idx == 0 else "warm",
+                        "sort_order": idx,
+                        "is_active": active,
+                        "created_by_admin": admin,
+                    }
+                    existing_text = TextTemplate.objects.filter(
+                        event=event, language=lang, title=title
+                    ).first()
+                    if existing_text is None:
+                        TextTemplate.objects.create(
+                            event=event,
+                            language=lang,
+                            title=title,
+                            **text_defaults,
+                        )
+                    elif force:
+                        for key, value in text_defaults.items():
+                            setattr(existing_text, key, value)
+                        existing_text.save()
 
             assets = TEMPLATE_ASSETS[item["slug"]]
             for idx, asset in enumerate(assets):
-                Template.objects.update_or_create(
-                    event=event,
-                    theme_name=asset["theme_name"],
-                    defaults={
-                        "bg_url": asset["bg_url"],
-                        "bg_url_preview": asset["bg_url_preview"],
-                        "ai_composition_prompt": asset["composition"],
-                        "supports_dark_text": True,
-                        "supported_formats": ["4:5", "9:16", "1:1"],
-                        "style_tags": asset["tags"],
-                        "color_palette": asset["palette"],
-                        "is_active": active,
-                        "is_featured": active and idx == 0,
-                        "created_by_admin": admin,
-                    },
-                )
-
-            # Do not deactivate/delete admin-uploaded templates. Seed only
-            # upserts the catalog themes above; custom JPG uploads must survive
-            # every redeploy / container restart.
+                tpl_defaults = {
+                    "bg_url": asset["bg_url"],
+                    "bg_url_preview": asset["bg_url_preview"],
+                    "ai_composition_prompt": asset["composition"],
+                    "supports_dark_text": True,
+                    "supported_formats": ["4:5", "9:16", "1:1"],
+                    "style_tags": asset["tags"],
+                    "color_palette": asset["palette"],
+                    "is_active": active,
+                    "is_featured": active and idx == 0,
+                    "created_by_admin": admin,
+                }
+                existing_tpl = Template.objects.filter(
+                    event=event, theme_name=asset["theme_name"]
+                ).first()
+                if existing_tpl is None:
+                    Template.objects.create(
+                        event=event,
+                        theme_name=asset["theme_name"],
+                        **tpl_defaults,
+                    )
+                elif force:
+                    for key, value in tpl_defaults.items():
+                        setattr(existing_tpl, key, value)
+                    existing_tpl.save()
 
             primary = assets[0]
-            AIPromptPreset.objects.update_or_create(
-                name=f"{item['slug']} luxury",
-                event=event,
-                defaults={
-                    "base_prompt": (
-                        f"Art-direct a premium print-ready Uzbek {item['slug']} taklifnoma "
-                        "with décor AND exact invitation text painted in. "
-                        "Visual style: {mood_snippets}. "
-                        f"Event-specific look: {primary['composition']} "
-                        "Full-bleed luxury stationery with rich floral/botanical corners, "
-                        "elegant multi-layer gold frame, antique metallic accents. "
-                        "Paint the exact user text with clear hierarchy. "
-                        "Never cartoonish, never a plain empty template."
-                    ),
-                    "negative_prompt": (
-                        "gibberish glyphs, misspelled words, mixed Latin/Cyrillic, "
-                        "watermark, logo, faces, neon, purple glow, comic, "
-                        "plain thin border only, empty corners, sparse template, "
-                        "floating white card panel, blurry unreadable letters, "
-                        "generic identical layout for every event type"
-                    ),
-                    "model_params": {"aspect_ratio": "4:5"},
-                    "is_active": active,
-                },
-            )
+            preset_defaults = {
+                "base_prompt": (
+                    f"Art-direct a premium print-ready Uzbek {item['slug']} taklifnoma "
+                    "with décor AND exact invitation text painted in. "
+                    "Visual style: {mood_snippets}. "
+                    f"Event-specific look: {primary['composition']} "
+                    "Full-bleed luxury stationery with rich floral/botanical corners, "
+                    "elegant multi-layer gold frame, antique metallic accents. "
+                    "Paint the exact user text with clear hierarchy. "
+                    "Never cartoonish, never a plain empty template."
+                ),
+                "negative_prompt": (
+                    "gibberish glyphs, misspelled words, mixed Latin/Cyrillic, "
+                    "watermark, logo, faces, neon, purple glow, comic, "
+                    "plain thin border only, empty corners, sparse template, "
+                    "floating white card panel, blurry unreadable letters, "
+                    "generic identical layout for every event type"
+                ),
+                "model_params": {"aspect_ratio": "4:5"},
+                "is_active": active,
+            }
+            preset_name = f"{item['slug']} luxury"
+            existing_preset = AIPromptPreset.objects.filter(
+                name=preset_name, event=event
+            ).first()
+            if existing_preset is None:
+                AIPromptPreset.objects.create(
+                    name=preset_name, event=event, **preset_defaults
+                )
+            elif force:
+                for key, value in preset_defaults.items():
+                    setattr(existing_preset, key, value)
+                existing_preset.save()
 
         for i, (slug, category, snippet, names) in enumerate(MOOD_TAGS):
-            MoodTag.objects.update_or_create(
-                slug=slug,
-                defaults={
-                    "category": category,
-                    "name_translations": names,
-                    "prompt_snippet": snippet,
-                    "sort_order": i,
-                    "is_active": True,
-                },
+            mood_defaults = {
+                "category": category,
+                "name_translations": names,
+                "prompt_snippet": snippet,
+                "sort_order": i,
+                "is_active": True,
+            }
+            existing_mood = MoodTag.objects.filter(slug=slug).first()
+            if existing_mood is None:
+                MoodTag.objects.create(slug=slug, **mood_defaults)
+            elif force:
+                # Preserve admin enable/disable even under --force.
+                mood_defaults.pop("is_active", None)
+                for key, value in mood_defaults.items():
+                    setattr(existing_mood, key, value)
+                existing_mood.save()
+
+        deleted = 0
+        if purge_junk:
+            from django.db.models import Q
+
+            admin_upload_q = Q(bg_url__regex=r"templates/[0-9a-f]{32}/") | Q(
+                bg_url_preview__regex=r"templates/[0-9a-f]{32}/"
+            )
+            junk_q = (
+                Q(theme_name__istartswith="Demo ")
+                | Q(
+                    theme_name__in=[
+                        "Ivory Classic",
+                        "Cream Gold Roses",
+                        "Rose Blush Minimal",
+                        "Ivory Atelier",
+                        "Black luxury",
+                    ]
+                )
+                | Q(bg_url__icontains="placehold.co")
+                | Q(bg_url_preview__icontains="placehold.co")
+                | Q(bg_url="ur")
+                | Q(bg_url_preview="ur")
+            )
+            deleted, _ = (
+                Template.objects.filter(junk_q)
+                .exclude(theme_name__in=KEEP_THEME_NAMES)
+                .exclude(admin_upload_q)
+                .delete()
             )
 
-        # Hard-remove only known junk placeholders — never wipe inactive or
-        # admin-uploaded templates (those live under templates/<32hex>/).
-        from django.db.models import Q
-
-        admin_upload_q = Q(bg_url__regex=r"templates/[0-9a-f]{32}/") | Q(
-            bg_url_preview__regex=r"templates/[0-9a-f]{32}/"
-        )
-        junk_q = (
-            Q(theme_name__istartswith="Demo ")
-            | Q(
-                theme_name__in=[
-                    "Ivory Classic",
-                    "Cream Gold Roses",
-                    "Rose Blush Minimal",
-                    "Ivory Atelier",
-                    "Black luxury",
-                ]
-            )
-            | Q(bg_url__icontains="placehold.co")
-            | Q(bg_url_preview__icontains="placehold.co")
-            | Q(bg_url="ur")
-            | Q(bg_url_preview="ur")
-        )
-        deleted, _ = (
-            Template.objects.filter(junk_q)
-            .exclude(theme_name__in=KEEP_THEME_NAMES)
-            .exclude(admin_upload_q)
-            .delete()
-        )
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seed data ready ({len(KEEP_THEME_NAMES)} quality themes; "
-                f"removed {deleted} junk templates)"
+                f"force={force}; purged {deleted} junk templates)"
             )
         )

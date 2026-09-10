@@ -2,7 +2,7 @@ from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 
 from apps.content.management.commands.seed_data import EVENTS
-from apps.content.models import EventConfig, Template
+from apps.content.models import EventConfig, MoodTag, Template, TextTemplate
 from apps.content.subtypes import event_subtype_mode, normalize_invitation_subtypes
 from apps.content.template_assets import EVENT_TEMPLATE_PICKS, design_meta
 from apps.users.models import Role, User
@@ -89,6 +89,32 @@ class SeedPreservesCustomTemplatesTests(TestCase):
         self.assertTrue(custom.is_active)
         self.assertEqual(custom.theme_name, "Admin Upload Custom")
         self.assertTrue(Template.objects.filter(pk=custom.pk).exists())
+
+    def test_seed_does_not_overwrite_admin_edits(self):
+        call_command("seed_data")
+        event = EventConfig.objects.get(slug="aqiqa")
+        event.name_translations = {"uz-latn": "Custom Aqiqa Name"}
+        event.save(update_fields=["name_translations", "updated_at"])
+
+        text = TextTemplate.objects.filter(event=event).first()
+        self.assertIsNotNone(text)
+        text.preview_text = "ADMIN CUSTOM PREVIEW {host_name}"
+        text.save(update_fields=["preview_text", "updated_at"])
+
+        mood = MoodTag.objects.first()
+        self.assertIsNotNone(mood)
+        mood.is_active = False
+        mood.prompt_snippet = "admin-only snippet"
+        mood.save(update_fields=["is_active", "prompt_snippet"])
+
+        call_command("seed_data")
+        event.refresh_from_db()
+        text.refresh_from_db()
+        mood.refresh_from_db()
+        self.assertEqual(event.name_translations.get("uz-latn"), "Custom Aqiqa Name")
+        self.assertEqual(text.preview_text, "ADMIN CUSTOM PREVIEW {host_name}")
+        self.assertFalse(mood.is_active)
+        self.assertEqual(mood.prompt_snippet, "admin-only snippet")
 
 
 class SeedPreservesEventActiveFlagTests(TestCase):

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, Children, cloneElement, isValidElement, type FormEvent, type ReactElement, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -127,10 +128,106 @@ function Field({
   );
 }
 
+function AdminModal({
+  title,
+  onClose,
+  children,
+  wide,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="admin-modal-backdrop" role="presentation" onClick={onClose}>
+      <div
+        className={`admin-modal ${wide ? "is-wide" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="admin-modal-head">
+          <h3>{title}</h3>
+          <button
+            type="button"
+            className="ghost admin-modal-close"
+            aria-label={t("adminCloseDrawer")}
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </header>
+        <div className="admin-modal-body">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function AdminImageModal({
+  src,
+  title,
+  onClose,
+}: {
+  src: string;
+  title?: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <AdminModal title={title || t("adminPreview")} onClose={onClose} wide>
+      <div className="admin-image-modal">
+        <img src={src} alt={title || ""} />
+        <a className="admin-btn" href={src} target="_blank" rel="noreferrer">
+          {t("adminOpenImage")}
+        </a>
+      </div>
+    </AdminModal>
+  );
+}
+
+const ALL_TABS: Tab[] = NAV.flatMap((group) => group.items.map((item) => item.id));
+
+function isAdminTab(value: string | null): value is Tab {
+  return Boolean(value && ALL_TABS.includes(value as Tab));
+}
+
 export default function AdminPage() {
   const { t } = useTranslation();
-  const { user, loginDev, loginAdmin } = useAuth();
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const { user, loading: authLoading, loginDev, loginAdmin } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: Tab = isAdminTab(searchParams.get("tab"))
+    ? (searchParams.get("tab") as Tab)
+    : "dashboard";
+  const setTab = useCallback(
+    (next: Tab) => {
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev);
+          if (next === "dashboard") params.delete("tab");
+          else params.set("tab", next);
+          return params;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
@@ -161,6 +258,9 @@ export default function AdminPage() {
   const [editingMood, setEditingMood] = useState<Record<string, unknown> | null>(null);
   const [editingPreset, setEditingPreset] = useState<Record<string, unknown> | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ src: string; title?: string } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     if (!user || user.role !== "admin") return;
@@ -253,6 +353,23 @@ export default function AdminPage() {
     // Default to first available event for a “single list” UX.
     setTextsEventSlug(eventOptions[0]);
   }, [tab, textsEventSlug, eventOptions]);
+
+  // Wait for session restore so refresh never flashes the login gate,
+  // and keep the URL tab (e.g. ?tab=templates) after auth resolves.
+  if (authLoading && !user) {
+    return (
+      <main className="admin-login-gate" aria-busy="true">
+        <section className="admin-login-panel">
+          <div className="admin-login-brand">
+            <span className="admin-login-badge">{t("brand")}</span>
+            <h1>{t("admin")}</h1>
+            <p>{t("loading")}</p>
+          </div>
+          <AdminSkeleton />
+        </section>
+      </main>
+    );
+  }
 
   if (!user || user.role !== "admin") {
     const canSubmit = Boolean(adminUsername.trim() && adminPassword);
@@ -452,16 +569,17 @@ export default function AdminPage() {
                 ]}
                 renderExtra={(row) =>
                   row.final_image_url ? (
-                    <a
-                      className="icon-btn"
-                      href={String(row.final_image_url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={t("adminOpenImage")}
-                      title={t("adminOpenImage")}
+                    <IconBtn
+                      label={t("adminOpenImage")}
+                      onClick={() =>
+                        setPreviewImage({
+                          src: String(row.final_image_url),
+                          title: String(row.event_slug || t("adminOpenImage")),
+                        })
+                      }
                     >
                       <IconExternal />
-                    </a>
+                    </IconBtn>
                   ) : (
                     "—"
                   )
@@ -494,19 +612,27 @@ export default function AdminPage() {
                 </button>
               </div>
               {(showCreate || editingEvent) && editingEvent && (
-                <EventForm
-                  initial={editingEvent}
-                  busy={!!actionBusy}
-                  onCancel={() => {
+                <AdminModal
+                  title={`${editingEvent.id ? t("adminEdit") : t("adminCreate")} — ${t("adminNavEvents")}`}
+                  onClose={() => {
                     setShowCreate(false);
                     setEditingEvent(null);
                   }}
-                  onSubmit={(body, id) =>
-                    void run("event", () =>
-                      id ? api.adminPatchEvent(id, body) : api.adminCreateEvent(body),
-                    )
-                  }
-                />
+                >
+                  <EventForm
+                    initial={editingEvent}
+                    busy={!!actionBusy}
+                    onCancel={() => {
+                      setShowCreate(false);
+                      setEditingEvent(null);
+                    }}
+                    onSubmit={(body, id) =>
+                      void run("event", () =>
+                        id ? api.adminPatchEvent(id, body) : api.adminCreateEvent(body),
+                      )
+                    }
+                  />
+                </AdminModal>
               )}
               <AdminTable
                 empty={t("adminEmpty")}
@@ -611,22 +737,32 @@ export default function AdminPage() {
                 </button>
               </div>
               {editingText && (
-                <TextForm
-                  initial={editingText}
-                  eventOptions={eventOptions}
-                  busy={!!actionBusy}
-                  onCancel={() => {
+                <AdminModal
+                  title={
+                    editingText.id ? t("adminEdit") : t("adminNewText")
+                  }
+                  onClose={() => {
                     setEditingText(null);
                     setShowCreate(false);
                   }}
-                  onSubmit={(body, id) =>
-                    void run("text", () =>
-                      id
-                        ? api.adminPatchTextTemplate(id, body)
-                        : api.adminCreateTextTemplate(body),
-                    )
-                  }
-                />
+                >
+                  <TextForm
+                    initial={editingText}
+                    eventOptions={eventOptions}
+                    busy={!!actionBusy}
+                    onCancel={() => {
+                      setEditingText(null);
+                      setShowCreate(false);
+                    }}
+                    onSubmit={(body, id) =>
+                      void run("text", () =>
+                        id
+                          ? api.adminPatchTextTemplate(id, body)
+                          : api.adminCreateTextTemplate(body),
+                      )
+                    }
+                  />
+                </AdminModal>
               )}
               {(() => {
                 const visibleTexts = texts.filter(
@@ -718,32 +854,37 @@ export default function AdminPage() {
                 </button>
               </div>
               {editingTemplate && (
-                <TemplateForm
-                  initial={editingTemplate}
-                  eventOptions={eventOptions}
-                  busy={!!actionBusy}
-                  onCancel={() => setEditingTemplate(null)}
-                  onSubmit={(body, id) =>
-                    void run("tpl", () =>
-                      body.__file instanceof File
-                        ? (() => {
-                            const fd = new FormData();
-                            Object.entries(body).forEach(([k, v]) => {
-                              if (k === "__file") return;
-                              if (v == null) return;
-                              fd.append(k, typeof v === "string" ? v : JSON.stringify(v));
-                            });
-                            fd.append("file", body.__file);
-                            return id
-                              ? api.adminPatchTemplateMultipart(id, fd)
-                              : api.adminCreateTemplateMultipart(fd);
-                          })()
-                        : id
-                          ? api.adminPatchTemplate(id, body)
-                          : api.adminCreateTemplate(body),
-                    )
-                  }
-                />
+                <AdminModal
+                  title={`${editingTemplate.id ? t("adminEdit") : t("adminCreate")} — JPG`}
+                  onClose={() => setEditingTemplate(null)}
+                >
+                  <TemplateForm
+                    initial={editingTemplate}
+                    eventOptions={eventOptions}
+                    busy={!!actionBusy}
+                    onCancel={() => setEditingTemplate(null)}
+                    onSubmit={(body, id) =>
+                      void run("tpl", () =>
+                        body.__file instanceof File
+                          ? (() => {
+                              const fd = new FormData();
+                              Object.entries(body).forEach(([k, v]) => {
+                                if (k === "__file") return;
+                                if (v == null) return;
+                                fd.append(k, typeof v === "string" ? v : JSON.stringify(v));
+                              });
+                              fd.append("file", body.__file);
+                              return id
+                                ? api.adminPatchTemplateMultipart(id, fd)
+                                : api.adminCreateTemplateMultipart(fd);
+                            })()
+                          : id
+                            ? api.adminPatchTemplate(id, body)
+                            : api.adminCreateTemplate(body),
+                      )
+                    }
+                  />
+                </AdminModal>
               )}
               {templates.length ? (
                 <div className="admin-card-grid">
@@ -752,8 +893,23 @@ export default function AdminPage() {
                       <span className="admin-list-index" aria-hidden>
                         {idx + 1}
                       </span>
-                      {tpl.bg_url_preview ? (
-                        <img src={String(tpl.bg_url_preview)} alt={String(tpl.theme_name)} />
+                      {tpl.bg_url_preview || tpl.bg_url ? (
+                        <button
+                          type="button"
+                          className="admin-media-thumb"
+                          onClick={() =>
+                            setPreviewImage({
+                              src: String(tpl.bg_url || tpl.bg_url_preview),
+                              title: String(tpl.theme_name || ""),
+                            })
+                          }
+                          aria-label={t("adminOpenImage")}
+                        >
+                          <img
+                            src={String(tpl.bg_url_preview || tpl.bg_url)}
+                            alt={String(tpl.theme_name)}
+                          />
+                        </button>
                       ) : (
                         <div className="admin-media-fallback">{t("adminEmpty")}</div>
                       )}
@@ -769,7 +925,10 @@ export default function AdminPage() {
                             onClick={() =>
                               void run(`tpl-test-${String(tpl.id)}`, async () => {
                                 const res = await api.adminTestTemplate(String(tpl.id));
-                                window.open(res.result_url, "_blank");
+                                setPreviewImage({
+                                  src: res.result_url,
+                                  title: String(tpl.theme_name || "Test"),
+                                });
                               })
                             }
                           >
@@ -827,16 +986,21 @@ export default function AdminPage() {
                 </button>
               </div>
               {editingMood && (
-                <MoodForm
-                  initial={editingMood}
-                  busy={!!actionBusy}
-                  onCancel={() => setEditingMood(null)}
-                  onSubmit={(body, id) =>
-                    void run("mood", () =>
-                      id ? api.adminPatchMoodTag(id, body) : api.adminCreateMoodTag(body),
-                    )
-                  }
-                />
+                <AdminModal
+                  title={`${editingMood.id ? t("adminEdit") : t("adminCreate")} — Mood`}
+                  onClose={() => setEditingMood(null)}
+                >
+                  <MoodForm
+                    initial={editingMood}
+                    busy={!!actionBusy}
+                    onCancel={() => setEditingMood(null)}
+                    onSubmit={(body, id) =>
+                      void run("mood", () =>
+                        id ? api.adminPatchMoodTag(id, body) : api.adminCreateMoodTag(body),
+                      )
+                    }
+                  />
+                </AdminModal>
               )}
               <SimpleTable
                 empty={t("adminEmpty")}
@@ -905,17 +1069,22 @@ export default function AdminPage() {
                 </button>
               </div>
               {editingPreset && (
-                <PresetForm
-                  initial={editingPreset}
-                  eventOptions={eventOptions}
-                  busy={!!actionBusy}
-                  onCancel={() => setEditingPreset(null)}
-                  onSubmit={(body, id) =>
-                    void run("preset", () =>
-                      id ? api.adminPatchAiPreset(id, body) : api.adminCreateAiPreset(body),
-                    )
-                  }
-                />
+                <AdminModal
+                  title={`${editingPreset.id ? t("adminEdit") : t("adminCreate")} — AI`}
+                  onClose={() => setEditingPreset(null)}
+                >
+                  <PresetForm
+                    initial={editingPreset}
+                    eventOptions={eventOptions}
+                    busy={!!actionBusy}
+                    onCancel={() => setEditingPreset(null)}
+                    onSubmit={(body, id) =>
+                      void run("preset", () =>
+                        id ? api.adminPatchAiPreset(id, body) : api.adminCreateAiPreset(body),
+                      )
+                    }
+                  />
+                </AdminModal>
               )}
               <SimpleTable
                 empty={t("adminEmpty")}
@@ -933,7 +1102,10 @@ export default function AdminPage() {
                       onClick={() =>
                         void run(`preset-test-${String(row.id)}`, async () => {
                           const res = await api.adminTestAiPreset(String(row.id));
-                          window.open(res.result_url, "_blank");
+                          setPreviewImage({
+                            src: res.result_url,
+                            title: String(row.name || "Test"),
+                          });
                           await load();
                         })
                       }
@@ -1015,6 +1187,14 @@ export default function AdminPage() {
                 ["message", t("adminColMessage")],
                 ["created_at", t("adminColCreated")],
               ]}
+            />
+          )}
+
+          {previewImage && (
+            <AdminImageModal
+              src={previewImage.src}
+              title={previewImage.title || t("adminPreview")}
+              onClose={() => setPreviewImage(null)}
             />
           )}
         </div>
@@ -1246,7 +1426,7 @@ function EventForm({
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
         </button>
-        <button type="button" className="ghost" onClick={onCancel}>
+        <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
         </button>
       </div>
@@ -1360,7 +1540,7 @@ function TextForm({
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
         </button>
-        <button type="button" className="ghost" onClick={onCancel}>
+        <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
         </button>
       </div>
@@ -1468,7 +1648,7 @@ function TemplateForm({
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
         </button>
-        <button type="button" className="ghost" onClick={onCancel}>
+        <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
         </button>
       </div>
@@ -1577,7 +1757,7 @@ function MoodForm({
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
         </button>
-        <button type="button" className="ghost" onClick={onCancel}>
+        <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
         </button>
       </div>
@@ -1677,7 +1857,7 @@ function PresetForm({
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
         </button>
-        <button type="button" className="ghost" onClick={onCancel}>
+        <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
         </button>
       </div>
