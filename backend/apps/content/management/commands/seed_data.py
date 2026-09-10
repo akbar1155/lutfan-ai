@@ -925,44 +925,46 @@ class Command(BaseCommand):
                         for key, value in text_defaults.items():
                             setattr(existing_text, key, value)
                         existing_text.save()
+                    elif active and not existing_text.is_active:
+                        existing_text.is_active = True
+                        existing_text.save(update_fields=["is_active", "updated_at"])
 
             assets = TEMPLATE_ASSETS[item["slug"]]
-            catalog_theme_names: set[str] = set()
-            for idx, asset in enumerate(assets):
-                catalog_theme_names.add(asset["theme_name"])
-                tpl_defaults = {
-                    "bg_url": asset["bg_url"],
-                    "bg_url_preview": asset["bg_url_preview"],
-                    "ai_composition_prompt": asset["composition"],
-                    "supports_dark_text": True,
-                    "supported_formats": ["4:5", "9:16", "1:1"],
-                    "style_tags": asset["tags"],
-                    "color_palette": asset["palette"],
-                    "is_active": active,
-                    "is_featured": active and idx == 0,
-                    "created_by_admin": admin,
-                }
-                existing_tpl = Template.objects.filter(
-                    event=event, theme_name=asset["theme_name"]
-                ).first()
-                if existing_tpl is None:
-                    Template.objects.create(
-                        event=event,
-                        theme_name=asset["theme_name"],
-                        **tpl_defaults,
-                    )
-                elif force:
-                    for key, value in tpl_defaults.items():
-                        setattr(existing_tpl, key, value)
-                    existing_tpl.save()
-                elif active and not existing_tpl.is_active:
-                    # Event came back online — catalog cards must follow.
-                    existing_tpl.is_active = True
-                    if idx == 0:
-                        existing_tpl.is_featured = True
-                    existing_tpl.save(
-                        update_fields=["is_active", "is_featured", "updated_at"]
-                    )
+            # JPG catalog seeds only on nikoh — all designs are reassigned there.
+            if item["slug"] == "nikoh":
+                for idx, asset in enumerate(assets):
+                    tpl_defaults = {
+                        "bg_url": asset["bg_url"],
+                        "bg_url_preview": asset["bg_url_preview"],
+                        "ai_composition_prompt": asset["composition"],
+                        "supports_dark_text": True,
+                        "supported_formats": ["4:5", "9:16", "1:1"],
+                        "style_tags": asset["tags"],
+                        "color_palette": asset["palette"],
+                        "is_active": active,
+                        "is_featured": active and idx == 0,
+                        "created_by_admin": admin,
+                    }
+                    existing_tpl = Template.objects.filter(
+                        event=event, theme_name=asset["theme_name"]
+                    ).first()
+                    if existing_tpl is None:
+                        Template.objects.create(
+                            event=event,
+                            theme_name=asset["theme_name"],
+                            **tpl_defaults,
+                        )
+                    elif force:
+                        for key, value in tpl_defaults.items():
+                            setattr(existing_tpl, key, value)
+                        existing_tpl.save()
+                    elif active and not existing_tpl.is_active:
+                        existing_tpl.is_active = True
+                        if idx == 0:
+                            existing_tpl.is_featured = True
+                        existing_tpl.save(
+                            update_fields=["is_active", "is_featured", "updated_at"]
+                        )
 
             primary = assets[0]
             preset_defaults = {
@@ -998,6 +1000,20 @@ class Command(BaseCommand):
                 for key, value in preset_defaults.items():
                     setattr(existing_preset, key, value)
                 existing_preset.save()
+            elif active and not existing_preset.is_active:
+                existing_preset.is_active = True
+                existing_preset.save(update_fields=["is_active", "updated_at"])
+
+        # Point every JPG template at nikoh so the wizard always sees the full set.
+        nikoh = EventConfig.objects.filter(slug="nikoh").first()
+        if nikoh is not None:
+            Template.objects.exclude(event=nikoh).update(event=nikoh)
+            Template.objects.filter(event=nikoh, is_active=False).update(is_active=True)
+
+        # Restore text templates that were deactivated while events were offline.
+        TextTemplate.objects.filter(event__is_active=True, is_active=False).update(
+            is_active=True
+        )
 
         for i, (slug, category, snippet, names) in enumerate(MOOD_TAGS):
             mood_defaults = {

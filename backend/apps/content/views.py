@@ -73,11 +73,8 @@ class TemplateListView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        qs = Template.objects.filter(is_active=True)
-        event_slug = self.request.query_params.get("event_slug")
-        if not event_slug:
-            return qs.none()
-        qs = qs.filter(event_id=event_slug)
+        # Shared JPG pool: all designs are assigned to nikoh and reused for every event.
+        qs = Template.objects.filter(is_active=True, event_id="nikoh")
         subtype = self.request.query_params.get("subtype_slug")
         if subtype:
             qs = qs.filter(subtype_slug=subtype)

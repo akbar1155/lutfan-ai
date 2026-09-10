@@ -88,6 +88,7 @@ class SeedPreservesCustomTemplatesTests(TestCase):
         custom.refresh_from_db()
         self.assertTrue(custom.is_active)
         self.assertEqual(custom.theme_name, "Admin Upload Custom")
+        self.assertEqual(custom.event_id, "nikoh")
         self.assertTrue(Template.objects.filter(pk=custom.pk).exists())
 
     def test_seed_does_not_overwrite_admin_edits(self):

@@ -104,7 +104,6 @@ export default function Layout() {
               className={`nav ${menuOpen ? "nav-open" : ""}`}
               aria-label="Main"
             >
-              <NavLink to="/gallery">{t("gallery")}</NavLink>
               <NavLink to="/how-it-works">{t("how")}</NavLink>
               <NavLink to="/faq">{t("faq")}</NavLink>
               {user && <NavLink to="/account">{t("account")}</NavLink>}

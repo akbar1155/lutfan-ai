@@ -76,20 +76,13 @@ export function GalleryPage() {
     let cancelled = false;
     void (async () => {
       try {
-        const evs = await api.events();
-        const all: JpgTemplate[] = [];
-        for (const ev of evs) {
-          const part = await api.templates(ev.slug).catch(() => [] as JpgTemplate[]);
-          all.push(
-            ...part.map((tpl) => ({
-              ...tpl,
-              event_slug: tpl.event_slug || ev.slug,
-            })),
-          );
-        }
+        const [evs, part] = await Promise.all([
+          api.events(),
+          api.templates("nikoh").catch(() => [] as JpgTemplate[]),
+        ]);
         if (!cancelled) {
           setEvents(evs);
-          setTemplates(all.filter(Boolean));
+          setTemplates(part);
         }
       } catch {
         if (!cancelled) {
