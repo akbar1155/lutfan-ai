@@ -4221,63 +4221,251 @@ details p {
   gap: 0.55rem;
 }
 
-.admin-form-grid > .admin-field:has(.admin-event-multi) {
-  grid-column: 1 / -1;
+.admin-tpl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.admin-event-multi {
+.admin-tpl-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-tpl-form .admin-field {
+  width: 100%;
+  color: var(--admin-ink, #18181b);
+  font-size: 0.78rem;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+}
+
+.admin-tpl-form .admin-field > span {
+  color: #71717a;
+  font-weight: 500;
+}
+
+.admin-tpl-form .admin-field input,
+.admin-tpl-form .admin-field textarea,
+.admin-tpl-form .admin-field .ui-select-wrap {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.admin-tpl-form .admin-field .ui-select-wrap {
+  display: block;
+}
+
+.admin-tpl-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.admin-tpl-dropzone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 168px;
+  padding: 0;
+  overflow: hidden;
+  border: 1.5px dashed #d4d4d8;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-tpl-dropzone:hover {
+  border-color: #a1a1aa;
+  background: #fafafa;
+  box-shadow: inset 0 0 0 1px rgba(24, 24, 27, 0.04);
+}
+
+.admin-tpl-dropzone.has-preview {
+  min-height: 220px;
+  border-style: solid;
+  border-color: #e4e4e7;
+  background: #18181b;
+}
+
+.admin-tpl-drop-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.25rem 1rem 2.4rem;
+  color: #52525b;
+}
+
+.admin-tpl-drop-empty strong {
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: #18181b;
+}
+
+.admin-tpl-drop-empty span {
+  font-size: 0.8rem;
+  color: #71717a;
+}
+
+.admin-tpl-drop-preview {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-tpl-drop-cta {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: #18181b;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 560;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(24, 24, 27, 0.22);
+}
+
+.admin-tpl-dropzone.has-preview .admin-tpl-drop-cta {
+  background: rgba(255, 255, 255, 0.92);
+  color: #18181b;
+}
+
+.admin-tpl-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.admin-tpl-file-name {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #71717a;
+  word-break: break-all;
+}
+
+.admin-tpl-section {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
 }
 
-.admin-event-multi-toolbar {
+.admin-tpl-section-head {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #71717a;
 }
 
-.admin-event-multi-toolbar .admin-btn {
-  min-height: 32px;
-  padding: 0 10px;
-  font-size: 0.8rem;
+.admin-tpl-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #3f6212;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-tpl-link:hover {
+  text-decoration: underline;
 }
 
 .admin-event-multi-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
-.admin-event-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+.admin-event-pill {
   margin: 0;
-  padding: 0.35rem 0.65rem;
+  padding: 0.45rem 0.8rem;
   border: 1px solid #e4e4e7;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #fff;
-  color: var(--admin-ink, #18181b);
+  color: #3f3f46;
   font-size: 0.82rem;
+  font-weight: 520;
   cursor: pointer;
-  user-select: none;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
-.admin-event-chip input {
-  margin: 0;
-  accent-color: #3f6212;
+.admin-event-pill:hover {
+  border-color: #d4d4d8;
+  background: #fafafa;
 }
 
-.admin-event-chip.is-on {
-  border-color: #84cc16;
-  background: #f7fee7;
+.admin-event-pill.is-on {
+  border-color: #365314;
+  background: #365314;
+  color: #fff;
 }
 
 .admin-event-multi-hint {
   margin: 0;
+  font-size: 0.78rem;
   color: #b91c1c;
+}
+
+.admin-tpl-count {
+  margin: 0;
+}
+
+.admin-tpl-advanced {
+  border: 1px solid #ececf0;
+  border-radius: 10px;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+.admin-tpl-advanced > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 560;
+  color: #3f3f46;
+  user-select: none;
+}
+
+.admin-tpl-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-tpl-advanced > summary::after {
+  content: "+";
+  float: right;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.admin-tpl-advanced[open] > summary::after {
+  content: "–";
+}
+
+.admin-tpl-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 0.85rem 0.85rem;
 }
 
 .admin-field {

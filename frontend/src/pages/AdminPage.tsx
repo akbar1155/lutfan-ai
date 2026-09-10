@@ -208,7 +208,7 @@ function isAdminTab(value: string | null): value is Tab {
 }
 
 export default function AdminPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, loading: authLoading, loginDev, loginAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab: Tab = isAdminTab(searchParams.get("tab"))
@@ -345,6 +345,19 @@ export default function AdminPage() {
     () => events.map((e) => String(e.slug)).filter(Boolean),
     [events],
   );
+
+  const eventLabels = useMemo(() => {
+    const lang = (i18n.language || "uz-latn") as string;
+    const map: Record<string, string> = {};
+    for (const e of events) {
+      const slug = String(e.slug || "");
+      if (!slug) continue;
+      const names = (e.name_translations || {}) as Record<string, string>;
+      map[slug] =
+        names[lang] || names["uz-latn"] || names["uz-cyrl"] || names.ru || slug;
+    }
+    return map;
+  }, [events, i18n.language]);
 
   useEffect(() => {
     if (tab !== "texts") return;
@@ -862,6 +875,7 @@ export default function AdminPage() {
                   <TemplateForm
                     initial={editingTemplate}
                     eventOptions={eventOptions}
+                    eventLabels={eventLabels}
                     busy={!!actionBusy}
                     onCancel={() => setEditingTemplate(null)}
                     onSubmit={(body, id) =>
@@ -1552,12 +1566,14 @@ function TextForm({
 function TemplateForm({
   initial,
   eventOptions,
+  eventLabels,
   onSubmit,
   onCancel,
   busy,
 }: {
   initial: Record<string, unknown>;
   eventOptions: string[];
+  eventLabels?: Record<string, string>;
   onSubmit: (body: Record<string, unknown>, id?: string) => void;
   onCancel: () => void;
   busy: boolean;
@@ -1566,12 +1582,15 @@ function TemplateForm({
   const isCreate = !initial.id;
   const [form, setForm] = useState(initial);
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [eventSlugs, setEventSlugs] = useState<string[]>(() => {
     if (Array.isArray(initial.event_slugs)) {
       return initial.event_slugs.map(String);
     }
     return initial.event_slug ? [String(initial.event_slug)] : [];
   });
+
   useEffect(() => {
     setForm(initial);
     setFile(null);
@@ -1582,6 +1601,16 @@ function TemplateForm({
     }
   }, [initial]);
 
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
   const toggleEvent = (slug: string) => {
     setEventSlugs((prev) =>
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
@@ -1591,9 +1620,24 @@ function TemplateForm({
   const allSelected =
     eventOptions.length > 0 && eventOptions.every((s) => eventSlugs.includes(s));
 
+  const labelFor = (slug: string) => eventLabels?.[slug] || slug;
+  const existingPreview =
+    previewUrl ||
+    (typeof form.bg_url_preview === "string" && form.bg_url_preview
+      ? form.bg_url_preview
+      : typeof form.bg_url === "string" && form.bg_url
+        ? form.bg_url
+        : null);
+
+  const canSave =
+    !busy &&
+    Boolean(String(form.theme_name || "").trim()) &&
+    (isCreate ? eventSlugs.length > 0 : Boolean(form.event_slug)) &&
+    (Boolean(file) || Boolean(String(form.bg_url || "").trim()));
+
   return (
     <form
-      className="admin-form"
+      className="admin-form admin-tpl-form"
       onSubmit={(e) => {
         e.preventDefault();
         const selected = isCreate
@@ -1622,25 +1666,61 @@ function TemplateForm({
         );
       }}
     >
-      <h3>{form.id ? t("adminEdit") : t("adminCreate")} — JPG</h3>
-      <div className="admin-form-grid">
-        <Field label={t("adminColEvent")}>
-          {isCreate ? (
-            <div className="admin-event-multi">
-              <div className="admin-event-multi-toolbar">
-                <button
-                  type="button"
-                  className="admin-btn"
-                  onClick={() =>
-                    setEventSlugs(allSelected ? [] : [...eventOptions])
-                  }
-                >
-                  {allSelected ? t("adminClearEvents") : t("adminSelectAllEvents")}
-                </button>
-                <span className="hint">
-                  {eventSlugs.length}/{eventOptions.length}
-                </span>
+      <div className="admin-tpl-stack">
+        <div className="admin-tpl-upload">
+          <button
+            type="button"
+            className={`admin-tpl-dropzone ${existingPreview ? "has-preview" : ""}`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {existingPreview ? (
+              <img src={existingPreview} alt="" className="admin-tpl-drop-preview" />
+            ) : (
+              <div className="admin-tpl-drop-empty">
+                <strong>{t("adminTplUploadTitle")}</strong>
+                <span>{t("adminTplUploadHint")}</span>
               </div>
+            )}
+            <span className="admin-tpl-drop-cta">
+              {file ? t("adminTplChangeFile") : t("adminTplChooseFile")}
+            </span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            className="admin-tpl-file-input"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+          {file ? (
+            <p className="admin-tpl-file-name">{file.name}</p>
+          ) : null}
+        </div>
+
+        <Field label={t("adminColTheme")}>
+          <input
+            required
+            value={String(form.theme_name || "")}
+            onChange={(e) => setForm({ ...form, theme_name: e.target.value })}
+            placeholder={t("adminTplThemePlaceholder")}
+          />
+        </Field>
+
+        <div className="admin-tpl-section">
+          <div className="admin-tpl-section-head">
+            <span>{t("adminColEvent")}</span>
+            {isCreate ? (
+              <button
+                type="button"
+                className="admin-tpl-link"
+                onClick={() => setEventSlugs(allSelected ? [] : [...eventOptions])}
+              >
+                {allSelected ? t("adminClearEvents") : t("adminSelectAllEvents")}
+              </button>
+            ) : null}
+          </div>
+          {isCreate ? (
+            <>
               <div
                 className="admin-event-multi-list"
                 role="group"
@@ -1649,24 +1729,29 @@ function TemplateForm({
                 {eventOptions.map((slug) => {
                   const checked = eventSlugs.includes(slug);
                   return (
-                    <label
+                    <button
                       key={slug}
-                      className={`admin-event-chip ${checked ? "is-on" : ""}`}
+                      type="button"
+                      className={`admin-event-pill ${checked ? "is-on" : ""}`}
+                      aria-pressed={checked}
+                      onClick={() => toggleEvent(slug)}
                     >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleEvent(slug)}
-                      />
-                      <span>{slug}</span>
-                    </label>
+                      {labelFor(slug)}
+                    </button>
                   );
                 })}
               </div>
               {!eventSlugs.length ? (
-                <p className="hint admin-event-multi-hint">{t("adminPickEvents")}</p>
-              ) : null}
-            </div>
+                <p className="admin-event-multi-hint">{t("adminPickEvents")}</p>
+              ) : (
+                <p className="hint admin-tpl-count">
+                  {t("adminTplEventsPicked", {
+                    count: eventSlugs.length,
+                    total: eventOptions.length,
+                  })}
+                </p>
+              )}
+            </>
           ) : (
             <UiSelect
               value={String(form.event_slug || "")}
@@ -1674,54 +1759,51 @@ function TemplateForm({
             >
               {eventOptions.map((slug) => (
                 <option key={slug} value={slug}>
-                  {slug}
+                  {labelFor(slug)}
                 </option>
               ))}
             </UiSelect>
           )}
-        </Field>
-        <Field label={t("adminColTheme")}>
-          <input
-            required
-            value={String(form.theme_name || "")}
-            onChange={(e) => setForm({ ...form, theme_name: e.target.value })}
-          />
-        </Field>
-        <Field label="bg_url">
-          <input
-            value={String(form.bg_url || "")}
-            onChange={(e) => setForm({ ...form, bg_url: e.target.value })}
-            placeholder="/media/… or upload file"
-          />
-        </Field>
-        <Field label="bg_url_preview">
-          <input
-            value={String(form.bg_url_preview || "")}
-            onChange={(e) => setForm({ ...form, bg_url_preview: e.target.value })}
-          />
-        </Field>
-        <Field label="JPG file (multipart)">
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </Field>
+        </div>
+
+        <details className="admin-tpl-advanced">
+          <summary>{t("adminTplAdvanced")}</summary>
+          <div className="admin-tpl-advanced-body">
+            <Field label={t("adminTplPrompt")}>
+              <textarea
+                rows={3}
+                value={String(form.ai_composition_prompt || "")}
+                onChange={(e) =>
+                  setForm({ ...form, ai_composition_prompt: e.target.value })
+                }
+              />
+            </Field>
+            {!isCreate || !file ? (
+              <>
+                <Field label={t("adminTplBgUrl")}>
+                  <input
+                    value={String(form.bg_url || "")}
+                    onChange={(e) => setForm({ ...form, bg_url: e.target.value })}
+                    placeholder="/media/…"
+                  />
+                </Field>
+                <Field label={t("adminTplPreviewUrl")}>
+                  <input
+                    value={String(form.bg_url_preview || "")}
+                    onChange={(e) =>
+                      setForm({ ...form, bg_url_preview: e.target.value })
+                    }
+                  />
+                </Field>
+              </>
+            ) : null}
+          </div>
+        </details>
       </div>
-      <Field label="ai_composition_prompt">
-        <textarea
-          rows={4}
-          value={String(form.ai_composition_prompt || "")}
-          onChange={(e) => setForm({ ...form, ai_composition_prompt: e.target.value })}
-        />
-      </Field>
+
       <div className="admin-actions">
-        <button
-          type="submit"
-          className="admin-btn primary"
-          disabled={busy || (isCreate && !eventSlugs.length)}
-        >
-          {t("adminSave")}
+        <button type="submit" className="admin-btn primary" disabled={!canSave}>
+          {busy ? t("loading") : t("adminSave")}
         </button>
         <button type="button" className="admin-btn" onClick={onCancel}>
           {t("back")}
