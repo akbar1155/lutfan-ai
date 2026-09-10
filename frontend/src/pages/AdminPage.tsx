@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import {
+  IconBan,
   IconBtn,
   IconEdit,
   IconExternal,
   IconPower,
-  IconTrash,
 } from "../components/ActionIcons";
 import { EmptyState } from "../components/UiStates";
 import UiSelect from "../components/UiSelect";
@@ -708,7 +708,7 @@ export default function AdminPage() {
                             )
                           }
                         >
-                          {e.is_active ? <IconTrash /> : <IconPower />}
+                          {e.is_active ? <IconBan /> : <IconPower />}
                         </IconBtn>
                       </td>
                     </tr>
@@ -847,7 +847,7 @@ export default function AdminPage() {
                               )
                             }
                           >
-                            {row.is_active ? <IconTrash /> : <IconPower />}
+                            {row.is_active ? <IconBan /> : <IconPower />}
                           </IconBtn>
                         </td>
                       </tr>
@@ -978,7 +978,7 @@ export default function AdminPage() {
                               )
                             }
                           >
-                            {tpl.is_active ? <IconTrash /> : <IconPower />}
+                            {tpl.is_active ? <IconBan /> : <IconPower />}
                           </IconBtn>
                         </div>
                       </div>
@@ -1068,7 +1068,7 @@ export default function AdminPage() {
                         )
                       }
                     >
-                      {row.is_active ? <IconTrash /> : <IconPower />}
+                      {row.is_active ? <IconBan /> : <IconPower />}
                     </IconBtn>
                   </div>
                 )}
@@ -1163,7 +1163,7 @@ export default function AdminPage() {
                         )
                       }
                     >
-                      {row.is_active ? <IconTrash /> : <IconPower />}
+                      {row.is_active ? <IconBan /> : <IconPower />}
                     </IconBtn>
                   </div>
                 )}
