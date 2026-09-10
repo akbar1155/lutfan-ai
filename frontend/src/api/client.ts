@@ -312,8 +312,15 @@ export const api = {
     if (opts?.subtype_slug) q.set("subtype_slug", opts.subtype_slug);
     return request<TextTemplate[]>(`/text-templates?${q.toString()}`);
   },
-  templates: (eventSlug: string) =>
-    request<JpgTemplate[]>(`/templates?event_slug=${eventSlug}`),
+  templates: async (eventSlug?: string) => {
+    const q = eventSlug ? `?event_slug=${encodeURIComponent(eventSlug)}` : "";
+    const data = await request<JpgTemplate[] | { results?: JpgTemplate[] }>(
+      `/templates${q}`,
+    );
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.results)) return data.results;
+    return [];
+  },
   moodTags: () =>
     request<Record<string, Array<{ slug: string; name_translations: Record<string, string>; prompt_snippet: string }>>>(
       "/mood-tags",

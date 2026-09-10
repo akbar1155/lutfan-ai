@@ -1399,6 +1399,12 @@ export function TextPage() {
 export function StylePage() {
   const { id } = useParams();
   const { t } = useTranslation();
+
+  // Warm the shared JPG catalog so "Tayyor dizayn" never flashes empty.
+  useEffect(() => {
+    void api.templates().catch(() => undefined);
+  }, []);
+
   return (
     <WizardChrome step={5} title={t("style")} hint={t("styleHint")}>
       <div className="grid style-grid">
@@ -1427,25 +1433,54 @@ export function StyleTemplatesPage() {
   const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<JpgTemplate[]>([]);
-  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id || authLoading) return;
-    setTemplatesLoading(true);
-    void api
-      .getInvitation(id)
-      .then(async (inv) => {
-        const list = await api.templates(inv.event_slug);
+    if (!id || authLoading) {
+      setReady(false);
+      return;
+    }
+
+    let cancelled = false;
+    setReady(false);
+    setError(null);
+
+    const load = async (attempt = 0): Promise<void> => {
+      try {
+        const [inv, list] = await Promise.all([
+          api.getInvitation(id),
+          api.templates(),
+        ]);
+        if (cancelled) return;
+        if (!list.length && attempt < 2) {
+          await new Promise((r) => window.setTimeout(r, 350 * (attempt + 1)));
+          if (cancelled) return;
+          return load(attempt + 1);
+        }
         setInvitation(inv);
         setTemplates(list);
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setTemplatesLoading(false));
+        setReady(true);
+      } catch (err) {
+        if (cancelled) return;
+        if (attempt < 2) {
+          await new Promise((r) => window.setTimeout(r, 350 * (attempt + 1)));
+          if (cancelled) return;
+          return load(attempt + 1);
+        }
+        setError(err instanceof Error ? err.message : String(err));
+        setReady(true);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [id, authLoading]);
 
-  if (!invitation || templatesLoading) {
+  if (!ready || !invitation) {
     return (
       <WizardChrome step={5} title={t("pathTemplate")} error={error}>
         <PageLoader label={t("loading")} />
