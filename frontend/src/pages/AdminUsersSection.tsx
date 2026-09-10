@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import { IconBan, IconBtn, IconEye, IconPower, IconSearch, IconSessions } from "../components/ActionIcons";
+import { IconBan, IconBtn, IconEye, IconInvite, IconPower, IconSearch, IconSessions } from "../components/ActionIcons";
 import {
   formatDisplayDateTimeStamp,
   formatRelativeTime,
@@ -26,6 +26,7 @@ type UserDetail = {
   user: Record<string, unknown>;
   sessions?: Array<Record<string, unknown>>;
   invitations: Array<Record<string, unknown>>;
+  invitation_count?: number;
   history: Array<Record<string, unknown>>;
 };
 type DrawerTab = "profile" | "sessions" | "invitations" | "history";
@@ -263,6 +264,7 @@ function RowActions({
   user,
   onViewProfile,
   onViewSessions,
+  onViewInvitations,
   onToggleBan,
   busy,
   t,
@@ -270,6 +272,7 @@ function RowActions({
   user: UserRow;
   onViewProfile: () => void;
   onViewSessions: () => void;
+  onViewInvitations: () => void;
   onToggleBan: () => void;
   busy: boolean;
   t: (k: string) => string;
@@ -287,6 +290,16 @@ function RowActions({
         }}
       >
         <IconEye />
+      </IconBtn>
+      <IconBtn
+        label={t("adminActionViewInvitations")}
+        disabled={busy}
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewInvitations();
+        }}
+      >
+        <IconInvite />
       </IconBtn>
       <IconBtn
         label={t("adminActionViewSessions")}
@@ -695,9 +708,16 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                               ) : null}
                             </td>
                             <td className="num">
-                              <span className="admin-users-count-pill">
+                              <button
+                                type="button"
+                                className="admin-users-count-pill admin-users-count-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openUser(id, "invitations");
+                                }}
+                              >
                                 {String(u.invitation_count ?? 0)}
-                              </span>
+                              </button>
                             </td>
                             <td className="actions-col" onClick={stopRowClick}>
                               <RowActions
@@ -705,6 +725,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                                 busy={!!actionBusy}
                                 t={t}
                                 onViewProfile={() => openUser(id, "profile")}
+                                onViewInvitations={() => openUser(id, "invitations")}
                                 onViewSessions={() => openUser(id, "sessions")}
                                 onToggleBan={() => handleToggleBan(u)}
                               />
@@ -769,6 +790,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                             busy={!!actionBusy}
                             t={t}
                             onViewProfile={() => openUser(id, "profile")}
+                            onViewInvitations={() => openUser(id, "invitations")}
                             onViewSessions={() => openUser(id, "sessions")}
                             onToggleBan={() => handleToggleBan(u)}
                           />
@@ -1051,22 +1073,57 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                     <section className="admin-users-drawer-section">
                       <div className="admin-users-stat">
                         <span>{t("adminColInvites")}</span>
-                        <strong>{String(drawerUser?.invitation_count ?? 0)}</strong>
+                        <strong>
+                          {String(
+                            userDetail.invitation_count ??
+                              drawerUser?.invitation_count ??
+                              userDetail.invitations.length,
+                          )}
+                        </strong>
                       </div>
                       {userDetail.invitations.length ? (
                         <ul className="admin-users-invite-list">
-                          {userDetail.invitations.map((inv, idx) => (
-                            <li key={String(inv.id)}>
-                              <span className="admin-list-index">{idx + 1}</span>
-                              <div className="admin-users-invite-head">
-                                <strong>{String(inv.event_slug)}</strong>
-                                <InviteStatusBadge status={inv.status} />
-                              </div>
-                              <span className="muted">
-                                {formatDisplayDateTimeStamp(inv.created_at)}
-                              </span>
-                            </li>
-                          ))}
+                          {userDetail.invitations.map((inv, idx) => {
+                            const imageUrl = String(inv.final_image_url || "");
+                            const inviteId = String(inv.id);
+                            const openHref = imageUrl
+                              ? `/i/${inviteId}`
+                              : `/create/${inviteId}/result`;
+                            return (
+                              <li key={inviteId} className="admin-users-invite-item">
+                                <span className="admin-list-index">{idx + 1}</span>
+                                {imageUrl ? (
+                                  <a
+                                    className="admin-users-invite-thumb"
+                                    href={openHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <img src={imageUrl} alt="" />
+                                  </a>
+                                ) : (
+                                  <div className="admin-users-invite-thumb empty" aria-hidden />
+                                )}
+                                <div className="admin-users-invite-body">
+                                  <div className="admin-users-invite-head">
+                                    <strong>{String(inv.event_slug)}</strong>
+                                    <InviteStatusBadge status={inv.status} />
+                                  </div>
+                                  <span className="muted">
+                                    {formatDisplayDateTimeStamp(inv.created_at)}
+                                  </span>
+                                  <a
+                                    className="admin-users-invite-link"
+                                    href={openHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    {t("adminOpenInvite")}
+                                  </a>
+                                </div>
+                              </li>
+                            );
+                          })}
                         </ul>
                       ) : (
                         <p className="admin-users-tab-empty">{t("adminInvitesEmpty")}</p>

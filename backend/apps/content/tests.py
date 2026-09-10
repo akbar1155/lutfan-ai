@@ -119,7 +119,7 @@ class SeedPreservesCustomTemplatesTests(TestCase):
 
 
 class SeedCatalogEventActiveTests(TestCase):
-    def test_seed_enables_catalog_active_events(self):
+    def test_seed_preserves_admin_disabled_event(self):
         event = EventConfig.objects.create(
             slug="aqiqa",
             name_translations={"uz-latn": "Aqiqa"},
@@ -129,9 +129,9 @@ class SeedCatalogEventActiveTests(TestCase):
         )
         call_command("seed_data")
         event.refresh_from_db()
-        self.assertTrue(event.is_active)
+        self.assertFalse(event.is_active)
 
-    def test_seed_keeps_catalog_disabled_events_off(self):
+    def test_seed_preserves_admin_enabled_event(self):
         event = EventConfig.objects.create(
             slug="hayit",
             name_translations={"uz-latn": "Hayit"},
@@ -141,4 +141,15 @@ class SeedCatalogEventActiveTests(TestCase):
         )
         call_command("seed_data")
         event.refresh_from_db()
-        self.assertFalse(event.is_active)
+        self.assertTrue(event.is_active)
+
+    def test_seed_preserves_admin_disabled_template(self):
+        call_command("seed_data")
+        event = EventConfig.objects.get(slug="nikoh")
+        tpl = Template.objects.filter(event=event).first()
+        self.assertIsNotNone(tpl)
+        tpl.is_active = False
+        tpl.save(update_fields=["is_active", "updated_at"])
+        call_command("seed_data")
+        tpl.refresh_from_db()
+        self.assertFalse(tpl.is_active)

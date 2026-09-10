@@ -103,6 +103,28 @@ export function IconBan() {
   );
 }
 
+export function IconInvite() {
+  return (
+    <Svg>
+      <rect
+        x="4"
+        y="5"
+        width="16"
+        height="14"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M8 10h8M8 14h5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 export function IconSessions() {
   return (
     <Svg>

@@ -335,7 +335,7 @@ class AdminUserDetailView(APIView):
         invitations = (
             Invitation.objects.filter(user=user, deleted_at__isnull=True)
             .order_by("-created_at")
-            .select_related("event")[:20]
+            .select_related("event")[:50]
         )
         history = (
             InvitationHistory.objects.filter(invitation__user=user)
@@ -390,10 +390,17 @@ class AdminUserDetailView(APIView):
                         "id": str(inv.id),
                         "event_slug": inv.event_id,
                         "status": inv.status,
+                        "language": inv.language,
+                        "generation_path": inv.generation_path,
+                        "subtype_slugs": inv.subtype_slugs
+                        or ([inv.subtype_slug] if inv.subtype_slug else []),
+                        "final_image_url": resolve_media_url(inv.final_image_url),
                         "created_at": inv.created_at,
+                        "updated_at": inv.updated_at,
                     }
                     for inv in invitations
                 ],
+                "invitation_count": invitation_count,
                 "history": [
                     {
                         "id": str(h.id),

@@ -1427,22 +1427,25 @@ export function StyleTemplatesPage() {
   const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<JpgTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || authLoading) return;
+    setTemplatesLoading(true);
     void api
       .getInvitation(id)
-      .then((inv) => {
+      .then(async (inv) => {
+        const list = await api.templates(inv.event_slug);
         setInvitation(inv);
-        return api.templates(inv.event_slug);
+        setTemplates(list);
       })
-      .then(setTemplates)
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setTemplatesLoading(false));
   }, [id, authLoading]);
 
-  if (!invitation) {
+  if (!invitation || templatesLoading) {
     return (
       <WizardChrome step={5} title={t("pathTemplate")} error={error}>
         <PageLoader label={t("loading")} />

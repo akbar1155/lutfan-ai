@@ -5288,6 +5288,60 @@ details p {
   gap: 8px;
 }
 
+.admin-users-invite-item {
+  display: grid !important;
+  grid-template-columns: 52px 1fr;
+  gap: 10px 12px;
+  align-items: start;
+  padding-left: 40px !important;
+}
+
+.admin-users-invite-thumb {
+  display: block;
+  width: 52px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  background: color-mix(in srgb, var(--admin-border) 40%, transparent);
+}
+
+.admin-users-invite-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-users-invite-thumb.empty {
+  background:
+    linear-gradient(135deg, #f4f4f5 25%, transparent 25%) -8px 0 / 16px 16px,
+    linear-gradient(225deg, #f4f4f5 25%, transparent 25%) -8px 0 / 16px 16px,
+    #fafafa;
+}
+
+.admin-users-invite-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-users-invite-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-accent, #0f766e);
+  text-decoration: none;
+}
+
+.admin-users-invite-link:hover {
+  text-decoration: underline;
+}
+
+.admin-users-count-btn {
+  cursor: pointer;
+  font: inherit;
+}
+
 .admin-users-invite-pill {
   display: inline-flex;
   padding: 2px 8px;

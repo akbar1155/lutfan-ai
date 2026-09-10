@@ -878,13 +878,7 @@ class Command(BaseCommand):
                     setattr(event, key, value)
                 event.save(update_fields=[*defaults.keys(), "updated_at"])
 
-            # Keep product catalog availability in sync with seed:
-            # if seed says an event should be live, re-enable it (templates
-            # on inactive events are invisible to users even when is_active).
-            # Seed-disabled events (e.g. hayit) stay off.
-            if event.is_active != seed_active:
-                event.is_active = seed_active
-                event.save(update_fields=["is_active", "updated_at"])
+            # Never overwrite admin is_active on existing events.
 
             # Always drop retired optional fields (e.g. personal_message) from schema.
             cleaned_schema = _strip_retired_fields(
@@ -922,12 +916,10 @@ class Command(BaseCommand):
                             **text_defaults,
                         )
                     elif force:
+                        text_defaults.pop("is_active", None)
                         for key, value in text_defaults.items():
                             setattr(existing_text, key, value)
                         existing_text.save()
-                    elif active and not existing_text.is_active:
-                        existing_text.is_active = True
-                        existing_text.save(update_fields=["is_active", "updated_at"])
 
             assets = TEMPLATE_ASSETS[item["slug"]]
             # JPG catalog seeds only on nikoh — all designs are reassigned there.
@@ -955,16 +947,10 @@ class Command(BaseCommand):
                             **tpl_defaults,
                         )
                     elif force:
+                        tpl_defaults.pop("is_active", None)
                         for key, value in tpl_defaults.items():
                             setattr(existing_tpl, key, value)
                         existing_tpl.save()
-                    elif active and not existing_tpl.is_active:
-                        existing_tpl.is_active = True
-                        if idx == 0:
-                            existing_tpl.is_featured = True
-                        existing_tpl.save(
-                            update_fields=["is_active", "is_featured", "updated_at"]
-                        )
 
             primary = assets[0]
             preset_defaults = {
@@ -997,23 +983,16 @@ class Command(BaseCommand):
                     name=preset_name, event=event, **preset_defaults
                 )
             elif force:
+                preset_defaults.pop("is_active", None)
                 for key, value in preset_defaults.items():
                     setattr(existing_preset, key, value)
                 existing_preset.save()
-            elif active and not existing_preset.is_active:
-                existing_preset.is_active = True
-                existing_preset.save(update_fields=["is_active", "updated_at"])
 
         # Point every JPG template at nikoh so the wizard always sees the full set.
+        # Do not change is_active — admin enable/disable must survive deploy/seed.
         nikoh = EventConfig.objects.filter(slug="nikoh").first()
         if nikoh is not None:
             Template.objects.exclude(event=nikoh).update(event=nikoh)
-            Template.objects.filter(event=nikoh, is_active=False).update(is_active=True)
-
-        # Restore text templates that were deactivated while events were offline.
-        TextTemplate.objects.filter(event__is_active=True, is_active=False).update(
-            is_active=True
-        )
 
         for i, (slug, category, snippet, names) in enumerate(MOOD_TAGS):
             mood_defaults = {
