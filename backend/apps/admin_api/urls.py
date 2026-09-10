@@ -9,6 +9,7 @@ from .views import (
     AdminDashboardView,
     AdminEventDetailView,
     AdminEventsView,
+    AdminGenerationLimitsView,
     AdminInvitationsView,
     AdminMoodTagDetailView,
     AdminMoodTagsView,
@@ -41,5 +42,6 @@ urlpatterns = [
     path("admin/invitations", AdminInvitationsView.as_view()),
     path("admin/ai-generations", AdminAiGenerationsView.as_view()),
     path("admin/system-logs", AdminSystemLogsView.as_view()),
+    path("admin/generation-limits", AdminGenerationLimitsView.as_view()),
     path("admin/analytics/export", AdminAnalyticsExportView.as_view()),
 ]

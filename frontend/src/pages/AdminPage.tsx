@@ -38,6 +38,7 @@ type Tab =
   | "templates"
   | "moods"
   | "presets"
+  | "limits"
   | "generations"
   | "logs";
 
@@ -66,6 +67,7 @@ const NAV: Array<{
   {
     titleKey: "adminGroupOps",
     items: [
+      { id: "limits", labelKey: "adminNavLimits" },
       { id: "generations", labelKey: "adminNavGenerations" },
       { id: "logs", labelKey: "adminNavLogs" },
     ],
@@ -81,6 +83,7 @@ const TAB_META: Record<Tab, { titleKey: string; descKey: string }> = {
   templates: { titleKey: "adminNavTemplates", descKey: "adminDescTemplates" },
   moods: { titleKey: "adminNavMoods", descKey: "adminDescMoods" },
   presets: { titleKey: "adminNavPresets", descKey: "adminDescPresets" },
+  limits: { titleKey: "adminNavLimits", descKey: "adminDescLimits" },
   generations: { titleKey: "adminNavGenerations", descKey: "adminDescGenerations" },
   logs: { titleKey: "adminNavLogs", descKey: "adminDescLogs" },
 };
@@ -251,6 +254,9 @@ export default function AdminPage() {
   const [generations, setGenerations] = useState<Array<Record<string, unknown>>>([]);
   const [genStatus, setGenStatus] = useState("");
   const [logs, setLogs] = useState<Array<Record<string, unknown>>>([]);
+  const [limitsHour, setLimitsHour] = useState("20");
+  const [limitsDay, setLimitsDay] = useState("50");
+  const [limitsSavedAt, setLimitsSavedAt] = useState<string | null>(null);
 
   const [editingEvent, setEditingEvent] = useState<Record<string, unknown> | null>(null);
   const [editingText, setEditingText] = useState<Record<string, unknown> | null>(null);
@@ -291,6 +297,12 @@ export default function AdminPage() {
         if (tab === "presets") setPresets(rest[0] || []);
       }
       if (tab === "moods") setMoods(await api.adminMoodTags());
+      if (tab === "limits") {
+        const limits = await api.adminGenerationLimits();
+        setLimitsHour(String(limits.per_hour ?? 0));
+        setLimitsDay(String(limits.per_day ?? 0));
+        setLimitsSavedAt(limits.updated_at ? String(limits.updated_at) : null);
+      }
       if (tab === "generations") setGenerations(await api.adminAiGenerations(genStatus || undefined));
       if (tab === "logs") setLogs(await api.adminSystemLogs());
     } catch (err) {
@@ -1156,6 +1168,74 @@ export default function AdminPage() {
                   </div>
                 )}
               />
+            </section>
+          )}
+
+          {tab === "limits" && (
+            <section className="admin-section">
+              <form
+                className="admin-form admin-limits-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const perHour = Number(limitsHour);
+                  const perDay = Number(limitsDay);
+                  if (!Number.isFinite(perHour) || perHour < 0 || !Number.isInteger(perHour)) {
+                    setError(t("adminLimitsInvalid"));
+                    return;
+                  }
+                  if (!Number.isFinite(perDay) || perDay < 0 || !Number.isInteger(perDay)) {
+                    setError(t("adminLimitsInvalid"));
+                    return;
+                  }
+                  void run("limits", async () => {
+                    const res = await api.adminPatchGenerationLimits({
+                      per_hour: perHour,
+                      per_day: perDay,
+                    });
+                    setLimitsHour(String(res.per_hour));
+                    setLimitsDay(String(res.per_day));
+                    setLimitsSavedAt(res.updated_at ? String(res.updated_at) : null);
+                  });
+                }}
+              >
+                <p className="hint">{t("adminLimitsHint")}</p>
+                <div className="admin-form-grid">
+                  <Field label={t("adminLimitsPerHour")}>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      required
+                      value={limitsHour}
+                      onChange={(e) => setLimitsHour(e.target.value)}
+                    />
+                  </Field>
+                  <Field label={t("adminLimitsPerDay")}>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      required
+                      value={limitsDay}
+                      onChange={(e) => setLimitsDay(e.target.value)}
+                    />
+                  </Field>
+                </div>
+                {limitsSavedAt ? (
+                  <p className="hint">
+                    {t("adminLimitsUpdated")}: {formatDate(limitsSavedAt)}
+                  </p>
+                ) : null}
+                <div className="admin-actions">
+                  <button
+                    type="submit"
+                    className="admin-btn primary"
+                    disabled={!!actionBusy}
+                  >
+                    {actionBusy === "limits" ? t("loading") : t("adminSave")}
+                  </button>
+                </div>
+              </form>
             </section>
           )}
 

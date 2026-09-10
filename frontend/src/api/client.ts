@@ -509,5 +509,14 @@ export const api = {
     request<Array<Record<string, unknown>>>(
       `/admin/system-logs${level ? `?level=${level}` : ""}`,
     ),
+  adminGenerationLimits: () =>
+    request<{ per_hour: number; per_day: number; updated_at?: string; hint?: string }>(
+      "/admin/generation-limits",
+    ),
+  adminPatchGenerationLimits: (body: { per_hour?: number; per_day?: number }) =>
+    request<{ ok: boolean; per_hour: number; per_day: number; updated_at?: string }>(
+      "/admin/generation-limits",
+      { method: "PATCH", body: JSON.stringify(body) },
+    ),
   adminAnalyticsExportUrl: () => `${API_BASE}/admin/analytics/export`,
 };

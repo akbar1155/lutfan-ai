@@ -240,3 +240,32 @@ class Notification(models.Model):
         if not self.id:
             self.id = uuid.uuid4()
         return super().save(*args, **kwargs)
+
+
+class GenerationRateLimit(models.Model):
+    """Singleton: global per-user generation caps (0 = unlimited)."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    per_hour = models.PositiveIntegerField(default=20)
+    per_day = models.PositiveIntegerField(default=50)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Generation rate limit"
+        verbose_name_plural = "Generation rate limits"
+
+    def __str__(self) -> str:
+        return f"limits hour={self.per_hour} day={self.per_day}"
+
+    @classmethod
+    def get_solo(cls) -> "GenerationRateLimit":
+        defaults = {
+            "per_hour": int(
+                getattr(settings, "RATE_LIMIT_GENERATIONS_PER_HOUR", 20) or 0
+            ),
+            "per_day": int(
+                getattr(settings, "RATE_LIMIT_GENERATIONS_PER_DAY", 50) or 0
+            ),
+        }
+        obj, _ = cls.objects.get_or_create(pk=1, defaults=defaults)
+        return obj

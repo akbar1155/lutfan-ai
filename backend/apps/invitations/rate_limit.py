@@ -2,11 +2,33 @@ from django.conf import settings
 from django.core.cache import cache
 from rest_framework.exceptions import Throttled
 
+from .models import GenerationRateLimit
+
+LIMITS_CACHE_KEY = "generation_rate_limits_v1"
+
+
+def get_generation_limits() -> tuple[int, int]:
+    """Return (per_hour, per_day). 0 means unlimited."""
+    cached = cache.get(LIMITS_CACHE_KEY)
+    if isinstance(cached, (list, tuple)) and len(cached) == 2:
+        return int(cached[0] or 0), int(cached[1] or 0)
+    try:
+        obj = GenerationRateLimit.get_solo()
+        hour_max = int(obj.per_hour or 0)
+        day_max = int(obj.per_day or 0)
+    except Exception:
+        hour_max = int(getattr(settings, "RATE_LIMIT_GENERATIONS_PER_HOUR", 0) or 0)
+        day_max = int(getattr(settings, "RATE_LIMIT_GENERATIONS_PER_DAY", 0) or 0)
+    cache.set(LIMITS_CACHE_KEY, (hour_max, day_max), timeout=120)
+    return hour_max, day_max
+
+
+def invalidate_generation_limits_cache() -> None:
+    cache.delete(LIMITS_CACHE_KEY)
+
 
 def check_generation_rate_limit(user_id: str) -> None:
-    # Demo / local: 0 = unlimited
-    hour_max = int(getattr(settings, "RATE_LIMIT_GENERATIONS_PER_HOUR", 0) or 0)
-    day_max = int(getattr(settings, "RATE_LIMIT_GENERATIONS_PER_DAY", 0) or 0)
+    hour_max, day_max = get_generation_limits()
     if hour_max <= 0 and day_max <= 0:
         return
 

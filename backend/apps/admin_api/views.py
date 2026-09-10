@@ -23,7 +23,17 @@ from apps.ai_engine.generator import generate_image_bytes
 from apps.ai_engine.models import AIGeneration, AdminAction, SystemLog
 from apps.ai_engine.storage import resolve_media_url, upload_bytes
 from apps.content.models import AIPromptPreset, EventConfig, MoodTag, Template, TextTemplate
-from apps.invitations.models import DailyMetric, Invitation, InvitationHistory, InvitationStatus
+from apps.invitations.models import (
+    DailyMetric,
+    GenerationRateLimit,
+    Invitation,
+    InvitationHistory,
+    InvitationStatus,
+)
+from apps.invitations.rate_limit import (
+    get_generation_limits,
+    invalidate_generation_limits_cache,
+)
 from apps.users.last_seen import resolve_last_activity_at
 from apps.users.models import Role, User
 from apps.users.permissions import IsAdminRole
@@ -1031,6 +1041,114 @@ class AdminSystemLogsView(APIView):
                 }
                 for log in qs[:100]
             ]
+        )
+
+
+class AdminGenerationLimitsView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        hour_max, day_max = get_generation_limits()
+        obj = GenerationRateLimit.get_solo()
+        return Response(
+            {
+                "per_hour": hour_max,
+                "per_day": day_max,
+                "updated_at": obj.updated_at,
+                "hint": "0 = unlimited",
+            }
+        )
+
+    def patch(self, request):
+        data = request.data or {}
+        obj = GenerationRateLimit.get_solo()
+        changed = False
+        if "per_hour" in data:
+            try:
+                value = int(data.get("per_hour"))
+            except (TypeError, ValueError):
+                return Response(
+                    {
+                        "error": {
+                            "code": "VALIDATION_ERROR",
+                            "message": "per_hour must be an integer >= 0",
+                        }
+                    },
+                    status=400,
+                )
+            if value < 0:
+                return Response(
+                    {
+                        "error": {
+                            "code": "VALIDATION_ERROR",
+                            "message": "per_hour must be >= 0",
+                        }
+                    },
+                    status=400,
+                )
+            obj.per_hour = value
+            changed = True
+        if "per_day" in data:
+            try:
+                value = int(data.get("per_day"))
+            except (TypeError, ValueError):
+                return Response(
+                    {
+                        "error": {
+                            "code": "VALIDATION_ERROR",
+                            "message": "per_day must be an integer >= 0",
+                        }
+                    },
+                    status=400,
+                )
+            if value < 0:
+                return Response(
+                    {
+                        "error": {
+                            "code": "VALIDATION_ERROR",
+                            "message": "per_day must be >= 0",
+                        }
+                    },
+                    status=400,
+                )
+            obj.per_day = value
+            changed = True
+        if not changed:
+            return Response(
+                {
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "per_hour or per_day required",
+                    }
+                },
+                status=400,
+            )
+        if obj.per_day > 0 and obj.per_hour > obj.per_day:
+            return Response(
+                {
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "per_hour cannot exceed per_day when both are set",
+                    }
+                },
+                status=400,
+            )
+        obj.save()
+        invalidate_generation_limits_cache()
+        _admin_log(
+            request,
+            "generation_limits_updated",
+            "settings",
+            None,
+            {"per_hour": obj.per_hour, "per_day": obj.per_day},
+        )
+        return Response(
+            {
+                "ok": True,
+                "per_hour": obj.per_hour,
+                "per_day": obj.per_day,
+                "updated_at": obj.updated_at,
+            }
         )
 
 

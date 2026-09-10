@@ -4425,8 +4425,16 @@ details p {
   color: #b91c1c;
 }
 
-.admin-tpl-count {
-  margin: 0;
+.admin-limits-form {
+  max-width: 420px;
+}
+
+.admin-limits-form .admin-form-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.admin-limits-form .admin-actions {
+  margin-top: 0.75rem;
 }
 
 .admin-field {
