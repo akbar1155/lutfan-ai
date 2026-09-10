@@ -4058,6 +4058,158 @@ details p {
   margin-bottom: 12px;
 }
 
+.admin-modal .admin-form {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-modal .admin-form > h3 {
+  display: none;
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(24, 24, 27, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.admin-modal {
+  width: min(640px, 100%);
+  max-height: min(90vh, 920px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border, #e4e4e7);
+  background: #fff;
+  box-shadow: 0 24px 64px rgba(24, 24, 27, 0.18);
+  overflow: hidden;
+}
+
+.admin-modal.is-wide {
+  width: min(820px, 100%);
+}
+
+.admin-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #ececf0;
+  flex-shrink: 0;
+}
+
+.admin-modal-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.admin-modal-close {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.admin-modal-body {
+  padding: 16px;
+  overflow: auto;
+}
+
+.admin-modal .admin-form .admin-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.admin-modal .admin-form .admin-actions .admin-btn,
+.admin-modal .admin-form .admin-actions .ghost,
+.admin-modal .admin-form .admin-actions button {
+  width: 100%;
+  min-height: 40px;
+  justify-content: center;
+}
+
+.admin-modal button.ghost,
+.admin-users-modal button.ghost,
+.admin-users-modal-actions .admin-btn:not(.primary):not(.danger) {
+  border: 1px solid var(--admin-border, #e4e4e7);
+  background: #fff;
+  color: var(--admin-ink, #18181b);
+  border-radius: var(--admin-radius, 8px);
+  min-height: 40px;
+  padding: 0 14px;
+  font-weight: 500;
+}
+
+.admin-modal button.ghost:hover,
+.admin-users-modal button.ghost:hover,
+.admin-users-modal-actions .admin-btn:not(.primary):not(.danger):hover {
+  background: var(--admin-bg, #f4f4f5);
+  color: var(--admin-ink, #18181b);
+  border-color: #d4d4d8;
+}
+
+.admin-users-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.admin-users-modal-actions .admin-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-image-modal {
+  display: grid;
+  gap: 12px;
+  justify-items: stretch;
+}
+
+.admin-image-modal img {
+  width: 100%;
+  max-height: min(70vh, 720px);
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f4f4f5;
+}
+
+.admin-image-modal .admin-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-media-thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.admin-media-thumb img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  display: block;
+}
+
 .admin-form h3 {
   margin: 0;
   font-size: 1rem;
@@ -4067,6 +4219,65 @@ details p {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.55rem;
+}
+
+.admin-form-grid > .admin-field:has(.admin-event-multi) {
+  grid-column: 1 / -1;
+}
+
+.admin-event-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.admin-event-multi-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.admin-event-multi-toolbar .admin-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+}
+
+.admin-event-multi-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.admin-event-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--admin-ink, #18181b);
+  font-size: 0.82rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-event-chip input {
+  margin: 0;
+  accent-color: #3f6212;
+}
+
+.admin-event-chip.is-on {
+  border-color: #84cc16;
+  background: #f7fee7;
+}
+
+.admin-event-multi-hint {
+  margin: 0;
+  color: #b91c1c;
 }
 
 .admin-field {
@@ -5137,13 +5348,6 @@ details p {
   font-size: 13px;
   color: var(--admin-muted);
   line-height: 1.5;
-}
-
-.admin-users-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
 }
 
 .admin-users-skeleton {

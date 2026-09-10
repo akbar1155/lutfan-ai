@@ -435,7 +435,7 @@ export const api = {
       `/admin/templates${eventSlug ? `?event_slug=${eventSlug}` : ""}`,
     ),
   adminCreateTemplate: (body: Record<string, unknown>) =>
-    request<{ id: string }>("/admin/templates", {
+    request<{ id: string; ids?: string[]; count?: number }>("/admin/templates", {
       method: "POST",
       body: JSON.stringify(body),
     }),
@@ -447,7 +447,7 @@ export const api = {
   adminDeleteTemplate: (id: string) =>
     request<{ ok: boolean }>(`/admin/templates/${id}`, { method: "DELETE" }),
   adminCreateTemplateMultipart: (formData: FormData) =>
-    requestForm<{ id: string }>("/admin/templates", formData),
+    requestForm<{ id: string; ids?: string[]; count?: number }>("/admin/templates", formData),
   adminPatchTemplateMultipart: (id: string, formData: FormData) =>
     patchForm<{ ok: boolean }>(`/admin/templates/${id}`, formData),
   adminTestTemplate: (id: string, blocks?: Record<string, string>) =>

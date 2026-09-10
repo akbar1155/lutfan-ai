@@ -841,6 +841,7 @@ export default function AdminPage() {
                   className="admin-btn primary"
                   onClick={() =>
                     setEditingTemplate({
+                      event_slugs: [...eventOptions],
                       event_slug: eventOptions[0] || "nikoh",
                       theme_name: "",
                       bg_url: "",
@@ -1562,21 +1563,47 @@ function TemplateForm({
   busy: boolean;
 }) {
   const { t } = useTranslation();
+  const isCreate = !initial.id;
   const [form, setForm] = useState(initial);
   const [file, setFile] = useState<File | null>(null);
+  const [eventSlugs, setEventSlugs] = useState<string[]>(() => {
+    if (Array.isArray(initial.event_slugs)) {
+      return initial.event_slugs.map(String);
+    }
+    return initial.event_slug ? [String(initial.event_slug)] : [];
+  });
   useEffect(() => {
     setForm(initial);
     setFile(null);
+    if (Array.isArray(initial.event_slugs)) {
+      setEventSlugs(initial.event_slugs.map(String));
+    } else {
+      setEventSlugs(initial.event_slug ? [String(initial.event_slug)] : []);
+    }
   }, [initial]);
+
+  const toggleEvent = (slug: string) => {
+    setEventSlugs((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+    );
+  };
+
+  const allSelected =
+    eventOptions.length > 0 && eventOptions.every((s) => eventSlugs.includes(s));
 
   return (
     <form
       className="admin-form"
       onSubmit={(e) => {
         e.preventDefault();
+        const selected = isCreate
+          ? eventSlugs.filter((s) => eventOptions.includes(s))
+          : [String(form.event_slug || "")].filter(Boolean);
+        if (!selected.length) return;
         onSubmit(
           {
-            event_slug: form.event_slug,
+            event_slug: selected[0],
+            event_slugs: selected,
             subtype_slug: form.subtype_slug || null,
             theme_name: form.theme_name,
             bg_url: form.bg_url,
@@ -1598,16 +1625,60 @@ function TemplateForm({
       <h3>{form.id ? t("adminEdit") : t("adminCreate")} — JPG</h3>
       <div className="admin-form-grid">
         <Field label={t("adminColEvent")}>
-          <UiSelect
-            value={String(form.event_slug || "")}
-            onChange={(e) => setForm({ ...form, event_slug: e.target.value })}
-          >
-            {eventOptions.map((slug) => (
-              <option key={slug} value={slug}>
-                {slug}
-              </option>
-            ))}
-          </UiSelect>
+          {isCreate ? (
+            <div className="admin-event-multi">
+              <div className="admin-event-multi-toolbar">
+                <button
+                  type="button"
+                  className="admin-btn"
+                  onClick={() =>
+                    setEventSlugs(allSelected ? [] : [...eventOptions])
+                  }
+                >
+                  {allSelected ? t("adminClearEvents") : t("adminSelectAllEvents")}
+                </button>
+                <span className="hint">
+                  {eventSlugs.length}/{eventOptions.length}
+                </span>
+              </div>
+              <div
+                className="admin-event-multi-list"
+                role="group"
+                aria-label={t("adminColEvent")}
+              >
+                {eventOptions.map((slug) => {
+                  const checked = eventSlugs.includes(slug);
+                  return (
+                    <label
+                      key={slug}
+                      className={`admin-event-chip ${checked ? "is-on" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleEvent(slug)}
+                      />
+                      <span>{slug}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {!eventSlugs.length ? (
+                <p className="hint admin-event-multi-hint">{t("adminPickEvents")}</p>
+              ) : null}
+            </div>
+          ) : (
+            <UiSelect
+              value={String(form.event_slug || "")}
+              onChange={(e) => setForm({ ...form, event_slug: e.target.value })}
+            >
+              {eventOptions.map((slug) => (
+                <option key={slug} value={slug}>
+                  {slug}
+                </option>
+              ))}
+            </UiSelect>
+          )}
         </Field>
         <Field label={t("adminColTheme")}>
           <input
@@ -1618,9 +1689,9 @@ function TemplateForm({
         </Field>
         <Field label="bg_url">
           <input
-            required
             value={String(form.bg_url || "")}
             onChange={(e) => setForm({ ...form, bg_url: e.target.value })}
+            placeholder="/media/… or upload file"
           />
         </Field>
         <Field label="bg_url_preview">
@@ -1645,7 +1716,11 @@ function TemplateForm({
         />
       </Field>
       <div className="admin-actions">
-        <button type="submit" className="admin-btn primary" disabled={busy}>
+        <button
+          type="submit"
+          className="admin-btn primary"
+          disabled={busy || (isCreate && !eventSlugs.length)}
+        >
           {t("adminSave")}
         </button>
         <button type="button" className="admin-btn" onClick={onCancel}>

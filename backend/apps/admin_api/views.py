@@ -49,8 +49,41 @@ def _parse_json_field(value, default):
         text = value.strip()
         if not text:
             return default
-        return json.loads(text)
-    return value
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return default
+    return default
+
+
+def _event_slugs_from_request(data) -> list[str]:
+    """Accept event_slugs (list/JSON) and/or a single event_slug."""
+    slugs: list[str] = []
+    raw_many = data.get("event_slugs")
+    if raw_many is not None and raw_many != "":
+        parsed = _parse_json_field(raw_many, raw_many)
+        if isinstance(parsed, str):
+            parsed = [parsed]
+        if isinstance(parsed, list):
+            slugs.extend(str(s).strip() for s in parsed if str(s).strip())
+    # multipart may send repeated fields
+    getlist = getattr(data, "getlist", None)
+    if callable(getlist):
+        for item in getlist("event_slugs"):
+            if item and item not in slugs:
+                slugs.append(str(item).strip())
+    single = (data.get("event_slug") or "").strip()
+    if single and single not in slugs:
+        slugs.append(single)
+    # de-dupe preserve order
+    seen: set[str] = set()
+    out: list[str] = []
+    for slug in slugs:
+        if slug in seen:
+            continue
+        seen.add(slug)
+        out.append(slug)
+    return out
 
 
 def _extract_vars(preview_text: str) -> list[str]:
@@ -593,7 +626,33 @@ class AdminTemplatesView(APIView):
 
     def post(self, request):
         data = request.data
-        event = get_object_or_404(EventConfig, slug=data.get("event_slug"))
+        event_slugs = _event_slugs_from_request(data)
+        if not event_slugs:
+            return Response(
+                {
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "event_slug or event_slugs required",
+                    }
+                },
+                status=400,
+            )
+        events = list(EventConfig.objects.filter(slug__in=event_slugs))
+        by_slug = {e.slug: e for e in events}
+        missing = [s for s in event_slugs if s not in by_slug]
+        if missing:
+            return Response(
+                {
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": f"Unknown events: {', '.join(missing)}",
+                    }
+                },
+                status=400,
+            )
+        # Preserve request order
+        ordered_events = [by_slug[s] for s in event_slugs]
+
         upload = request.FILES.get("file")
         bg = data.get("bg_url") or ""
         preview = data.get("bg_url_preview") or bg
@@ -615,25 +674,36 @@ class AdminTemplatesView(APIView):
             )
             if not dominant_colors:
                 dominant_colors = auto_colors
-        tpl = Template.objects.create(
-            event=event,
-            subtype_slug=data.get("subtype_slug") or None,
-            theme_name=data.get("theme_name") or "Theme",
-            style_tags=_parse_json_field(data.get("style_tags"), []),
-            color_palette=_parse_json_field(data.get("color_palette"), []),
-            mood_tags=_parse_json_field(data.get("mood_tags"), []),
-            bg_url=bg,
-            bg_url_preview=preview,
-            ai_composition_prompt=data.get("ai_composition_prompt") or "Place text elegantly.",
-            supports_dark_text=bool(data.get("supports_dark_text", True)),
-            dominant_colors=dominant_colors,
-            supported_formats=_parse_json_field(data.get("supported_formats"), ["4:5", "9:16", "1:1"]),
-            is_active=bool(data.get("is_active", True)),
-            is_featured=bool(data.get("is_featured", False)),
-            created_by_admin=request.user,
+
+        shared = {
+            "subtype_slug": data.get("subtype_slug") or None,
+            "theme_name": data.get("theme_name") or "Theme",
+            "style_tags": _parse_json_field(data.get("style_tags"), []),
+            "color_palette": _parse_json_field(data.get("color_palette"), []),
+            "mood_tags": _parse_json_field(data.get("mood_tags"), []),
+            "bg_url": bg,
+            "bg_url_preview": preview,
+            "ai_composition_prompt": data.get("ai_composition_prompt")
+            or "Place text elegantly.",
+            "supports_dark_text": bool(data.get("supports_dark_text", True)),
+            "dominant_colors": dominant_colors,
+            "supported_formats": _parse_json_field(
+                data.get("supported_formats"), ["4:5", "9:16", "1:1"]
+            ),
+            "is_active": bool(data.get("is_active", True)),
+            "is_featured": bool(data.get("is_featured", False)),
+            "created_by_admin": request.user,
+        }
+        created_ids: list[str] = []
+        for event in ordered_events:
+            tpl = Template.objects.create(event=event, **shared)
+            created_ids.append(str(tpl.id))
+            _admin_log(request, "template_created", "template", tpl.id)
+
+        return Response(
+            {"id": created_ids[0], "ids": created_ids, "count": len(created_ids)},
+            status=201,
         )
-        _admin_log(request, "template_created", "template", tpl.id)
-        return Response({"id": str(tpl.id)}, status=201)
 
 
 class AdminTemplateDetailView(APIView):
