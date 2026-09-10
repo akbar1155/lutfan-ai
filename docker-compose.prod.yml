@@ -146,6 +146,7 @@ services:
       - static_data:/var/lutfan-static:ro
     depends_on:
       - backend
+      - minio
     networks:
       - lutfan
 

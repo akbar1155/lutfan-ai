@@ -18,6 +18,8 @@ updates = {
     "RATE_LIMIT_GENERATIONS_PER_DAY": "50",
     # Never re-seed on every deploy — seed_data used to wipe admin JPG uploads.
     "RUN_SEED": "0",
+    # Browser-facing MinIO public prefix (frontend nginx location /s3/).
+    "CDN_BASE_URL": "https://lutfanai.uz/s3",
 }
 lines = text.splitlines()
 seen = set()
@@ -46,5 +48,9 @@ docker compose -f docker-compose.prod.yml ps
 # Re-attach admin JPG uploads whose files survived in MinIO/media after DB wipe.
 docker compose -f docker-compose.prod.yml exec -T backend \
   python manage.py recover_orphan_templates || true
+
+# Mirror MinIO public templates into MEDIA_ROOT so /media/ and /s3/ both work.
+docker compose -f docker-compose.prod.yml exec -T backend \
+  python manage.py sync_template_media || true
 
 docker image prune -f >/dev/null
