@@ -53,4 +53,8 @@ docker compose -f docker-compose.prod.yml exec -T backend \
 docker compose -f docker-compose.prod.yml exec -T backend \
   python manage.py sync_template_media || true
 
+# Ensure catalog events/texts/templates exist (create-only; safe for admin data).
+docker compose -f docker-compose.prod.yml exec -T backend \
+  python manage.py seed_data || true
+
 docker image prune -f >/dev/null

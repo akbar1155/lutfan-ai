@@ -28,7 +28,11 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   python manage.py collectstatic --noinput
 fi
 
-if [ "${RUN_SEED:-0}" = "1" ]; then
+# Safe create-only catalog fill (never deletes/overwrites admin content).
+# Set RUN_SEED_FORCE=1 to refresh catalog fields from code.
+if [ "${RUN_SEED_FORCE:-0}" = "1" ]; then
+  python manage.py seed_data --force || true
+else
   python manage.py seed_data || true
 fi
 
