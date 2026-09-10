@@ -927,7 +927,9 @@ class Command(BaseCommand):
                         existing_text.save()
 
             assets = TEMPLATE_ASSETS[item["slug"]]
+            catalog_theme_names: set[str] = set()
             for idx, asset in enumerate(assets):
+                catalog_theme_names.add(asset["theme_name"])
                 tpl_defaults = {
                     "bg_url": asset["bg_url"],
                     "bg_url_preview": asset["bg_url_preview"],
@@ -953,6 +955,14 @@ class Command(BaseCommand):
                     for key, value in tpl_defaults.items():
                         setattr(existing_tpl, key, value)
                     existing_tpl.save()
+                elif active and not existing_tpl.is_active:
+                    # Event came back online — catalog cards must follow.
+                    existing_tpl.is_active = True
+                    if idx == 0:
+                        existing_tpl.is_featured = True
+                    existing_tpl.save(
+                        update_fields=["is_active", "is_featured", "updated_at"]
+                    )
 
             primary = assets[0]
             preset_defaults = {
