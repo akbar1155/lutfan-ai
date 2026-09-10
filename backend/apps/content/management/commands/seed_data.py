@@ -848,13 +848,11 @@ class Command(BaseCommand):
 
             rich = _load_ready_texts().get(item["slug"]) or {}
             texts = rich if rich else TEXT_BY_EVENT.get(item["slug"], {})
-            keep_titles: set[str] = set()
             for lang, payloads in texts.items():
                 variants = payloads if isinstance(payloads, list) else [payloads]
                 for idx, payload in enumerate(variants):
                     title = payload["title"]
                     preview = payload.get("preview") or payload.get("preview_text") or ""
-                    keep_titles.add(title)
                     TextTemplate.objects.update_or_create(
                         event=event,
                         language=lang,
@@ -868,15 +866,10 @@ class Command(BaseCommand):
                             "created_by_admin": admin,
                         },
                     )
-            if keep_titles:
-                TextTemplate.objects.filter(event=event, is_active=True).exclude(
-                    title__in=keep_titles
-                ).update(is_active=False)
+            # Seed upserts catalog texts only; never deactivate admin-created texts.
 
             assets = TEMPLATE_ASSETS[item["slug"]]
-            keep_theme_names: set[str] = set()
             for idx, asset in enumerate(assets):
-                keep_theme_names.add(asset["theme_name"])
                 Template.objects.update_or_create(
                     event=event,
                     theme_name=asset["theme_name"],
@@ -894,10 +887,9 @@ class Command(BaseCommand):
                     },
                 )
 
-            # Keep only the quality themes for this event.
-            Template.objects.filter(event=event).exclude(
-                theme_name__in=keep_theme_names
-            ).update(is_active=False, is_featured=False)
+            # Do not deactivate/delete admin-uploaded templates. Seed only
+            # upserts the catalog themes above; custom JPG uploads must survive
+            # every redeploy / container restart.
 
             primary = assets[0]
             AIPromptPreset.objects.update_or_create(
@@ -938,12 +930,15 @@ class Command(BaseCommand):
                 },
             )
 
-        # Hard-remove junk JPG templates (demos, placeholders, broken uploads).
+        # Hard-remove only known junk placeholders — never wipe inactive or
+        # admin-uploaded templates (those live under templates/<32hex>/).
         from django.db.models import Q
 
+        admin_upload_q = Q(bg_url__regex=r"templates/[0-9a-f]{32}/") | Q(
+            bg_url_preview__regex=r"templates/[0-9a-f]{32}/"
+        )
         junk_q = (
             Q(theme_name__istartswith="Demo ")
-            | Q(theme_name__iendswith=" Classic")
             | Q(
                 theme_name__in=[
                     "Ivory Classic",
@@ -961,17 +956,12 @@ class Command(BaseCommand):
         deleted, _ = (
             Template.objects.filter(junk_q)
             .exclude(theme_name__in=KEEP_THEME_NAMES)
-            .delete()
-        )
-        # Also remove any other inactive leftovers not in the quality set.
-        extra, _ = (
-            Template.objects.filter(is_active=False)
-            .exclude(theme_name__in=KEEP_THEME_NAMES)
+            .exclude(admin_upload_q)
             .delete()
         )
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seed data ready ({len(KEEP_THEME_NAMES)} quality themes; "
-                f"removed {deleted + extra} junk templates)"
+                f"removed {deleted} junk templates)"
             )
         )

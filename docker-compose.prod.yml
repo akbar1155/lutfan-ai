@@ -80,7 +80,9 @@ services:
       - .env.production
     environment:
       RUN_MIGRATIONS: "1"
-      RUN_SEED: ${RUN_SEED:-1}
+      # Default off so redeploys never re-run destructive seed cleanup.
+      # Set RUN_SEED=1 in .env.production only for a fresh/empty DB bootstrap.
+      RUN_SEED: ${RUN_SEED:-0}
       ALLOW_DEV_LOGIN: "false"
       DATABASE_URL: postgresql://${POSTGRES_USER:-lutfan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lutfan}
       REDIS_URL: redis://redis:6379/0

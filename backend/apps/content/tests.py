@@ -2,9 +2,10 @@ from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 
 from apps.content.management.commands.seed_data import EVENTS
-from apps.content.models import EventConfig
+from apps.content.models import EventConfig, Template
 from apps.content.subtypes import event_subtype_mode, normalize_invitation_subtypes
 from apps.content.template_assets import EVENT_TEMPLATE_PICKS, design_meta
+from apps.users.models import Role, User
 
 
 class EventTemplateCatalogTests(SimpleTestCase):
@@ -58,6 +59,36 @@ class HayitSubtypeConfigTests(SimpleTestCase):
             normalize_invitation_subtypes(event, ["nope"], "qurbon_hayiti"),
             ["qurbon_hayiti"],
         )
+
+
+class SeedPreservesCustomTemplatesTests(TestCase):
+    def test_seed_does_not_delete_or_deactivate_admin_uploads(self):
+        call_command("seed_data")
+        admin = User.objects.filter(role=Role.ADMIN).first()
+        event = EventConfig.objects.get(slug="aqiqa")
+        custom = Template.objects.create(
+            event=event,
+            theme_name="Admin Upload Custom",
+            style_tags=[],
+            color_palette=[],
+            mood_tags=[],
+            bg_url="s3://lutfan-public/templates/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bg.jpg",
+            bg_url_preview=(
+                "s3://lutfan-public/templates/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/preview.jpg"
+            ),
+            ai_composition_prompt="Place text elegantly.",
+            supports_dark_text=True,
+            dominant_colors=[],
+            supported_formats=["4:5"],
+            is_active=True,
+            is_featured=False,
+            created_by_admin=admin,
+        )
+        call_command("seed_data")
+        custom.refresh_from_db()
+        self.assertTrue(custom.is_active)
+        self.assertEqual(custom.theme_name, "Admin Upload Custom")
+        self.assertTrue(Template.objects.filter(pk=custom.pk).exists())
 
 
 class SeedPreservesEventActiveFlagTests(TestCase):

@@ -16,6 +16,8 @@ text = path.read_text(encoding="utf-8")
 updates = {
     "RATE_LIMIT_GENERATIONS_PER_HOUR": "20",
     "RATE_LIMIT_GENERATIONS_PER_DAY": "50",
+    # Never re-seed on every deploy — seed_data used to wipe admin JPG uploads.
+    "RUN_SEED": "0",
 }
 lines = text.splitlines()
 seen = set()
@@ -40,4 +42,9 @@ PY
 
 docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml ps
+
+# Re-attach admin JPG uploads whose files survived in MinIO/media after DB wipe.
+docker compose -f docker-compose.prod.yml exec -T backend \
+  python manage.py recover_orphan_templates || true
+
 docker image prune -f >/dev/null
