@@ -1766,39 +1766,30 @@ function TemplateForm({
           )}
         </div>
 
-        <details className="admin-tpl-advanced">
-          <summary>{t("adminTplAdvanced")}</summary>
-          <div className="admin-tpl-advanced-body">
-            <Field label={t("adminTplPrompt")}>
-              <textarea
-                rows={3}
-                value={String(form.ai_composition_prompt || "")}
-                onChange={(e) =>
-                  setForm({ ...form, ai_composition_prompt: e.target.value })
-                }
-              />
-            </Field>
-            {!isCreate || !file ? (
-              <>
-                <Field label={t("adminTplBgUrl")}>
-                  <input
-                    value={String(form.bg_url || "")}
-                    onChange={(e) => setForm({ ...form, bg_url: e.target.value })}
-                    placeholder="/media/…"
-                  />
-                </Field>
-                <Field label={t("adminTplPreviewUrl")}>
-                  <input
-                    value={String(form.bg_url_preview || "")}
-                    onChange={(e) =>
-                      setForm({ ...form, bg_url_preview: e.target.value })
-                    }
-                  />
-                </Field>
-              </>
-            ) : null}
-          </div>
-        </details>
+        <Field label={t("adminTplPrompt")}>
+          <textarea
+            rows={3}
+            value={String(form.ai_composition_prompt || "")}
+            onChange={(e) =>
+              setForm({ ...form, ai_composition_prompt: e.target.value })
+            }
+          />
+        </Field>
+        <Field label={t("adminTplBgUrl")}>
+          <input
+            value={String(form.bg_url || "")}
+            onChange={(e) => setForm({ ...form, bg_url: e.target.value })}
+            placeholder="/media/…"
+          />
+        </Field>
+        <Field label={t("adminTplPreviewUrl")}>
+          <input
+            value={String(form.bg_url_preview || "")}
+            onChange={(e) =>
+              setForm({ ...form, bg_url_preview: e.target.value })
+            }
+          />
+        </Field>
       </div>
 
       <div className="admin-actions">

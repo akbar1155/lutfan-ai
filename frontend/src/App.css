@@ -4429,45 +4429,6 @@ details p {
   margin: 0;
 }
 
-.admin-tpl-advanced {
-  border: 1px solid #ececf0;
-  border-radius: 10px;
-  background: #fafafa;
-  overflow: hidden;
-}
-
-.admin-tpl-advanced > summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 0.7rem 0.85rem;
-  font-size: 0.82rem;
-  font-weight: 560;
-  color: #3f3f46;
-  user-select: none;
-}
-
-.admin-tpl-advanced > summary::-webkit-details-marker {
-  display: none;
-}
-
-.admin-tpl-advanced > summary::after {
-  content: "+";
-  float: right;
-  color: #a1a1aa;
-  font-weight: 500;
-}
-
-.admin-tpl-advanced[open] > summary::after {
-  content: "–";
-}
-
-.admin-tpl-advanced-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0 0.85rem 0.85rem;
-}
-
 .admin-field {
   display: flex;
   flex-direction: column;
