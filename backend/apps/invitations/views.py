@@ -223,14 +223,25 @@ class InvitationGenerateView(APIView):
                 raise ValidationError("Please select an event type.")
 
         check_generation_rate_limit(str(request.user.id))
+        text_only = bool(
+            request.data.get("text_only")
+            or request.data.get("textOnly")
+            or request.query_params.get("text_only")
+        )
         invitation.status = InvitationStatus.GENERATING
         invitation.last_error = None
         invitation.save(update_fields=["status", "last_error", "updated_at"])
 
-        async_result = enqueue_invitation_generation(str(invitation.id))
+        async_result = enqueue_invitation_generation(
+            str(invitation.id), text_only=text_only
+        )
         invitation.last_job_id = async_result.id
         invitation.save(update_fields=["last_job_id", "updated_at"])
-        _history(invitation, "regenerated", request)
+        _history(
+            invitation,
+            "text_regenerated" if text_only else "regenerated",
+            request,
+        )
 
         return Response(
             {"job_id": async_result.id, "invitation_id": str(invitation.id)},

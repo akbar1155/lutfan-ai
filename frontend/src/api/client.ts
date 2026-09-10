@@ -335,8 +335,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
-  generate: (id: string) =>
-    request<{ job_id: string }>(`/invitations/${id}/generate`, { method: "POST" }),
+  generate: (id: string, opts?: { textOnly?: boolean }) =>
+    request<{ job_id: string }>(`/invitations/${id}/generate`, {
+      method: "POST",
+      body: JSON.stringify(opts?.textOnly ? { text_only: true } : {}),
+    }),
   status: (id: string) =>
     request<{
       status: string;

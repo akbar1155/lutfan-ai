@@ -16,15 +16,31 @@ export default function HomePage() {
               {t("cta")}
             </button>
           </div>
-          <div className="home-hero-stage">
+          <div className="home-hero-stage" aria-hidden="true">
             <img
-              className="home-hero-art"
-              src="/landing-hero.png"
+              className="home-hero-card is-left"
+              src="/landing-card-aqiqa.png?v=7"
               alt=""
-              width={1463}
-              height={817}
+              width={1200}
+              height={1500}
+              decoding="async"
+            />
+            <img
+              className="home-hero-card is-center"
+              src="/landing-card-nikoh.png?v=7"
+              alt=""
+              width={1200}
+              height={1500}
               decoding="async"
               fetchPriority="high"
+            />
+            <img
+              className="home-hero-card is-right"
+              src="/landing-card-birthday.png?v=7"
+              alt=""
+              width={1200}
+              height={1500}
+              decoding="async"
             />
           </div>
         </section>

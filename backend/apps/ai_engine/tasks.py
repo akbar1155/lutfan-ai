@@ -21,7 +21,12 @@ from apps.invitations.models import (
     RenderedFile,
 )
 
-from .generator import compose_from_template_bytes, generate_image_bytes
+from .generator import (
+    GenerationResult,
+    compose_from_template_bytes,
+    generate_image_bytes,
+    overlay_exact_invitation_text,
+)
 from .models import AIGeneration, AIGenerationCache
 from .prompts import build_prompt, build_text_blocks
 from .storage import resolve_media_url, upload_bytes
@@ -30,7 +35,10 @@ logger = logging.getLogger(__name__)
 
 
 def enqueue_invitation_generation(
-    invitation_id: str, extra_format: str | None = None
+    invitation_id: str,
+    extra_format: str | None = None,
+    *,
+    text_only: bool = False,
 ):
     """
     Start image generation and return a job-like object with `.id`.
@@ -48,7 +56,7 @@ def enqueue_invitation_generation(
             try:
                 generate_invitation_image.apply(
                     args=[invitation_id],
-                    kwargs={"extra_format": extra_format},
+                    kwargs={"extra_format": extra_format, "text_only": text_only},
                     task_id=job_id,
                 )
             except Exception:
@@ -67,7 +75,9 @@ def enqueue_invitation_generation(
 
         return _LocalJob()
 
-    return generate_invitation_image.delay(invitation_id, extra_format=extra_format)
+    return generate_invitation_image.delay(
+        invitation_id, extra_format=extra_format, text_only=text_only
+    )
 
 def _load_template_bytes(url: str) -> bytes | None:
     """Load template image from local /media path or HTTP URL."""
@@ -88,6 +98,99 @@ def _load_template_bytes(url: str) -> bytes | None:
     return None
 
 
+def _invitation_style_tags(invitation: Invitation) -> list[str]:
+    tags: list[str] = []
+    if invitation.generation_path == GenerationPath.TEMPLATE and invitation.template:
+        tags = list(invitation.template.style_tags or [])
+        if invitation.template.theme_name:
+            tags.append(invitation.template.theme_name)
+    else:
+        tags = list(invitation.selected_mood_tags or [])
+    return tags
+
+
+def _persist_decor_url(invitation: Invitation, decor_url: str) -> None:
+    data = dict(invitation.event_data or {})
+    if data.get("decor_image_url") == decor_url:
+        return
+    data["decor_image_url"] = decor_url
+    invitation.event_data = data
+    invitation.save(update_fields=["event_data", "updated_at"])
+
+
+def _load_decor_bytes(invitation: Invitation, fmt: str) -> tuple[bytes | None, bool]:
+    """
+    Background without invitation type.
+    Returns (bytes, from_template).
+    """
+    del fmt  # reserved if we later store per-format décor
+    if (
+        invitation.generation_path == GenerationPath.TEMPLATE
+        and invitation.template
+        and invitation.template.bg_url
+    ):
+        data = _load_template_bytes(invitation.template.bg_url)
+        if not data and invitation.template.bg_url_preview:
+            data = _load_template_bytes(invitation.template.bg_url_preview)
+        return data, True
+
+    decor_url = (invitation.event_data or {}).get("decor_image_url")
+    if decor_url:
+        data = _load_template_bytes(str(decor_url))
+        if data:
+            return data, False
+    # Text-only regenerate: reuse the last finished card as décor.
+    if invitation.final_image_url:
+        data = _load_template_bytes(str(invitation.final_image_url))
+        if data:
+            return data, False
+    return None, False
+
+
+def _compose_on_decor(
+    decor_bytes: bytes,
+    blocks: dict,
+    *,
+    fmt: str,
+    style_tags: list[str],
+    language: str | None,
+    from_template: bool,
+) -> GenerationResult:
+    if from_template:
+        return compose_from_template_bytes(
+            decor_bytes,
+            blocks,
+            fmt=fmt,
+            style_tags=style_tags,
+            language=language,
+        )
+    # AI décor is already sized; only re-typeset copy.
+    data = overlay_exact_invitation_text(
+        decor_bytes,
+        blocks,
+        fmt=fmt,
+        style_tags=style_tags,
+        language=language,
+        corner_guard=True,
+    )
+    width, height = 0, 0
+    try:
+        from PIL import Image
+        import io
+
+        img = Image.open(io.BytesIO(data))
+        width, height = img.width, img.height
+    except Exception:
+        pass
+    return GenerationResult(
+        data,
+        source="text_overlay",
+        width=width,
+        height=height,
+        text_overlay=True,
+    )
+
+
 def _cache_key(
     invitation: Invitation,
     prompt: str,
@@ -101,7 +204,7 @@ def _cache_key(
     )
     payload = "|".join(
         [
-            "overlay-v14-inset-text",
+            "overlay-v18-readable-meta",
             invitation.generation_path or "",
             str(invitation.template_id or invitation.ai_preset_id or ""),
             ",".join(sorted(invitation.selected_mood_tags or [])),
@@ -125,7 +228,12 @@ def ping():
     max_retries=0,  # retries × Gemini hang ≈ 15min waits behind ngrok
     autoretry_for=(),
 )
-def generate_invitation_image(self, invitation_id: str, extra_format: str | None = None):
+def generate_invitation_image(
+    self,
+    invitation_id: str,
+    extra_format: str | None = None,
+    text_only: bool = False,
+):
     started = time.time()
     invitation = Invitation.objects.select_related("template", "ai_preset", "user", "event").get(
         id=invitation_id
@@ -133,6 +241,7 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
     fmt = extra_format or invitation.primary_format
     blocks = build_text_blocks(invitation)
     prompt, negative, model_params = build_prompt(invitation, blocks=blocks)
+    style_tags = _invitation_style_tags(invitation)
 
     generation = AIGeneration.objects.create(
         invitation=invitation,
@@ -143,7 +252,7 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
         base_image_url=invitation.template.bg_url if invitation.template else None,
         final_prompt=prompt,
         negative_prompt=negative,
-        model_params=model_params or {},
+        model_params={**(model_params or {}), "text_only": bool(text_only)},
         status=AIGeneration.Status.PROCESSING,
         started_at=timezone.now(),
     )
@@ -159,58 +268,85 @@ def generate_invitation_image(self, invitation_id: str, extra_format: str | None
             cached.save(update_fields=["hit_count", "last_used_at"])
             result_stored_url = cached.result_url
         else:
-            base_bytes = None
-            if (
-                invitation.generation_path == GenerationPath.TEMPLATE
-                and invitation.template
-                and invitation.template.bg_url
-            ):
-                # Prefer full template for direct composite (preview is too soft)
-                ref_url = invitation.template.bg_url
-                base_bytes = _load_template_bytes(ref_url)
-                if not base_bytes and invitation.template.bg_url_preview:
-                    base_bytes = _load_template_bytes(
-                        invitation.template.bg_url_preview
+            gen_result: GenerationResult | None = None
+
+            # Text edit: keep existing décor, only re-typeset copy.
+            if text_only:
+                decor_bytes, from_template = _load_decor_bytes(invitation, fmt)
+                if decor_bytes:
+                    gen_result = _compose_on_decor(
+                        decor_bytes,
+                        blocks,
+                        fmt=fmt,
+                        style_tags=style_tags,
+                        language=invitation.language,
+                        from_template=from_template,
+                    )
+                else:
+                    logger.info(
+                        "text_only requested but no décor for %s — full generate",
+                        invitation_id,
                     )
 
-            if (
+            if gen_result is None and (
                 invitation.generation_path == GenerationPath.TEMPLATE
-                and base_bytes
             ):
-                # Skip Gemini — template already has décor; overlay exact text only.
-                style_tags = []
-                if invitation.template:
-                    style_tags = list(invitation.template.style_tags or [])
-                    if invitation.template.theme_name:
-                        style_tags.append(invitation.template.theme_name)
-                gen_result = compose_from_template_bytes(
-                    base_bytes,
+                decor_bytes, from_template = _load_decor_bytes(invitation, fmt)
+                if decor_bytes and from_template:
+                    gen_result = compose_from_template_bytes(
+                        decor_bytes,
+                        blocks,
+                        fmt=fmt,
+                        style_tags=style_tags,
+                        language=invitation.language,
+                    )
+
+            if gen_result is None:
+                # AI-from-scratch: paint décor only, persist it, then overlay text.
+                decor_result = generate_image_bytes(
+                    prompt,
+                    fmt=fmt,
+                    base_image_bytes=None,
+                    blocks=blocks,
+                    negative_prompt=negative,
+                    model_params=model_params,
+                    style_tags=style_tags,
+                    language=invitation.language,
+                    overlay_text=False,
+                    verify_text=False,
+                    require_gemini=True,
+                )
+                decor_key = (
+                    f"invitations/{invitation.id}/"
+                    f"decor_{fmt.replace(':', '_')}.jpg"
+                )
+                decor_url = upload_bytes(decor_result.data, decor_key, private=True)
+                _persist_decor_url(invitation, decor_url)
+                final_data = overlay_exact_invitation_text(
+                    decor_result.data,
                     blocks,
                     fmt=fmt,
                     style_tags=style_tags,
                     language=invitation.language,
+                    corner_guard=True,
                 )
-            else:
-                # AI-from-scratch: Gemini paints décor ONLY; PIL overlays the
-                # exact user text so edits always appear crisp and correct.
-                gen_result = generate_image_bytes(
-                    prompt,
-                    fmt=fmt,
-                    base_image_bytes=base_bytes,
-                    blocks=blocks,
-                    negative_prompt=negative,
-                    model_params=model_params,
-                    style_tags=list(invitation.selected_mood_tags or []),
-                    language=invitation.language,
-                    overlay_text=True,
-                    verify_text=False,
-                    require_gemini=True,
+                width, height = decor_result.width, decor_result.height
+                try:
+                    from PIL import Image
+                    import io
+
+                    img = Image.open(io.BytesIO(final_data))
+                    width, height = img.width, img.height
+                except Exception:
+                    pass
+                gen_result = GenerationResult(
+                    final_data,
+                    source=decor_result.source,
+                    width=width,
+                    height=height,
+                    text_overlay=True,
                 )
-            # Exact PIL overlay — mark as text-ready.
-            if not getattr(gen_result, "text_overlay", False):
-                logger.warning(
-                    "Generation for %s missing text overlay flag", invitation_id
-                )
+
             image_meta = gen_result
             object_key = f"invitations/{invitation.id}/hd_{fmt.replace(':', '_')}.jpg"
             result_stored_url = upload_bytes(gen_result.data, object_key, private=True)

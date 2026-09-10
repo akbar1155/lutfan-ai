@@ -76,6 +76,7 @@ EVENTS = [
         "fields_schema": {
             "subtype_mode": "multi",
             "required": [
+                {"key": "family_signature", "type": "string", "maxLength": 80},
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
                 {"key": "venue_name", "type": "string", "maxLength": 100},

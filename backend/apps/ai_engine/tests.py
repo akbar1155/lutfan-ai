@@ -2,7 +2,14 @@ from django.test import SimpleTestCase
 from PIL import Image, ImageDraw
 
 from apps.ai_engine.fonts import SERIF_BOLD_PATHS, SERIF_PATHS, load_font
-from apps.ai_engine.layout import analyze_safe_region, wrap_text
+from apps.ai_engine.layout import (
+    analyze_safe_region,
+    clear_safe_text_area,
+    render_invitation_layout,
+    wrap_text,
+    _base_sizes,
+    _clamp_sizes,
+)
 from apps.ai_engine.prompts import _inject_child_name, _inject_hayit_occasion, build_text_blocks
 from apps.ai_engine.spelling import is_junk_field_value, scrub_junk_lines
 
@@ -48,6 +55,25 @@ class OverlaySafeRegionTests(SimpleTestCase):
         self.assertGreater(guarded.y0, plain.y0)
         self.assertGreater(guarded.x0, plain.x0)
         self.assertLess(guarded.y1, plain.y1)
+        self.assertGreaterEqual(guarded.x0, int(2400 * 0.185))
+        self.assertLessEqual(guarded.y1, int(3000 * (1 - 0.220)))
+
+    def test_safe_area_washes_invading_florals_not_center_paper(self):
+        paper = (250, 244, 232)
+        floral = (40, 90, 55)
+        img = Image.new("RGB", (2400, 3000), paper)
+        draw = ImageDraw.Draw(img)
+        # Dark floral blobs that overlap the type column (as in production cards).
+        draw.ellipse((60, 1980, 920, 2920), fill=floral)
+        draw.ellipse((1480, 1980, 2340, 2920), fill=floral)
+        draw.ellipse((80, 40, 720, 620), fill=floral)
+        safe = analyze_safe_region(img, corner_guard=True)
+        out = clear_safe_text_area(img, safe, corner_guard=True)
+        cx, cy = 1200, 1500
+        self.assertEqual(out.getpixel((cx, cy))[:3], paper)
+        # Footer-zone floral that sat inside the type column must be washed toward paper.
+        sample = out.getpixel((safe.x0 + 120, safe.y1 - 80))[:3]
+        self.assertGreater(sum(sample), sum(floral) + 120)
 
     def test_russian_orphan_last_word_is_merged(self):
         img = Image.new("RGB", (2400, 3000), (250, 244, 232))
@@ -61,6 +87,54 @@ class OverlaySafeRegionTests(SimpleTestCase):
         self.assertTrue(lines)
         last = lines[-1].strip()
         self.assertNotIn(last.lower(), {"нас", "вами.", "вами", "с"})
+
+    def test_sana_line_is_not_split_on_date_hyphen(self):
+        from apps.ai_engine.layout import parse_schedule_blocks
+
+        rows = parse_schedule_blocks("Sana: 10-sentabr\nVaqt: 17:00", "uz-latn")
+        blob = "\n".join(f"{r['label']} {r['line']}" for r in rows)
+        self.assertIn("10-sentabr", blob.replace("\u2011", "-"))
+        self.assertNotIn("Sana: 10", [r["label"] for r in rows])
+
+    def test_date_and_address_stay_near_body_size(self):
+        sizes = _clamp_sizes(_base_sizes(1488, dense=True), 1488)
+        self.assertGreaterEqual(sizes["date"], int(sizes["body"] * 0.90))
+        self.assertGreaterEqual(sizes["address"], int(sizes["body"] * 0.88))
+        crushed = _clamp_sizes(
+            {
+                "header": 40,
+                "body": 50,
+                "date": 10,
+                "address": 10,
+                "host": 40,
+            },
+            1488,
+        )
+        self.assertGreaterEqual(crushed["date"], int(crushed["body"] * 0.90))
+        self.assertGreaterEqual(crushed["address"], int(crushed["body"] * 0.88))
+
+    def test_dense_card_meta_fonts_match_body(self):
+        img = Image.new("RGB", (2400, 3000), (252, 247, 236))
+        out = render_invitation_layout(
+            img,
+            {
+                "header": "Hurmatli va e‘zozli mehmonimiz!",
+                "body": (
+                    "Sizni va oila a‘zolaringizni xonadonimizdagi qutlug‘ ayyom, "
+                    "farzandlarimizning muqaddas nikoh to‘yi munosabati bilan "
+                    "yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu "
+                    "quvonchli va mas’uliyatli onlarda yonimizda bo‘lib, "
+                    "yoshlarimizning baxtiyor kelajagiga ezgu tilaklar bildirishingiz "
+                    "biz uchun ulkan sharafdir."
+                ),
+                "date_time": "Sana: 10-sentabr\nVaqt: 17:00",
+                "address": "Manzil: Yakkasaroy, Tergachi",
+                "footer": "Yuksak ehtirom ila, Israilovlar oilasi",
+            },
+            language="uz-latn",
+            corner_guard=True,
+        )
+        self.assertEqual(out.size, (2400, 3000))
 
 
 class ChildNameOverlayTests(SimpleTestCase):

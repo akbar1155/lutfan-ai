@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
 import { showDevLogin } from "../auth/flags";
@@ -13,8 +13,9 @@ const localeLabels: Record<(typeof UI_LANGS)[number], string> = {
 
 export default function Layout() {
   const { t, i18n } = useTranslation();
-  const { user, loginDev, logout } = useAuth();
+  const { user, loginDev, logout, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const current = normalizeUiLang(i18n.language);
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isAdminAuthed = user?.role === "admin";
@@ -24,14 +25,33 @@ export default function Layout() {
   const isWizard = location.pathname.startsWith("/create");
   const isHome = location.pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
+  const leavingWizard = useRef(false);
 
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const onWizardStep = location.pathname.startsWith("/create/");
+    if (!onWizardStep) return;
+    if (leavingWizard.current || (!loading && !user)) {
+      navigate("/", { replace: true });
+    }
+  }, [loading, user, location.pathname, navigate]);
+
   const setLang = (code: (typeof UI_LANGS)[number]) => {
     void i18n.changeLanguage(code);
     localStorage.setItem("ui_lang", code);
+  };
+
+  const handleLogout = () => {
+    leavingWizard.current = true;
+    navigate("/", { replace: true });
+    void logout().finally(() => {
+      window.setTimeout(() => {
+        leavingWizard.current = false;
+      }, 800);
+    });
   };
 
   return (
@@ -89,6 +109,21 @@ export default function Layout() {
               <NavLink to="/faq">{t("faq")}</NavLink>
               {user && <NavLink to="/account">{t("account")}</NavLink>}
               {user?.role === "admin" && <NavLink to="/admin">{t("admin")}</NavLink>}
+              <div className="nav-lang" role="group" aria-label={t("languageLabel")}>
+                <span className="nav-lang-label">{t("languageLabel")}</span>
+                <div className="lang">
+                  {UI_LANGS.map((code) => (
+                    <button
+                      key={code}
+                      type="button"
+                      className={current === code ? "active" : ""}
+                      onClick={() => setLang(code)}
+                    >
+                      {localeLabels[code]}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </nav>
           )}
 
@@ -106,7 +141,7 @@ export default function Layout() {
               ))}
             </div>
             {user ? (
-              <button type="button" className="ghost top-logout" onClick={() => void logout()}>
+              <button type="button" className="ghost top-logout" onClick={handleLogout}>
                 {t("logout")}
               </button>
             ) : (
@@ -115,7 +150,7 @@ export default function Layout() {
               showDevLogin && (
                 <button
                   type="button"
-                  className="ghost top-login"
+                  className="top-login"
                   onClick={() => {
                     void loginDev(false).catch(() => undefined);
                   }}

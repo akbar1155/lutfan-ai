@@ -25,14 +25,24 @@ type EventTopic = {
   duaRu: string;
 };
 
+type NikohBlock = {
+  header: string;
+  body: string;
+  closing: string;
+};
+
 type ReadyTextsFile = {
   catalog: CatalogItem[];
   nikohTopics?: Record<string, EventTopic>;
+  nikohBySubtype?: Record<string, Record<string, Partial<Record<Lang, NikohBlock>>>>;
   eventTopics: Record<string, EventTopic>;
   templates: Record<string, I18nText>;
 };
 
 const data = catalogData as ReadyTextsFile;
+
+/** Marker so splitTemplateBlocks can extract the closing / signature line. */
+export const FOOTER_MARK = "@@FOOTER@@";
 
 const FALLBACK_TOPIC: EventTopic = {
   latn: "tadbirimiz",
@@ -99,12 +109,31 @@ function topicFor(
   return data.eventTopics[eventSlug] || FALLBACK_TOPIC;
 }
 
+function nikohBlock(
+  styleId: string,
+  lang: Lang,
+  subtypeSlugs?: string[] | null,
+): NikohBlock | null {
+  const key = primaryNikohSubtype(subtypeSlugs);
+  const byStyle = data.nikohBySubtype?.[key]?.[styleId];
+  if (!byStyle) return null;
+  return byStyle[lang] || byStyle["uz-latn"] || null;
+}
+
 function bodyFor(
   eventSlug: string,
   styleId: string,
   lang: Lang,
   subtypeSlugs?: string[] | null,
 ): string {
+  if (eventSlug === "nikoh") {
+    const block = nikohBlock(styleId, lang, subtypeSlugs);
+    if (block) {
+      return [block.header, block.body, `${FOOTER_MARK}${block.closing}`]
+        .filter(Boolean)
+        .join("\n");
+    }
+  }
   const topic = topicFor(eventSlug, subtypeSlugs);
   const tpl = data.templates[styleId]?.[lang] || "";
   return fillTemplate(tpl, topic).trim();

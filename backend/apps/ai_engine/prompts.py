@@ -30,6 +30,34 @@ def _looks_like_datetime_line(text: str) -> bool:
     return bool(_DATETIME_LINE_RE.search(t))
 
 
+def format_family_signature(raw: str | None, language: str | None = None) -> str:
+    """Tohirov → Tohirovlar oilasi (idempotent)."""
+    name = (raw or "").strip()
+    if not name:
+        return ""
+    lang = (language or "").lower()
+    name = re.sub(r"\s+oilasi\.?$", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"\s+оиласи\.?$", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"^семья\s+", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"\s+семьи\.?$", "", name, flags=re.IGNORECASE)
+    name = name.strip()
+    if not name:
+        return ""
+    if lang.startswith("ru"):
+        return f"семья {name}"
+    is_cyrl = lang == "uz-cyrl" or bool(
+        re.search(r"[А-Яа-яЁёЎўҚқҒғҲҳ]", name)
+    )
+    has_plural = bool(
+        re.search(r"(лар|лер)$", name, re.IGNORECASE)
+        if is_cyrl
+        else re.search(r"(lar|ler)$", name, re.IGNORECASE)
+    )
+    if not has_plural:
+        name = f"{name}{'лар' if is_cyrl else 'lar'}"
+    return f"{name} {'оиласи' if is_cyrl else 'oilasi'}"
+
+
 def sanitize_user_text(value: str, max_len: int = 400) -> str:
     text = (value or "").strip()[:max_len]
     text = text.replace("{", "(").replace("}", ")")
@@ -206,7 +234,10 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     if not footer:
         footer = sanitize_overlay_field(
             normalize_invitation_spelling(
-                sanitize_user_text(structured.get("family_signature", ""), 120),
+                format_family_signature(
+                    sanitize_user_text(structured.get("family_signature", ""), 120),
+                    lang,
+                ),
                 lang,
             )
         )
@@ -320,10 +351,12 @@ TEXT CONSTRAINT (absolute):
   logos, QR codes, or fake typography in ANY language or script.
 - Software will typeset the real invitation text later onto a TEXT-SAFE ZONE.
 
-TEXT-SAFE ZONE (center ~38–45% of the card, continuous paper — NOT a floating panel):
+TEXT-SAFE ZONE (center ~50% of the card, continuous paper — NOT a floating panel):
 - Soft ivory/cream paper texture only in the middle.
 - NO floating white card, NO drop-shadow plate, NO frosted glass box, NO inner parchment rectangle.
 - Keep the center calm enough to read overlay text, but the REST of the card must feel richly designed.
+- Florals, leaves, petals, and gold filigree MUST STOP before the inner half of the card.
+  They may hug the frame and corners only — never sit under the future title, body, or signature.
 """.strip()
 
 
@@ -361,6 +394,7 @@ CORNER DECORATION SYSTEM (mandatory):
 - BOTTOM-LEFT: continuation / trailing stems / soft foliage or ornaments.
 - BOTTOM-RIGHT: closing composition element.
 - Décor must grow naturally FROM the frame edges INTO the card — not tiny floating stickers.
+- Stop inward growth before the center typography column (inner ~50%). No petals over the middle.
 - Forbidden: four identical corner circles, tiny sparse sprigs, empty corners, clip-art icons.
 """.strip()
 

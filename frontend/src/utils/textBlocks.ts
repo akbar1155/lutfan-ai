@@ -4,6 +4,8 @@ import {
   formatDisplayTime,
 } from "./date";
 import { cleanFieldValue, isJunkFieldValue } from "./fieldQuality";
+import { formatFamilySignature } from "./familySignature";
+import { FOOTER_MARK } from "./readyTexts";
 
 const DATETIME_LINE_RE =
   /(?:\d{1,2}\s*[-./]\s*[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+|\d{1,2}\.\d{1,2}\.\d{4}).*\d{1,2}\s*:\s*\d{2}|soat\s+\d{1,2}\s*:\s*\d{2}|соат\s+\d{1,2}\s*:\s*\d{2}/i;
@@ -21,10 +23,13 @@ export function substituteTextVars(
 ): string {
   return text
     .replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key: string) => {
-      const v = cleanFieldValue(vars[key]);
+      let v = cleanFieldValue(vars[key]);
       if (!v) return "";
       if (key === "event_date") return formatDisplayDate(v, language);
       if (key === "event_time") return formatDisplayTime(v);
+      if (key === "family_signature") {
+        return formatFamilySignature(v, language);
+      }
       return String(v);
     })
     .replace(/[ \t]{2,}/g, " ")
@@ -33,7 +38,7 @@ export function substituteTextVars(
 }
 
 /**
- * Split a ready-text template into header / body / date / address.
+ * Split a ready-text template into header / body / date / address / footer.
  * Date and address always come from structured fields so a junk venue
  * or a filtered body line cannot shuffle the date into "Asosiy matn".
  */
@@ -42,7 +47,13 @@ export function splitTemplateBlocks(
   vars: Record<string, string>,
   language?: string,
   options?: { skipDate?: boolean; fallbackBody?: string },
-): { header: string; body: string; date_time: string; address: string } {
+): {
+  header: string;
+  body: string;
+  date_time: string;
+  address: string;
+  footer: string;
+} {
   const dateTime = options?.skipDate
     ? ""
     : formatDisplayDateTime(vars.event_date, vars.event_time, language);
@@ -54,7 +65,13 @@ export function splitTemplateBlocks(
   );
 
   const keepNames = new Set(
-    [vars.child_name, vars.childName, vars.person_name, vars.personName]
+    [
+      vars.child_name,
+      vars.childName,
+      vars.person_name,
+      vars.personName,
+      vars.family_signature,
+    ]
       .map((v) => cleanFieldValue(String(v || "")))
       .filter(Boolean)
       .map((v) => v.toLowerCase()),
@@ -67,8 +84,15 @@ export function splitTemplateBlocks(
     .filter(Boolean);
 
   const header = raw[0] || "";
+  let footer = "";
   const bodyLines: string[] = [];
   for (const line of raw.slice(1)) {
+    if (line.startsWith(FOOTER_MARK)) {
+      footer = line.slice(FOOTER_MARK.length).trim();
+      // Drop trailing comma/space when family_signature was empty.
+      footer = footer.replace(/[,;\s]+$/g, "").trim();
+      continue;
+    }
     if (looksLikeDateTimeLine(line)) continue;
     if (venueAddress && line === venueAddress) continue;
     if (/\{[a-z_]+\}/i.test(line) && line.length < 80) continue;
@@ -96,6 +120,7 @@ export function splitTemplateBlocks(
     ),
     date_time: dateTime,
     address: venueAddress,
+    footer,
   };
 }
 

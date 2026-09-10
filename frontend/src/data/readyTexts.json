@@ -10,19 +10,19 @@
       }
     },
     {
-      "id": "warm1",
-      "title": {
-        "uz-latn": "Samimiy 1",
-        "uz-cyrl": "Самимий 1",
-        "ru": "Тёплое 1"
-      }
-    },
-    {
       "id": "classic2",
       "title": {
         "uz-latn": "Klassik 2",
         "uz-cyrl": "Классик 2",
         "ru": "Классика 2"
+      }
+    },
+    {
+      "id": "warm1",
+      "title": {
+        "uz-latn": "Samimiy 1",
+        "uz-cyrl": "Самимий 1",
+        "ru": "Тёплое 1"
       }
     },
     {
@@ -249,6 +249,203 @@
       "duaLatn": "quvonch, sihat-salomatlik va baxtiyor kunlar",
       "duaCyrl": "қувонч, сиҳат-саломатлик ва бахтиёр кунлар",
       "duaRu": "радости, здоровья и счастливых дней"
+    }
+  },
+  "nikohBySubtype": {
+    "nikoh_oqshomi": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom — farzandlarimizning muqaddas nikoh to‘yi munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu quvonchli va mas’uliyatli onlarda yonimizda bo‘lib, yoshlarimizning baxtiyor kelajagiga ezgu tilaklar bildirishingiz biz uchun ulkan sharafdir.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Ikki qalbning muqaddas nikoh rishtalari ila tutashuvi va yangi oila poydevori qo‘yilishi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Yoshlarimizning mustaqil hayot bo‘sag‘asiga qo‘yayotgan ilk qadamlarida guvoh bo‘lib, chiroyli duolaringiz bilan davramiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Baxtli kunlar quvonchi eng qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal va hayajonli tantana — qalbimizdagi samimiy mehr hamda shukronalikni Siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Oila — bu qalb harorati, ehtirom va samimiyat maskani. Nikoh to‘yimiz munosabati bilan tashkil etilayotgan ushbu iliq va samimiy kechada aynan Sizning ishtirokingiz biz uchun juda muhimdir. Keling, birgalikda eng go‘zal xotiralarni yarataylik va ushbu kunga unutilmas shukuh ulashaylik!",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamiz tarixidagi eng sharafli va shodiyona kun — nikoh to‘yi tantanasi munosabati bilan Sizni ushbu shukuhli kechaga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, to‘yimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyat va oq tilaklaringiz bilan kelib, quvonchimizga sherik bo‘ling!",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim.",
+          "body": "Yaratganning inoyati va hikmati ila ikki yoshning nikoh to‘yi munosabati bilan yozilgan ushbu taklifimizni qabul qilgaysiz. Ushbu xayrli va barakali kunda to‘kin dasturxonimiz atrofida jam bo‘lib, yoshlarimiz haqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Hayotimizdagi eng go‘zal va mas’uliyatli kun — nikoh to‘yimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling va baxtimizni birga nishonlang!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "Hayotimizning eng hayajonli va yangi sahifasi ochilmoqda! Ushbu unutilmas, quvnoq hamda samimiy oqshomni Siz kabi qadrli insonlar davrasida o‘tkazishni istaymiz. Tashrif buyuring, chiroyli xotiralar va ajoyib kayfiyatni birgalikda yarataylik!",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilalarimiz tarixidagi eng sharafli va unutilmas ayyom — muqaddas nikoh rishtalarining tutashuvidir. Ushbu shukuhli tantanada Sizning ishtirokingiz biz uchun shunchaki ehtirom emas, balki baxtimizning mukammalligidir. Ezgu niyat va samimiy tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    },
+    "nahorgi_osh": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom munosabati bilan yozilayotgan nahorga osh dasturxonimizga taklif etamiz. Ushbu xayrli va shukuhli tongda mehmonimiz bo‘lib, to‘kin dasturxonimiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Xonadonimizda bo‘lib o‘tadigan to‘y tantanasi munosabati bilan yozilgan nahorga osh taklifnomamizni qabul qilgaysiz. Ertalabki fayzli davramizda ishtirok etib, yoshlarimiz kelajagiga ezgu tilaklar bildirishingiz biz uchun ulkan sharafdir.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Qalbimizdagi samimiy mehr va shukronalik bilan Sizni nahorgi osh dasturxonimizga chorlaymiz. Hayotimizdagi quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga cheksiz mamnuniyat bag‘ishlaydi. Qutlug‘ tongda yonimizda bo‘ling!",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Oila quvonchi yaqinlar jam bo‘lgandagina to‘liq bo‘ladi. To‘yimiz munosabati bilan yozilayotgan elga osh dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ertalabki fayzli suhbatda birga bo‘laylik va unutilmas xotiralar ulashaylik!",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamiz tarixidagi eng sharafli va shodiyona kun munosabati bilan Sizni nahorga osh marosimiga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, to‘yimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim.",
+          "body": "Yaratganning inoyati ila to‘yimiz munosabati bilan yozilgan nahorga osh taklifimizni samimiyat bilan qabul qilgaysiz. Ushbu muborak va xayrli tongda to‘kin dasturxonimiz atrofida jam bo‘lib, yoshlarimiz haqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Xonadonimizdagi to‘y munosabati bilan yozilayotgan nahorga osh dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Qutlug‘ tongda kutib qolamiz!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "To‘yimizning eng fayzli va jo‘shqin qismi — nahorga osh marosimida barchangizni kutamiz! Erta tongdan ko‘tarinki kayfiyat, samimiy gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutamiz!",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilalarimiz tarixidagi eng sharafli va unutilmas ayyom munosabati bilan Sizni nahorgi el oshiga taklif etamiz. Ushbu shukuhli tantanada Sizning ishtirokingiz biz uchun shunchaki ehtirom emas, balki baxtimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    },
+    "maslahat_oshi": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Xonadonimizda bo‘lib o‘tadigan to‘y tantanalari oldidan tashkil etilayotgan maslahat oshiga Sizni taklif etamiz. Tajribangiz, qimmatli maslahatlaringiz va ezgu tilaklaringiz bilan to‘yimiz tayyorgarligida yonimizda bo‘lishingiz biz uchun ulkan sharafdir.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Farzandlarimizning nikoh to‘yi munosabati bilan yozilayotgan maslahat oshi dasturxonimizga taklif etamiz. To‘y tashvishlari va tayyorgarlik ishlarini maslahatlashib olish uchun oqsoqollarimiz va yaqinlarimiz davrasida mehmonimiz bo‘lishingizni so‘raymiz.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "To‘y — bu nafaqat quvonch, balki yaqinlarning hamjihatligidir. Xonadonimizdagi to‘y oldidan yozilayotgan maslahat oshida Siz azizlarni ko‘rishdan behad mamnun bo‘lamiz. Kelib, samimiy gurung va maslahatlaringiz bilan quvonchimizga sherik bo‘ling.",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Kattalarning duo va maslahati olingan ishda hamisha baraka bo‘ladi. To‘yimiz oldidan tashkil etilayotgan maslahat oshida aynan Sizning ishtirokingiz biz uchun juda muhim. Dasturxonimiz atrofida jam bo‘lib, to‘yimizni tartibli va fayzli o‘tkazishda fikrlaringizni baham ko‘rishingizni so‘raymiz.",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamizdagi shukuhli ayyom — bo‘lajak nikoh to‘yi munosabati bilan barcha yaqinlar va el-yurt faollarini maslahat oshiga taklif etamiz. Tashrifingiz xonadonimizga fayz, to‘yimiz tayyorgarligiga esa tartib va baraka bag‘ishlaydi.",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim.",
+          "body": "Xonadonimizdagi to‘y tantanalari xayrli va barakali o‘tishi uchun yozilgan maslahat oshi dasturxonimizga taklif etamiz. Ezgu niyatlar bilan to‘planib, bo‘lajak to‘yimiz haqiga chiroyli duolar qilishingiz hamda maslahatlaringiz bilan ko‘maklashishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Xonadonimizdagi to‘y oldidan yozilayotgan maslahat oshiga taklif etamiz. Dasturxonimiz atrofida Sizni ko‘rishdan behad mamnun bo‘lamiz!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "To‘yimiz tayyorgarligining eng mas’uliyatli va muhim bosqichi — maslahat oshida barchangizni kutamiz! Samimiy gurung, vazifalarni bo‘lishib olish va ko‘tarinki kayfiyatda birga bo‘laylik.",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilamiz tarixidagi eng sharafli va unutilmas ayyom oldidan yozilayotgan maslahat oshida Sizning ishtirokingiz biz uchun yuksak izzatdir. Hayotiy tajribangiz, qimmatli maslahatlaringiz hamda duolaringiz ila to‘yimiz fayzini oshirishingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
     }
   }
 }

@@ -44,6 +44,7 @@ import {
 } from "../utils/eventSubtypes";
 import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
+import { formatFamilySignature } from "../utils/familySignature";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
 import {
@@ -62,7 +63,6 @@ import {
   IconPlus,
   IconRefresh,
   IconShare,
-  IconUser,
 } from "../components/ActionIcons";
 
 type FieldDef = {
@@ -586,6 +586,17 @@ export function DataPage() {
         maxLength: 200,
       });
     }
+    // Nikoh: family signature used in ready-text closings / card footer.
+    if (
+      event.slug === "nikoh" &&
+      !all.some((f) => f.key === "family_signature")
+    ) {
+      all.unshift({
+        key: "family_signature",
+        type: "string",
+        maxLength: 80,
+      });
+    }
     if (multiCeremony) {
       return all.filter(
         (f) => f.key !== "event_date" && f.key !== "event_time",
@@ -599,6 +610,9 @@ export function DataPage() {
     const keys = ((event.fields_schema.required || []) as FieldDef[])
       .map((f) => String(f.key))
       .filter((k) => !(multiCeremony && (k === "event_date" || k === "event_time")));
+    if (event.slug === "nikoh" && !keys.includes("family_signature")) {
+      keys.push("family_signature");
+    }
     return new Set(keys);
   }, [event, multiCeremony]);
 
@@ -924,6 +938,13 @@ export function DataPage() {
                 type="text"
                 maxLength={field.maxLength || 200}
                 value={form[key] || ""}
+                placeholder={
+                  key === "family_signature"
+                    ? t("field_family_signature_ph", {
+                        defaultValue: "masalan: Tohirov",
+                      })
+                    : undefined
+                }
                 aria-invalid={fieldError ? true : undefined}
                 onChange={(e) => {
                   clearError();
@@ -970,6 +991,7 @@ export function TextPage() {
     body: "",
     date_time: "",
     address: "",
+    footer: "",
   });
   const [scheduleDateTime, setScheduleDateTime] = useState("");
 
@@ -1065,6 +1087,7 @@ export function TextPage() {
             body,
             date_time: dateTime,
             address,
+            footer: formatDatesInText(existing.footer || "", inv.language),
           });
         } else {
           setBlocks({
@@ -1088,6 +1111,10 @@ export function TextPage() {
             ),
             date_time: dateTimeFromSchedule,
             address: venueLine,
+            footer: formatFamilySignature(
+              fields.family_signature || "",
+              inv.language,
+            ),
           });
         }
         return Promise.all([
@@ -1142,6 +1169,7 @@ export function TextPage() {
           hayit_occasion: ctx.occasion,
           child_name: ctx.fields.child_name || ctx.fields.childName || "",
           person_name: ctx.fields.person_name || ctx.fields.personName || "",
+          family_signature: ctx.fields.family_signature || "",
         };
         const next = splitTemplateBlocks(
           first.preview_text,
@@ -1159,15 +1187,17 @@ export function TextPage() {
         body = ensurePersonalMessageInBody(body, ctx.personalMessage);
         body = normalizeUzbekSpelling(body, inv.language);
         const header = normalizeUzbekSpelling(next.header, inv.language);
+        const footer = normalizeUzbekSpelling(next.footer || "", inv.language);
         if (ctx.dateTimeFromSchedule.includes("\n")) {
           setBlocks({
             ...next,
             header,
             body,
+            footer,
             date_time: ctx.dateTimeFromSchedule,
           });
         } else {
-          setBlocks({ ...next, header, body });
+          setBlocks({ ...next, header, body, footer });
         }
       })
       .catch((err: Error) => setError(err.message));
@@ -1252,6 +1282,8 @@ export function TextPage() {
                           structuredFields.person_name ||
                           structuredFields.personName ||
                           "",
+                        family_signature:
+                          structuredFields.family_signature || "",
                       };
                       const personalMessage = cleanFieldValue(
                         String(
@@ -1280,16 +1312,21 @@ export function TextPage() {
                           next.header,
                           invitation.language,
                         );
+                        const footer = normalizeUzbekSpelling(
+                          next.footer || "",
+                          invitation.language,
+                        );
                         // Multi-ceremony: keep the full ready-text body; only replace date block.
                         if (scheduleDateTime.includes("\n")) {
                           return {
                             ...next,
                             header,
                             body,
+                            footer,
                             date_time: scheduleDateTime,
                           };
                         }
-                        return { ...next, header, body };
+                        return { ...next, header, body, footer };
                       });
                     }}
                   >
@@ -1306,7 +1343,7 @@ export function TextPage() {
             {(
               invitation.event_slug === "hayit"
                 ? (["header", "body"] as const)
-                : (["header", "body", "date_time"] as const)
+                : (["header", "body", "date_time", "footer"] as const)
             ).map((key) => (
               <label key={key} className={`text-block text-block-${key}`}>
                 <span>{t(`block_${key}`)}</span>
@@ -1348,7 +1385,7 @@ export function TextPage() {
                       body: normalizeUzbekSpelling(blocks.body, invitation.language),
                       date_time: normalizeUzbekSpelling(blocks.date_time, invitation.language),
                       address: normalizeUzbekSpelling(blocks.address, invitation.language),
-                      footer: "",
+                      footer: normalizeUzbekSpelling(blocks.footer, invitation.language),
                     },
                   },
                 })
@@ -1625,16 +1662,24 @@ export function GeneratingPage() {
   const [message, setMessage] = useState(t("generating"));
   const [failed, setFailed] = useState(false);
   const [polling, setPolling] = useState(false);
-  const kickStarted = useRef(false);
+  const pendingRef = useRef(
+    location.state as
+      | {
+          pendingGenerate?: boolean;
+          pendingFormat?: "9:16" | "1:1";
+          textOnly?: boolean;
+        }
+      | null,
+  );
+  pendingRef.current = location.state as typeof pendingRef.current;
 
   useEffect(() => {
-    if (!id || authLoading || kickStarted.current) return;
-    kickStarted.current = true;
-    const state = location.state as
-      | { pendingGenerate?: boolean; pendingFormat?: "9:16" | "1:1" }
-      | null;
+    if (!id || authLoading) return;
+    let cancelled = false;
+    const state = pendingRef.current;
 
     const fail = (msg: string) => {
+      if (cancelled) return;
       setFailed(true);
       const lower = (msg || "").toLowerCase();
       if (lower.includes("hourly") || lower.includes("generation_hourly")) {
@@ -1649,11 +1694,18 @@ export function GeneratingPage() {
     void api
       .getInvitation(id)
       .then((inv) => {
+        if (cancelled) return;
         if (state?.pendingFormat) {
-          return api.generateFormat(id, state.pendingFormat).then(() => setPolling(true));
+          return api.generateFormat(id, state.pendingFormat).then(() => {
+            if (!cancelled) setPolling(true);
+          });
         }
         if (state?.pendingGenerate) {
-          return api.generate(id).then(() => setPolling(true));
+          return api
+            .generate(id, { textOnly: Boolean(state.textOnly) })
+            .then(() => {
+              if (!cancelled) setPolling(true);
+            });
         }
         if (inv.status === "ready") {
           navigate(`/create/${id}/result`, { replace: true });
@@ -1668,17 +1720,26 @@ export function GeneratingPage() {
           return;
         }
         if (inv.generation_path) {
-          return api.generate(id).then(() => setPolling(true));
+          return api.generate(id).then(() => {
+            if (!cancelled) setPolling(true);
+          });
         }
         navigate(invitationContinuePath(inv), { replace: true });
       })
       .catch((err: Error) => fail(err.message || t("generateFailed")));
-  }, [id, authLoading, location.state, navigate, t]);
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally not depending on `t` / location.state: those change during
+    // Strict Mode and i18n init and would cancel polling before it starts.
+  }, [id, authLoading, navigate]);
 
   useEffect(() => {
     if (!id || failed || !polling) return;
+    let cancelled = false;
     const startedAt = Date.now();
     const poll = () => {
+      if (cancelled) return;
       if (Date.now() - startedAt > 150_000) {
         setFailed(true);
         setMessage(t("generateTimeout"));
@@ -1687,6 +1748,7 @@ export function GeneratingPage() {
       void api
         .status(id)
         .then((st) => {
+          if (cancelled) return;
           if (st.status === "ready") navigate(`/create/${id}/result`);
           else if (st.status === "failed") {
             setFailed(true);
@@ -1701,21 +1763,16 @@ export function GeneratingPage() {
             }
           }
         })
-        .catch((err: Error) => {
-          setFailed(true);
-          const lower = (err.message || "").toLowerCase();
-          if (lower.includes("hourly") || lower.includes("generation_hourly")) {
-            setMessage(t("generateHourlyLimit"));
-          } else if (lower.includes("daily") || lower.includes("generation_daily")) {
-            setMessage(t("generateDailyLimit"));
-          } else {
-            setMessage(err.message);
-          }
+        .catch(() => {
+          /* keep polling through transient network errors */
         });
     };
     poll();
     const timer = window.setInterval(poll, 700);
-    return () => window.clearInterval(timer);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
   }, [id, navigate, t, failed, polling]);
 
   return (
@@ -1748,13 +1805,16 @@ export function ResultPage() {
     body: "",
     date_time: "",
     address: "",
+    footer: "",
   });
 
   useEffect(() => {
     if (!id || authLoading) return;
+    let cancelled = false;
     void api
       .getInvitation(id)
       .then((inv) => {
+        if (cancelled) return;
         if (inv.status === "generating") {
           navigate(`/create/${id}/generating`, { replace: true });
           return;
@@ -1774,9 +1834,15 @@ export function ResultPage() {
               ? ""
               : formatDatesInText(existing.date_time || "", inv.language),
           address: existing.address || "",
+          footer: formatDatesInText(existing.footer || "", inv.language),
         });
       })
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => {
+        if (!cancelled) setError(err.message);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id, authLoading, navigate]);
 
   if (!invitation) {
@@ -1794,21 +1860,22 @@ export function ResultPage() {
       .patchInvitation(invitation.id, {
         event_data: {
           ...(invitation.event_data || {}),
-                    final_text_blocks: {
-                      header: normalizeUzbekSpelling(blocks.header, invitation.language),
-                      body: normalizeUzbekSpelling(blocks.body, invitation.language),
-                      date_time:
-                        invitation.event_slug === "hayit"
-                          ? ""
-                          : normalizeUzbekSpelling(blocks.date_time, invitation.language),
-                      address: normalizeUzbekSpelling(blocks.address, invitation.language),
-                    },
+          final_text_blocks: {
+            header: normalizeUzbekSpelling(blocks.header, invitation.language),
+            body: normalizeUzbekSpelling(blocks.body, invitation.language),
+            date_time:
+              invitation.event_slug === "hayit"
+                ? ""
+                : normalizeUzbekSpelling(blocks.date_time, invitation.language),
+            address: normalizeUzbekSpelling(blocks.address, invitation.language),
+            footer: normalizeUzbekSpelling(blocks.footer, invitation.language),
+          },
         },
       })
       .then(() =>
         navigate(`/create/${invitation.id}/generating`, {
           replace: true,
-          state: { pendingGenerate: true },
+          state: { pendingGenerate: true, textOnly: true },
         }),
       )
       .catch((err: Error) => {
@@ -1932,7 +1999,7 @@ export function ResultPage() {
                 {(
                   invitation.event_slug === "hayit"
                     ? (["header", "body", "address"] as const)
-                    : (["header", "body", "date_time", "address"] as const)
+                    : (["header", "body", "date_time", "address", "footer"] as const)
                 ).map((key) => (
                   <label key={key} className={`text-block text-block-${key}`}>
                     <span>{t(`block_${key}`)}</span>
@@ -1969,10 +2036,6 @@ export function ResultPage() {
             <Link className="ghost btn-with-icon" to="/create">
               <IconPlus />
               {t("createNew")}
-            </Link>
-            <Link className="ghost btn-with-icon" to="/account">
-              <IconUser />
-              {t("account")}
             </Link>
           </div>
         </div>

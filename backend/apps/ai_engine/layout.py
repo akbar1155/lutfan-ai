@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Sequence
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 from .fonts import (
     SANS_BOLD_PATHS,
@@ -60,6 +60,10 @@ _MONTH_INDEX = {
     "декабря": 12,
 }
 
+_META_LINE_RE = re.compile(
+    r"^(Sana|Сана|Дата|Vaqt|Вақт|Время|Manzil|Манзил|Адрес)\s*:",
+    re.IGNORECASE,
+)
 _DATE_TIME_RE = re.compile(
     r"^(?P<label>.+?)\s*[-–—|]\s*(?P<rest>.+)$",
 )
@@ -132,11 +136,11 @@ def analyze_safe_region(
     """
     w, h = img.size
     tall = h / max(w, 1) > 1.5
-    # Keep generous side inset so type never hugs the decorative frame on mobile.
+    # Keep generous side/bottom inset so type never sits on corner florals.
     if corner_guard:
-        side = 0.178 if tall else 0.165
-        top = 0.195
-        bottom = 0.188
+        side = 0.205 if tall else 0.190
+        top = 0.215
+        bottom = 0.228
     else:
         side = 0.148 if tall else 0.138
         top = 0.138
@@ -150,118 +154,74 @@ def analyze_safe_region(
 
 
 def _sample_paper(img: Image.Image, safe: SafeRegion) -> tuple[int, int, int]:
-    boxes = [
-        (
-            safe.x0 + int(safe.width * 0.35),
-            safe.y0 + int(safe.height * 0.08),
-            safe.x0 + int(safe.width * 0.65),
-            safe.y0 + int(safe.height * 0.16),
-        ),
-        (
-            safe.x0 + int(safe.width * 0.40),
-            safe.y0 + int(safe.height * 0.45),
-            safe.x0 + int(safe.width * 0.60),
-            safe.y0 + int(safe.height * 0.52),
-        ),
-    ]
-    samples: list[tuple[int, int, int]] = []
-    for box in boxes:
-        try:
-            px = img.crop(box).resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))
-            samples.append(px[:3])
-        except Exception:
-            continue
-    if not samples:
-        return (253, 248, 238)
-    return (
-        sum(s[0] for s in samples) // len(samples),
-        sum(s[1] for s in samples) // len(samples),
-        sum(s[2] for s in samples) // len(samples),
-    )
+    """Cream from the true center — not the floral corners."""
+    w, h = img.size
+    pw, ph = max(24, w // 36), max(24, h // 36)
+    cx, cy = w // 2, (safe.y0 + safe.y1) // 2
+    patch = img.crop((cx - pw, cy - ph, cx + pw, cy + ph)).convert("RGB")
+    return patch.resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))[:3]
 
 
 def clear_safe_text_area(
     img: Image.Image, safe: SafeRegion, *, corner_guard: bool = False
 ) -> Image.Image:
     """
-    Keep the cream stationery continuous — no floating card and no circular
-    vignette/blob behind the type.
+    Wash only décor that has invaded the type column back to paper color.
 
-    When the center is already light, leave décor untouched.
-    Only on darker AI washes, apply a soft rounded paper panel plus a faint
-    diagonal stationery weave (naqsh), never an oval shadow.
+    Center cream/paper texture is left untouched so this does not read as a
+    floating white card. Florals, gold filigree, and leaves under the copy
+    are blended toward the sampled paper.
     """
-    paper = _sample_paper(img, safe)
+    rgb = img.convert("RGB")
+    paper = _sample_paper(rgb, safe)
+    w, h = rgb.size
+    pad_x = int(safe.width * (0.06 if corner_guard else 0.03))
+    pad_y = int(safe.height * (0.05 if corner_guard else 0.02))
+    x0 = max(0, safe.x0 - pad_x)
+    y0 = max(0, safe.y0 - pad_y)
+    x1 = min(w, safe.x1 + pad_x)
+    y1 = min(h, safe.y1 + pad_y)
+    region = rgb.crop((x0, y0, x1, y1))
+    if region.size[0] < 8 or region.size[1] < 8:
+        return rgb
+
+    paper_img = Image.new("RGB", region.size, paper)
+    diff = ImageChops.difference(region, paper_img).convert("L")
+    # 0–16 ≈ paper grain; 16–52 ramp; 52+ almost full wash
+    lut = []
+    strength = 236 if corner_guard else 210
+    for v in range(256):
+        if v < 16:
+            lut.append(0)
+        elif v > 52:
+            lut.append(strength)
+        else:
+            lut.append(int(strength * (v - 16) / 36))
+    floral = diff.point(lut)
+    floral = floral.filter(
+        ImageFilter.GaussianBlur(radius=min(10, max(4, min(region.size) // 140)))
+    )
+
+    # Soft mask at low-res so HD cards don't stall on a huge Gaussian radius.
+    sw = max(48, region.size[0] // 4)
+    sh = max(48, region.size[1] // 4)
+    feather = Image.new("L", (sw, sh), 0)
+    fd = ImageDraw.Draw(feather)
+    sx = max(4, int((max(12, min(region.size) // 22) / max(region.size[0], 1)) * sw))
+    sy = max(4, int((max(12, min(region.size) // 22) / max(region.size[1], 1)) * sh))
+    rad = max(8, min(sw, sh) // 6)
+    box = (sx, sy, sw - 1 - sx, sh - 1 - sy)
     try:
-        region = img.crop((safe.x0, safe.y0, safe.x1, safe.y1))
-        avg = region.resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))[:3]
-        paper = (
-            (paper[0] + avg[0]) // 2,
-            (paper[1] + avg[1]) // 2,
-            (paper[2] + avg[2]) // 2,
-        )
+        fd.rounded_rectangle(box, radius=rad, fill=255)
     except Exception:
-        pass
-
-    luminance = 0.299 * paper[0] + 0.587 * paper[1] + 0.114 * paper[2]
-    # Cream / ivory centers need no wash — the old oval always looked like a stain.
-    if luminance >= 185:
-        return img
-
-    # Bias wash toward ivory stationery so dark AI fills actually lighten.
-    cream = (246, 240, 228)
-    wash = (
-        int(paper[0] * 0.35 + cream[0] * 0.65),
-        int(paper[1] * 0.35 + cream[1] * 0.65),
-        int(paper[2] * 0.35 + cream[2] * 0.65),
+        fd.rectangle(box, fill=255)
+    feather = feather.filter(ImageFilter.GaussianBlur(8)).resize(
+        region.size, Image.Resampling.BILINEAR
     )
-
-    base = img.convert("RGBA")
-    wipe = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(wipe)
-
-    inset_x = int(safe.width * 0.05)
-    inset_y = int(safe.height * 0.04)
-    box = (
-        safe.x0 + inset_x,
-        safe.y0 + inset_y,
-        safe.x1 - inset_x,
-        safe.y1 - inset_y,
-    )
-    radius = max(28, img.width // 36)
-    # Soft rounded paper panel (stationery), not a circular glow.
-    panel_alpha = 72 if corner_guard else 56
-    draw.rounded_rectangle(box, radius=radius, fill=(*wash, panel_alpha))
-
-    soft = wipe.filter(ImageFilter.GaussianBlur(radius=max(14, img.width // 70)))
-    out = Image.alpha_composite(base, soft)
-
-    # Faint diagonal weave / naqsh inside the text zone only.
-    pattern = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    pdraw = ImageDraw.Draw(pattern)
-    x0, y0, x1, y1 = box
-    step = max(22, img.width // 85)
-    tone = (
-        max(0, wash[0] - 22),
-        max(0, wash[1] - 26),
-        max(0, wash[2] - 32),
-        10 if corner_guard else 8,
-    )
-    height = y1 - y0
-    for x in range(x0 - height, x1 + step, step):
-        pdraw.line([(x, y0), (x + height, y1)], fill=tone, width=1)
-    # Opposite diagonal, lighter
-    tone2 = (*tone[:3], max(4, tone[3] - 3))
-    for x in range(x0, x1 + height + step, step):
-        pdraw.line([(x, y0), (x - height, y1)], fill=tone2, width=1)
-
-    # Soft-clip pattern to the same rounded panel so edges stay clean.
-    mask = Image.new("L", img.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle(box, radius=radius, fill=255)
-    clipped = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    clipped.paste(pattern, (0, 0), mask=mask)
-    out = Image.alpha_composite(out, clipped)
-    return out.convert("RGB")
+    mask = ImageChops.multiply(floral, feather)
+    cleaned = Image.composite(paper_img, region, mask)
+    rgb.paste(cleaned, (x0, y0))
+    return rgb
 
 
 def typography_mode(style_tags: Sequence[str] | None) -> str:
@@ -335,42 +295,85 @@ def sort_schedule_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return sorted(rows, key=_schedule_sort_key)
 
 
+def _meta_labels(language: str | None) -> dict[str, str]:
+    if language == "uz-cyrl":
+        return {"date": "Сана", "time": "Вақт", "address": "Манзил"}
+    if language == "ru":
+        return {"date": "Дата", "time": "Время", "address": "Адрес"}
+    return {"date": "Sana", "time": "Vaqt", "address": "Manzil"}
+
+
 def format_card_datetime(raw: str, language: str | None = None) -> str:
-    """Turn '5-avgust, soat 02:10 da' into '5-avgust | Soat 02:10'."""
+    """Turn datetime text into labeled lines: 'Sana: …\nVaqt: …'."""
     text = (raw or "").strip()
     if not text:
         return ""
-    # Already pipe-formatted
-    if " | " in text and re.search(r"\d{1,2}:\d{2}", text):
+    labels = _meta_labels(language)
+
+    # Already labeled
+    if re.search(r"^(Sana|Сана|Дата)\s*:", text, re.IGNORECASE | re.M):
         return text
+
+    # Pipe form: date | Soat HH:mm  or  date | HH:mm
+    if " | " in text:
+        left, right = [p.strip() for p in text.split(" | ", 1)]
+        tm = re.search(r"(\d{1,2}:\d{2})", right)
+        time = tm.group(1) if tm else ""
+        date = left
+        if not re.search(r"\d", date) and re.search(r"\d", right):
+            m = _PLAIN_DT_RE.match(right) or _DATETIME_BODY_RE.match(right)
+            if m:
+                date = (m.group("date") or "").strip()
+                time = (m.groupdict().get("time") or time or "").strip()
+        lines = []
+        if date:
+            lines.append(f"{labels['date']}: {date}")
+        if time:
+            lines.append(f"{labels['time']}: {time}")
+        return "\n".join(lines) if lines else text
 
     m = _PLAIN_DT_RE.match(text) or _DATETIME_BODY_RE.match(text)
     if m:
         date = (m.group("date") or "").strip()
         time = (m.groupdict().get("time") or "").strip()
-        if date and time:
-            if language == "uz-cyrl":
-                return f"{date} | Соат {time}"
-            if language == "ru":
-                return f"{date} | {time}"
-            return f"{date} | Soat {time}"
-        return date or text
+        lines = []
+        if date:
+            lines.append(f"{labels['date']}: {date}")
+        if time:
+            lines.append(f"{labels['time']}: {time}")
+        return "\n".join(lines) if lines else text
 
-    # Fallback: rewrite known patterns
+    # Fallback: rewrite known patterns then re-parse
     out = re.sub(
         r",\s*soat\s+(\d{1,2}:\d{2})\s*da\b",
-        r" | Soat \1",
+        r" | \1",
         text,
         flags=re.IGNORECASE,
     )
     out = re.sub(
         r",\s*соат\s+(\d{1,2}:\d{2})\s*да\b",
-        r" | Соат \1",
+        r" | \1",
         out,
         flags=re.IGNORECASE,
     )
     out = re.sub(r"\s{2,}", " ", out).strip(" ,")
-    return out
+    if out != text and " | " in out:
+        return format_card_datetime(out, language)
+    return text
+
+
+def ensure_address_label(address: str, language: str | None = None) -> str:
+    text = (address or "").strip()
+    if not text:
+        return ""
+    labels = _meta_labels(language)
+    if re.match(
+        rf"^({re.escape(labels['address'])}|Manzil|Манзил|Адрес)\s*:",
+        text,
+        re.IGNORECASE,
+    ):
+        return text
+    return f"{labels['address']}: {text}"
 
 
 def parse_schedule_blocks(date_time: str, language: str | None = None) -> list[dict[str, str]]:
@@ -390,7 +393,12 @@ def parse_schedule_blocks(date_time: str, language: str | None = None) -> list[d
         if not paragraph:
             continue
         m = _DATE_TIME_RE.match(paragraph)
-        if m and not re.match(r"^\d", m.group("label").strip()):
+        if (
+            m
+            and not re.match(r"^\d", m.group("label").strip())
+            and not _META_LINE_RE.match(paragraph)
+            and not _META_LINE_RE.match(m.group("label").strip())
+        ):
             label = m.group("label").strip()
             rest = format_card_datetime(m.group("rest").strip(), language)
             rows.append(
@@ -412,12 +420,18 @@ def parse_schedule_blocks(date_time: str, language: str | None = None) -> list[d
 
 
 def _protect_phrases(text: str) -> str:
-    return re.sub(
+    out = re.sub(
         r"(soat\s+\d{1,2}:\d{2}(?:\s+da)?|соат\s+\d{1,2}:\d{2}(?:\s+да)?|"
         r"Soat\s+\d{1,2}:\d{2}|Соат\s+\d{1,2}:\d{2})",
         lambda m: m.group(0).replace(" ", "\u00a0"),
         text or "",
         flags=re.IGNORECASE,
+    )
+    # Keep "10-sentabr" as one token so wrap does not split the month.
+    return re.sub(
+        r"(\d{1,2})-([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘’ʻ]+)",
+        lambda m: f"{m.group(1)}\u2011{m.group(2)}",
+        out,
     )
 
 
@@ -442,13 +456,18 @@ def wrap_text(
         current = words[0]
         for word in words[1:]:
             trial = f"{current} {word}"
-            if draw.textlength(trial, font=font) <= max_width:
+            slack = max_width * (1.08 if "\u2011" in trial or "\u00a0" in trial else 1.0)
+            if draw.textlength(trial, font=font) <= slack:
                 current = trial
                 continue
             lines.append(current)
             current = word
-            # Hard-break oversized tokens
-            while draw.textlength(current, font=font) > max_width and len(current) > 8:
+            # Hard-break oversized tokens, but never split dates like 10-sentabr.
+            while (
+                draw.textlength(current, font=font) > max_width
+                and len(current) > 8
+                and not re.match(r"^\d{1,2}\u2011", current)
+            ):
                 approx = max(
                     8,
                     int(
@@ -461,7 +480,7 @@ def wrap_text(
                 current = current[approx:].lstrip("-")
         if current:
             lines.append(current)
-    cleaned = [ln.replace("\u00a0", " ") for ln in lines]
+    cleaned = [ln.replace("\u00a0", " ").replace("\u2011", "-") for ln in lines]
     return _merge_orphan_lines(draw, cleaned, font, max_width)
 
 
@@ -506,42 +525,44 @@ def _merge_orphan_lines(
 def _base_sizes(safe_w: int, dense: bool, *, packed: bool = False) -> dict[str, int]:
     """
     Target sizes relative to safe width.
-    Anchored to ~900px design: title 48–78, body 26–36, meta 20–28.
-    Dense/packed: body stays prominent; schedule slightly quieter.
+    Date/venue must stay near body size — they are the practical details.
     """
     unit = safe_w / 900.0
     if packed:
         return {
             "header": int(50 * unit),
             "body": int(30 * unit),
-            "date": int(23 * unit),
-            "address": int(22 * unit),
+            "date": int(30 * unit),
+            "address": int(29 * unit),
             "host": int(32 * unit),
         }
     if dense:
         return {
             "header": int(52 * unit),
             "body": int(31 * unit),
-            "date": int(25 * unit),
-            "address": int(23 * unit),
+            "date": int(31 * unit),
+            "address": int(30 * unit),
             "host": int(34 * unit),
         }
     return {
         "header": int(56 * unit),
         "body": int(33 * unit),
-        "date": int(29 * unit),
-        "address": int(26 * unit),
+        "date": int(33 * unit),
+        "address": int(32 * unit),
         "host": int(40 * unit),
     }
 
 
 def _clamp_sizes(sizes: dict[str, int], safe_w: int) -> dict[str, int]:
     unit = safe_w / 900.0
+    body = max(int(24 * unit), min(int(38 * unit), sizes["body"]))
+    date_floor = max(int(28 * unit), int(body * 0.90))
+    addr_floor = max(int(27 * unit), int(body * 0.88))
     return {
         "header": max(int(40 * unit), min(int(78 * unit), sizes["header"])),
-        "body": max(int(24 * unit), min(int(38 * unit), sizes["body"])),
-        "date": max(int(18 * unit), min(int(32 * unit), sizes["date"])),
-        "address": max(int(18 * unit), min(int(30 * unit), sizes["address"])),
+        "body": body,
+        "date": max(date_floor, min(int(40 * unit), sizes["date"])),
+        "address": max(addr_floor, min(int(38 * unit), sizes["address"])),
         "host": max(int(26 * unit), min(int(48 * unit), sizes["host"])),
     }
 
@@ -568,10 +589,10 @@ def make_font_plan(
     return FontPlan(
         header=_truetype(title_paths, sizes["header"]),
         body=_truetype(body_paths, sizes["body"]),
-        date_label=_truetype(body_paths, max(sizes["date"] - 1, 18)),
-        date_meta=_truetype(SERIF_PATHS, sizes["date"] + 2),
-        date_primary=_truetype(SERIF_BOLD_PATHS, sizes["date"] + 10),
-        address=_truetype(SERIF_PATHS + SANS_PATHS, sizes["address"] + 3),
+        date_label=_truetype(body_paths, sizes["date"]),
+        date_meta=_truetype(SERIF_PATHS, sizes["date"]),
+        date_primary=_truetype(SERIF_BOLD_PATHS, sizes["date"] + 2),
+        address=_truetype(SERIF_PATHS + SANS_PATHS, sizes["address"]),
         host=_truetype(host_paths, sizes["host"]),
         header_size=sizes["header"],
         body_size=sizes["body"],
@@ -629,9 +650,11 @@ def measure_and_layout(
     Returns (ops, total_height) where ops are callable-like tuples.
     Hierarchy: greeting → body → ornament → schedule → venue → host
     """
-    # Slightly wider than before so body wraps into cleaner 3–5 lines
-    content_w = int(safe.width * (0.78 if narrow else 0.82))
-    body_w = int(safe.width * (0.76 if narrow else 0.80))
+    # Narrower column when AI florals crowd the sides / footer.
+    content_w = int(safe.width * (0.74 if narrow else 0.82))
+    body_w = int(safe.width * (0.72 if narrow else 0.80))
+    host_w = int(safe.width * (0.62 if narrow else 0.72))
+    meta_w = int(safe.width * (0.90 if narrow else 0.94))
     ops: list[tuple] = []
     y = 0
 
@@ -686,23 +709,31 @@ def measure_and_layout(
             gap(0.004 if packed else 0.007)
         if row["line"]:
             line = row["line"]
-            if " | " in line:
-                left, right = line.split(" | ", 1)
-                ops.append(
-                    (
-                        "dt_pair",
-                        left.strip(),
-                        right.strip(),
-                        meta_font,
-                        meta_color,
-                        y,
-                    )
+            # Prefer labeled Sana/Vaqt stack; keep left-aligned column.
+            meta_lines: list[str] = []
+            for part in line.split("\n"):
+                part = part.strip()
+                if not part:
+                    continue
+                if " | " in part and not re.search(
+                    r"^(Sana|Сана|Дата|Vaqt|Вақт|Время)\s*:", part, re.I
+                ):
+                    part = format_card_datetime(part, language)
+                meta_lines.extend(
+                    ln.strip() for ln in part.split("\n") if ln.strip()
                 )
-                y += int(meta_lead)
-            else:
-                for wrapped in wrap_text(draw, line, meta_font, content_w):
-                    ops.append(("text", wrapped, meta_font, meta_color, y))
-                    y += int(meta_lead)
+            if not meta_lines and " | " in line:
+                meta_lines = [
+                    ln.strip()
+                    for ln in format_card_datetime(line, language).split("\n")
+                    if ln.strip()
+                ]
+            drawn: list[str] = []
+            for part in meta_lines:
+                drawn.extend(wrap_text(draw, part, meta_font, meta_w) or [part])
+            if drawn:
+                ops.append(("meta_stack", drawn, meta_font, meta_color, y))
+                y += int(meta_lead) * len(drawn)
         if primary and i < len(schedule) - 1:
             gap(0.010)
             ops.append(("rule_small", y))
@@ -714,15 +745,17 @@ def measure_and_layout(
             gap(0.032)
 
     if address:
-        for line in wrap_text(draw, address, plan.address, content_w):
-            ops.append(("text", line, plan.address, "venue", y))
-            y += int(plan.address_size * 1.40)
+        address = ensure_address_label(address, language)
+        addr_lines = wrap_text(draw, address, plan.address, meta_w)
+        if addr_lines:
+            ops.append(("meta_stack", addr_lines, plan.address, "venue", y))
+            y += int(plan.address_size * 1.40) * len(addr_lines)
         gap(0.028)
 
     if host:
         ops.append(("rule_small", y))
         y += int(safe.height * 0.018 * gap_scale) + 8
-        for line in wrap_text(draw, host, plan.host, content_w):
+        for line in wrap_text(draw, host, plan.host, host_w):
             ops.append(("text", line, plan.host, "title", y))
             y += int(plan.host_size * 1.28)
 
@@ -736,6 +769,7 @@ def render_invitation_layout(
     style_tags: Sequence[str] | None = None,
     language: str | None = None,
     corner_guard: bool = False,
+    wash_text_area: bool = True,
 ) -> Image.Image:
     """
     Premium centered layout:
@@ -755,12 +789,15 @@ def render_invitation_layout(
             blocks[key] = scrub_junk_lines(raw)
         else:
             blocks[key] = sanitize_overlay_field(raw)
+    if blocks.get("address"):
+        blocks["address"] = ensure_address_label(blocks["address"], language)
 
     if not any((blocks.get(k) or "").strip() for k in blocks):
         return img
 
     safe = analyze_safe_region(img, corner_guard=corner_guard)
-    img = clear_safe_text_area(img, safe, corner_guard=corner_guard)
+    if wash_text_area:
+        img = clear_safe_text_area(img, safe, corner_guard=corner_guard)
     draw = ImageDraw.Draw(img)
     colors = _ink_colors(style_tags)
     mode = typography_mode(style_tags)
@@ -804,9 +841,10 @@ def render_invitation_layout(
             gap_scale=gap_scale,
             narrow=corner_guard,
         )
-        # Packed cards look better with air; don't force-fill the panel
-        target_min = int(safe.height * (0.52 if packed else 0.58 if dense else 0.66))
-        target_max = int(safe.height * (0.86 if packed else 0.88))
+        # Packed cards look better with air; don't force-fill into florals
+        target_min = int(safe.height * (0.50 if packed else 0.56 if dense else 0.62))
+        fill_hi = 0.80 if corner_guard else 0.88
+        target_max = int(safe.height * (0.78 if packed else fill_hi))
         best_plan, best_ops, best_h = plan, ops, total_h
         key = (sizes["header"], sizes["body"], sizes["date"], round(gap_scale, 3))
         if key == prev_key:
@@ -829,14 +867,14 @@ def render_invitation_layout(
             gap_scale = min(1.35, gap_scale * 1.02)
             continue
         if total_h > target_max:
-            # Shrink schedule/gaps first; keep body as large as possible
+            # Shrink greeting/body/gaps first; keep date & venue readable.
             sizes = _clamp_sizes(
                 {
-                    "header": int(sizes["header"] * 0.97),
-                    "body": int(sizes["body"] * 0.99),
-                    "date": int(sizes["date"] * 0.90),
-                    "address": int(sizes["address"] * 0.91),
-                    "host": int(sizes["host"] * 0.94),
+                    "header": int(sizes["header"] * 0.96),
+                    "body": int(sizes["body"] * 0.97),
+                    "date": int(sizes["date"] * 0.98),
+                    "address": int(sizes["address"] * 0.98),
+                    "host": int(sizes["host"] * 0.96),
                 },
                 safe.width,
             )
@@ -845,6 +883,20 @@ def render_invitation_layout(
         break
 
     assert best_plan is not None
+    # Final guard: Sana / Vaqt / Manzil never drop far below body type.
+    sizes["date"] = max(sizes["date"], int(sizes["body"] * 0.92))
+    sizes["address"] = max(sizes["address"], int(sizes["body"] * 0.90))
+    sizes = _clamp_sizes(sizes, safe.width)
+    best_plan = make_font_plan(sizes, mode)
+    best_ops, best_h = measure_and_layout(
+        draw,
+        blocks,
+        best_plan,
+        safe,
+        language=language,
+        gap_scale=gap_scale,
+        narrow=corner_guard,
+    )
     text_ops = sum(1 for op in best_ops if op[0] == "text")
     # Keep dense cards centered; avoid hugging the top floral corners
     if text_ops <= 3:
@@ -866,16 +918,25 @@ def render_invitation_layout(
                 draw, text, font, cx, start_y + rel_y, colors[color_key]
             )
         elif kind == "dt_pair":
+            # Legacy pipe layout — keep for safety; prefer meta_stack.
             _, left, right, font, color_key, rel_y = op
             y = start_y + rel_y
             fill = colors[color_key]
-            pipe = "  |  "
-            pipe_w = draw.textlength(pipe, font=font)
-            left_w = draw.textlength(left, font=font)
-            pipe_x = cx - pipe_w / 2
-            draw.text((pipe_x - left_w, y), left, fill=fill, font=font)
-            draw.text((pipe_x, y), pipe, fill=fill, font=font)
-            draw.text((pipe_x + pipe_w, y), right, fill=fill, font=font)
+            lines = [left, right]
+            widths = [draw.textlength(line, font=font) for line in lines]
+            x0 = cx - max(widths) / 2
+            lead = int(_font_size(font) * 1.28)
+            for i, line in enumerate(lines):
+                draw.text((x0, y + i * lead), line, fill=fill, font=font)
+        elif kind == "meta_stack":
+            _, lines, font, color_key, rel_y = op
+            y = start_y + rel_y
+            fill = colors[color_key]
+            widths = [draw.textlength(line, font=font) for line in lines]
+            x0 = cx - (max(widths) if widths else 0) / 2
+            lead = int(_font_size(font) * 1.32)
+            for i, line in enumerate(lines):
+                draw.text((x0, y + i * lead), line, fill=fill, font=font)
         elif kind == "rule":
             _, rel_y = op
             _draw_ornament_rule(
