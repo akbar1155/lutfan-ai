@@ -19,7 +19,7 @@ updates = {
     # Never re-seed on every deploy — seed_data used to wipe admin JPG uploads.
     "RUN_SEED": "0",
     # One-shot undo of mistaken ready-texts sync; cleared after this deploy.
-    "UNSYNC_READY_TEXTS": "0",
+    "UNSYNC_READY_TEXTS": "1",
     # Browser-facing MinIO public prefix (frontend nginx location /s3/).
     "CDN_BASE_URL": "https://lutfanai.uz/s3",
 }
@@ -62,7 +62,7 @@ if [[ "${RUN_SEED:-0}" == "1" ]]; then
 fi
 
 # One-shot: undo mistaken ready-texts sync (re-enable short fallbacks only).
-if [[ "${UNSYNC_READY_TEXTS:-0}" == "1" ]]; then
+if grep -q '^UNSYNC_READY_TEXTS=1' .env.production 2>/dev/null; then
   docker compose -f docker-compose.prod.yml exec -T backend \
     python manage.py seed_data --unsync-texts || true
   # Clear one-shot flag so later deploys do not touch texts again.
