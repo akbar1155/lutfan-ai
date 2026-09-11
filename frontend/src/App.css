@@ -2337,9 +2337,17 @@ label.field-invalid textarea,
   min-width: 0;
 }
 
+.account-invite-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .account-invite-badge {
   display: inline-flex;
   align-items: center;
+  gap: 0.3rem;
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -2348,6 +2356,39 @@ label.field-invalid textarea,
   font-size: 0.74rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.account-invite-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+.account-invite-badge.tone-ok {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.account-invite-badge.tone-warn {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.account-invite-badge.tone-danger {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.account-invite-badge.tone-muted {
+  color: var(--muted);
+}
+
+.account-invite-badge.tone-path {
+  color: color-mix(in srgb, var(--accent, #8a6a3b) 85%, var(--ink));
+  background: color-mix(in srgb, var(--accent, #8a6a3b) 10%, #fff);
+  border-color: color-mix(in srgb, var(--accent, #8a6a3b) 28%, var(--line));
 }
 
 .account-invite-meta-list {

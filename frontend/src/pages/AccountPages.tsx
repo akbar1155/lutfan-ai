@@ -8,6 +8,7 @@ import { loginHintKey, showDevLogin } from "../auth/flags";
 import {
   IconCalendar,
   IconClock,
+  IconPalette,
   IconPin,
   IconTag,
 } from "../components/ActionIcons";
@@ -28,9 +29,16 @@ function venueFromInvitation(inv: Invitation): string {
 }
 
 function pathLabel(inv: Invitation, t: (k: string) => string): string {
-  if (inv.generation_path === "template") return t("pathTemplate");
-  if (inv.generation_path === "ai_from_scratch") return t("pathAi");
+  if (inv.generation_path === "template") return t("accountPathJpg");
+  if (inv.generation_path === "ai_from_scratch") return t("accountPathAi");
   return "";
+}
+
+function statusTone(status: string): "ok" | "muted" | "warn" | "danger" {
+  if (status === "ready") return "ok";
+  if (status === "failed") return "danger";
+  if (status === "generating" || status === "queued") return "warn";
+  return "muted";
 }
 
 function pageNumbers(page: number, totalPages: number): Array<number | "…"> {
@@ -239,10 +247,19 @@ export function AccountPage() {
                         <EventIcon slug={inv.event_slug} size={18} />
                         {eventDisplayName(inv.event_slug, lang)}
                       </strong>
-                      <span className="account-invite-badge">
-                        {statusText}
-                        {path ? ` · ${path}` : ""}
-                      </span>
+                      <div className="account-invite-chips">
+                        <span
+                          className={`account-invite-badge tone-${statusTone(inv.status)}`}
+                        >
+                          {statusText}
+                        </span>
+                        {path ? (
+                          <span className="account-invite-badge tone-path">
+                            <IconPalette />
+                            {path}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="account-invite-meta-list">
