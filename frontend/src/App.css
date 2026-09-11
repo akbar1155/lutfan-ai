@@ -2250,6 +2250,8 @@ label.field-invalid textarea,
 
 .account-list {
   margin-top: 0.35rem;
+  display: grid;
+  gap: 0.7rem;
 }
 
 .account-stats {
@@ -2280,17 +2282,30 @@ label.field-invalid textarea,
 }
 
 .account-invite-card {
-  display: grid !important;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 0.75rem 0.9rem;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 0.85rem 1rem;
   align-items: start;
+  padding: 0.9rem 1rem;
+  border-radius: calc(var(--radius) + 2px);
+  background: color-mix(in srgb, var(--bg-accent) 88%, #fff);
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.account-invite-card:hover {
+  border-color: color-mix(in srgb, var(--accent, #8a6a3b) 35%, var(--line));
+  box-shadow: 0 6px 18px color-mix(in srgb, #000 6%, transparent);
+  transform: translateY(-1px);
 }
 
 .account-invite-thumb {
-  width: 64px;
-  height: 80px;
+  width: 72px;
+  height: 90px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--line) 35%, transparent);
 }
@@ -2300,36 +2315,149 @@ label.field-invalid textarea,
   place-items: center;
 }
 
-.account-invite-body {
+.account-invite-main {
   display: grid;
-  gap: 0.18rem;
+  gap: 0.55rem;
   min-width: 0;
 }
 
-.account-invite-body strong {
+.account-invite-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem 0.75rem;
+}
+
+.account-invite-title {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1.02rem;
+  min-width: 0;
+}
+
+.account-invite-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 70%, #fff);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.account-invite-status {
-  font-size: 0.86rem;
-  color: var(--ink);
+.account-invite-meta-list {
+  display: grid;
+  gap: 0.28rem;
 }
 
 .account-invite-meta {
-  font-size: 0.8rem;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: start;
   color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.account-meta-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-top: 0.1rem;
+  color: color-mix(in srgb, var(--accent, #8a6a3b) 75%, var(--muted));
+}
+
+.account-meta-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.account-meta-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.account-invite-meta.muted {
-  opacity: 0.85;
+.account-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.account-page-info {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.account-page-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.account-page-btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.45rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-accent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.account-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.account-page-btn.is-current {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.account-page-ellipsis {
+  color: var(--muted);
+  padding: 0 0.2rem;
+}
+
+@media (max-width: 640px) {
+  .account-invite-card {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.8rem;
+  }
+
+  .account-invite-thumb {
+    width: 56px;
+    height: 72px;
+  }
+
+  .account-invite-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .account-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-page-nav {
+    justify-content: center;
+  }
 }
 
 .event-grid {

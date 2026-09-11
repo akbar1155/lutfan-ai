@@ -324,6 +324,71 @@ export function IconLink() {
   );
 }
 
+export function IconCalendar() {
+  return (
+    <Svg>
+      <rect
+        x="4"
+        y="5"
+        width="16"
+        height="15"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M8 3v4M16 3v4M4 10h16"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function IconPin() {
+  return (
+    <Svg>
+      <path
+        d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="11" r="2.2" stroke="currentColor" strokeWidth="1.8" />
+    </Svg>
+  );
+}
+
+export function IconClock() {
+  return (
+    <Svg>
+      <circle cx="12" cy="12" r="8.25" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M12 8v4.5l3 1.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function IconTag() {
+  return (
+    <Svg>
+      <path
+        d="M3.5 12.5V5.8A2.3 2.3 0 0 1 5.8 3.5h6.7L20.5 11.5l-7.7 7.7L3.5 12.5z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.2" cy="8.2" r="1.2" fill="currentColor" />
+    </Svg>
+  );
+}
+
 export function IconSearch() {
   return (
     <Svg>

@@ -41,7 +41,16 @@ export function subtypeLabel(
   const fromEvent = meta ? pickTranslation(meta.names, language) : "";
   if (fromEvent) return fromEvent;
   const fallback = HAYIT_FALLBACK[slug];
-  return (fallback && pickTranslation(fallback, language)) || slug;
+  if (fallback) {
+    const named = pickTranslation(fallback, language);
+    if (named) return named;
+  }
+  // nikoh_oqshomi → "Nikoh oqshomi"
+  return slug
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
 }
 
 export function hayitOccasionName(
