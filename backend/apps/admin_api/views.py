@@ -715,7 +715,17 @@ class AdminTemplatesView(APIView):
         for event in ordered_events:
             tpl = Template.objects.create(event=event, **shared)
             created_ids.append(str(tpl.id))
-            _admin_log(request, "template_created", "template", tpl.id)
+            _admin_log(
+                request,
+                "template_created",
+                "template",
+                tpl.id,
+                {
+                    "theme_name": shared["theme_name"],
+                    "event_slug": event.slug,
+                    "bg_url": shared["bg_url"],
+                },
+            )
 
         return Response(
             {"id": created_ids[0], "ids": created_ids, "count": len(created_ids)},

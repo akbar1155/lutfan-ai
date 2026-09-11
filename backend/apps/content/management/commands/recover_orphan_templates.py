@@ -73,14 +73,14 @@ class Command(BaseCommand):
                 skipped += 1
                 continue
 
-            theme_name = f"Restored {token[:8]}"
+            theme_name = f"Yuklangan shablon {token[:6]}"
             if dry_run:
-                self.stdout.write(f"would restore {token} -> {event.slug}")
+                self.stdout.write(f"would restore {token} -> {event.slug} (inactive)")
             else:
                 Template.objects.create(
                     event=event,
                     theme_name=theme_name,
-                    style_tags=["restored"],
+                    style_tags=["restored", "needs_rename"],
                     color_palette=[],
                     mood_tags=[],
                     bg_url=bg_url,
@@ -89,11 +89,12 @@ class Command(BaseCommand):
                     supports_dark_text=True,
                     dominant_colors=[],
                     supported_formats=["4:5", "9:16", "1:1"],
-                    is_active=True,
+                    # Keep out of the public picker until an admin sets a real name.
+                    is_active=False,
                     is_featured=False,
                     created_by_admin=admin,
                 )
-                self.stdout.write(self.style.SUCCESS(f"restored {token}"))
+                self.stdout.write(self.style.SUCCESS(f"restored {token} (inactive)"))
             created += 1
 
         verb = "would restore" if dry_run else "restored"

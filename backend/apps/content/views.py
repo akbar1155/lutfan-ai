@@ -74,7 +74,10 @@ class TemplateListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Shared JPG pool: all designs are assigned to nikoh and reused for every event.
-        qs = Template.objects.filter(is_active=True, event_id="nikoh")
+        # Hide orphan recoveries that lost their admin-given names ("Restored abcd1234").
+        qs = Template.objects.filter(is_active=True, event_id="nikoh").exclude(
+            theme_name__istartswith="Restored "
+        )
         subtype = self.request.query_params.get("subtype_slug")
         if subtype:
             qs = qs.filter(subtype_slug=subtype)
