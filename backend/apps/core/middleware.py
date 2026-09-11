@@ -19,6 +19,10 @@ class BanCheckMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        path = request.path or ""
+        # Keep Django admin HTML/login flow intact.
+        if path.startswith("/django-admin/"):
+            return self.get_response(request)
         user = getattr(request, "user", None)
         if user and user.is_authenticated and getattr(user, "is_banned", False):
             from django.http import JsonResponse

@@ -379,6 +379,60 @@ function ConfirmDialog({
   );
 }
 
+function InviteImageModal({
+  src,
+  title,
+  onClose,
+}: {
+  src: string;
+  title: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="admin-modal-backdrop" role="presentation" onClick={onClose}>
+      <div
+        className="admin-modal is-wide"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="admin-modal-head">
+          <h3>{title}</h3>
+          <button
+            type="button"
+            className="ghost admin-modal-close"
+            aria-label={t("adminCloseDrawer")}
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </header>
+        <div className="admin-image-modal">
+          <img src={src} alt={title} />
+          <a className="admin-btn" href={src} target="_blank" rel="noreferrer">
+            {t("adminOpenImage")}
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function AdminUsersSection(
   { onError },
   ref,
@@ -398,6 +452,9 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>("profile");
+  const [previewImage, setPreviewImage] = useState<{ src: string; title?: string } | null>(
+    null,
+  );
   const [userDetail, setUserDetail] = useState<UserDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -1086,21 +1143,26 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                           {userDetail.invitations.map((inv, idx) => {
                             const imageUrl = String(inv.final_image_url || "");
                             const inviteId = String(inv.id);
-                            const openHref = imageUrl
-                              ? `/i/${inviteId}`
-                              : `/create/${inviteId}/result`;
+                            const styleNote = String(inv.custom_style_note || "").trim();
+                            const openPreview = () => {
+                              if (!imageUrl) return;
+                              setPreviewImage({
+                                src: imageUrl,
+                                title: String(inv.event_slug || t("adminPreview")),
+                              });
+                            };
                             return (
                               <li key={inviteId} className="admin-users-invite-item">
                                 <span className="admin-list-index">{idx + 1}</span>
                                 {imageUrl ? (
-                                  <a
+                                  <button
+                                    type="button"
                                     className="admin-users-invite-thumb"
-                                    href={openHref}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                    onClick={openPreview}
+                                    aria-label={t("adminOpenImage")}
                                   >
                                     <img src={imageUrl} alt="" />
-                                  </a>
+                                  </button>
                                 ) : (
                                   <div className="admin-users-invite-thumb empty" aria-hidden />
                                 )}
@@ -1112,14 +1174,23 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                                   <span className="muted">
                                     {formatDisplayDateTimeStamp(inv.created_at)}
                                   </span>
-                                  <a
-                                    className="admin-users-invite-link"
-                                    href={openHref}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    {t("adminOpenInvite")}
-                                  </a>
+                                  {styleNote ? (
+                                    <p className="admin-users-invite-prompt">
+                                      <span className="admin-users-invite-prompt-label">
+                                        {t("adminStylePrompt")}
+                                      </span>
+                                      {styleNote}
+                                    </p>
+                                  ) : null}
+                                  {imageUrl ? (
+                                    <button
+                                      type="button"
+                                      className="admin-users-invite-link"
+                                      onClick={openPreview}
+                                    >
+                                      {t("adminOpenImage")}
+                                    </button>
+                                  ) : null}
                                 </div>
                               </li>
                             );
@@ -1191,6 +1262,14 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
               "role",
             );
           }}
+        />
+      )}
+
+      {previewImage && (
+        <InviteImageModal
+          src={previewImage.src}
+          title={previewImage.title || t("adminPreview")}
+          onClose={() => setPreviewImage(null)}
         />
       )}
     </section>

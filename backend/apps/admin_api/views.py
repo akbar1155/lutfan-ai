@@ -394,6 +394,8 @@ class AdminUserDetailView(APIView):
                         "generation_path": inv.generation_path,
                         "subtype_slugs": inv.subtype_slugs
                         or ([inv.subtype_slug] if inv.subtype_slug else []),
+                        "custom_style_note": inv.custom_style_note or "",
+                        "selected_mood_tags": inv.selected_mood_tags or [],
                         "final_image_url": resolve_media_url(inv.final_image_url),
                         "created_at": inv.created_at,
                         "updated_at": inv.updated_at,
@@ -1002,6 +1004,9 @@ class AdminInvitationsView(APIView):
                     "user_name": inv.user.first_name,
                     "telegram_id": inv.user.telegram_id,
                     "language": inv.language,
+                    "generation_path": inv.generation_path,
+                    "custom_style_note": inv.custom_style_note or "",
+                    "selected_mood_tags": inv.selected_mood_tags or [],
                     "final_image_url": resolve_media_url(inv.final_image_url),
                     "created_at": inv.created_at,
                 }

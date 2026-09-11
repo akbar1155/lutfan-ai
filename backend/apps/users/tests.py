@@ -1,5 +1,4 @@
-from django.test import TestCase, override_settings
-from django.urls import reverse
+from django.test import TestCase
 from rest_framework.test import APIClient
 
 from apps.users.management.commands.ensure_admin_login import synthetic_telegram_id
@@ -58,6 +57,42 @@ class EnsureAdminLoginCommandTests(TestCase):
         user = User.objects.get(username="panel")
         self.assertEqual(user.role, Role.ADMIN)
         self.assertTrue(user.check_password("Secret123!"))
+
+
+class DjangoAdminUsernameLoginTests(TestCase):
+    def setUp(self):
+        self.user = User(
+            telegram_id=synthetic_telegram_id("admin"),
+            username="admin",
+            first_name="Admin",
+            role=Role.ADMIN,
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.user.set_password("admin123")
+        self.user.save()
+
+    def test_login_with_username(self):
+        from django.contrib.auth import authenticate
+
+        authed = authenticate(username="admin", password="admin123")
+        self.assertIsNotNone(authed)
+        self.assertEqual(authed.pk, self.user.pk)
+
+    def test_login_with_telegram_id(self):
+        from django.contrib.auth import authenticate
+
+        authed = authenticate(
+            username=str(self.user.telegram_id), password="admin123"
+        )
+        self.assertIsNotNone(authed)
+        self.assertEqual(authed.pk, self.user.pk)
+
+    def test_django_admin_session_login(self):
+        ok = self.client.login(username="admin", password="admin123")
+        self.assertTrue(ok)
+        res = self.client.get("/django-admin/")
+        self.assertEqual(res.status_code, 200)
 
 
 class PhoneAuthTests(TestCase):

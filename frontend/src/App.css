@@ -3462,6 +3462,7 @@ details p {
   font-size: 13.5px;
   font-weight: 500;
   line-height: 1.25;
+  text-decoration: none;
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
@@ -5549,10 +5550,21 @@ details p {
   display: block;
   width: 52px;
   height: 68px;
+  padding: 0;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--admin-border);
   background: color-mix(in srgb, var(--admin-border) 40%, transparent);
+  cursor: pointer;
+}
+
+button.admin-users-invite-thumb {
+  font: inherit;
+}
+
+.admin-users-invite-thumb:focus-visible {
+  outline: 2px solid var(--admin-accent, #0f766e);
+  outline-offset: 2px;
 }
 
 .admin-users-invite-thumb img {
@@ -5576,14 +5588,44 @@ details p {
 }
 
 .admin-users-invite-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
   font-size: 12px;
   font-weight: 600;
   color: var(--admin-accent, #0f766e);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .admin-users-invite-link:hover {
   text-decoration: underline;
+}
+
+.admin-users-invite-prompt {
+  margin: 2px 0 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--admin-border) 35%, transparent);
+  color: var(--admin-text, #18181b);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.admin-users-invite-prompt-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
 }
 
 .admin-users-count-btn {

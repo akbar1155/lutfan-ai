@@ -502,6 +502,19 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+          <div className="admin-nav-group">
+            <p className="admin-nav-label">{t("adminGroupSystem")}</p>
+            <div className="admin-nav-children" role="group" aria-label={t("adminGroupSystem")}>
+              <a
+                className="admin-nav-item"
+                href="/django-admin/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("adminNavDjango")}
+              </a>
+            </div>
+          </div>
         </nav>
         <div className="admin-sidebar-foot">
           <span>{user.first_name || user.username || "Admin"}</span>
@@ -589,6 +602,7 @@ export default function AdminPage() {
                   ["status", t("adminColStatus")],
                   ["user_name", t("adminColUser")],
                   ["telegram_id", "TG"],
+                  ["custom_style_note", t("adminStylePrompt")],
                   ["language", t("adminColLang")],
                   ["created_at", t("adminColCreated")],
                 ]}
