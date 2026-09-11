@@ -888,6 +888,30 @@ def _sync_ready_texts(admin) -> int:
     return updated
 
 
+def _unsync_ready_texts() -> dict[str, int]:
+    """Undo the harmful part of --sync-texts: re-enable short fallback titles.
+
+    Does not delete rows or rewrite preview_text. Does not change Event/JPG flags.
+    """
+    restored = 0
+    for event_slug, by_lang in TEXT_BY_EVENT.items():
+        event = EventConfig.objects.filter(slug=event_slug).first()
+        if event is None:
+            continue
+        for lang, payloads in by_lang.items():
+            variants = payloads if isinstance(payloads, list) else [payloads]
+            for payload in variants:
+                title = str((payload or {}).get("title") or "").strip()
+                if not title:
+                    continue
+                restored += (
+                    TextTemplate.objects.filter(
+                        event=event, language=lang, title=title, is_active=False
+                    ).update(is_active=True)
+                )
+    return {"restored_fallback": restored}
+
+
 class Command(BaseCommand):
     help = (
         "Seed MVP catalog (events, texts, templates, moods, presets). "
@@ -917,11 +941,20 @@ class Command(BaseCommand):
                 "Does not change EventConfig or JPG Template is_active."
             ),
         )
+        parser.add_argument(
+            "--unsync-texts",
+            action="store_true",
+            help=(
+                "Undo --sync-texts fallback hiding: re-enable short TEXT_BY_EVENT titles. "
+                "Does not rewrite preview_text or touch JPG/event flags."
+            ),
+        )
 
     def handle(self, *args, **options):
         force = bool(options.get("force"))
         purge_junk = bool(options.get("purge_junk"))
         sync_texts = bool(options.get("sync_texts"))
+        unsync_texts = bool(options.get("unsync_texts"))
         _ensure_media_templates()
 
         admin, _ = User.objects.get_or_create(
@@ -933,6 +966,16 @@ class Command(BaseCommand):
                 "is_superuser": True,
             },
         )
+
+        if unsync_texts and not force and not purge_junk and not sync_texts:
+            stats = _unsync_ready_texts()
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Reverted sync-texts fallback hide "
+                    f"(restored_fallback={stats['restored_fallback']})"
+                )
+            )
+            return
 
         if sync_texts and not force and not purge_junk:
             updated = _sync_ready_texts(admin)
