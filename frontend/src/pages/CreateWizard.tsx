@@ -44,7 +44,7 @@ import {
 } from "../utils/eventSubtypes";
 import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
-import { formatFamilyFooter, formatFamilySignature } from "../utils/familySignature";
+import { formatFamilyFooter } from "../utils/familySignature";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
 import {
