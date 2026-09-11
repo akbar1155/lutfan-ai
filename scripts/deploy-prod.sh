@@ -51,10 +51,6 @@ docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml exec -T backend \
   python manage.py recover_orphan_templates || true
 
-# Re-enable templates that were wrongly deactivated for "Restored …" placeholder names.
-docker compose -f docker-compose.prod.yml exec -T backend \
-  python manage.py hide_restored_templates --reactivate || true
-
 # Mirror MinIO public templates into MEDIA_ROOT so /media/ and /s3/ both work.
 docker compose -f docker-compose.prod.yml exec -T backend \
   python manage.py sync_template_media || true
