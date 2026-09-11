@@ -177,6 +177,7 @@ class SyncReadyTextsTests(TestCase):
             preview_text="short fallback",
             is_active=True,
             sort_order=99,
+            created_by_admin=text.created_by_admin,
         )
 
         call_command("seed_data", sync_texts=True)
