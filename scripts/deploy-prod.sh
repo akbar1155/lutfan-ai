@@ -19,7 +19,7 @@ updates = {
     # Never re-seed on every deploy — seed_data used to wipe admin JPG uploads.
     "RUN_SEED": "0",
     # One-shot undo of mistaken ready-texts sync; cleared after this deploy.
-    "UNSYNC_READY_TEXTS": "1",
+    "UNSYNC_READY_TEXTS": "0",
     # Browser-facing MinIO public prefix (frontend nginx location /s3/).
     "CDN_BASE_URL": "https://lutfanai.uz/s3",
 }
