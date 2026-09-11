@@ -138,9 +138,9 @@ def analyze_safe_region(
     tall = h / max(w, 1) > 1.5
     # Keep generous side/bottom inset so type never sits on corner florals.
     if corner_guard:
-        side = 0.205 if tall else 0.190
-        top = 0.215
-        bottom = 0.228
+        side = 0.22 if tall else 0.205
+        top = 0.235
+        bottom = 0.245
     else:
         side = 0.148 if tall else 0.138
         top = 0.138
@@ -175,8 +175,8 @@ def clear_safe_text_area(
     rgb = img.convert("RGB")
     paper = _sample_paper(rgb, safe)
     w, h = rgb.size
-    pad_x = int(safe.width * (0.06 if corner_guard else 0.03))
-    pad_y = int(safe.height * (0.05 if corner_guard else 0.02))
+    pad_x = int(safe.width * (0.08 if corner_guard else 0.03))
+    pad_y = int(safe.height * (0.07 if corner_guard else 0.02))
     x0 = max(0, safe.x0 - pad_x)
     y0 = max(0, safe.y0 - pad_y)
     x1 = min(w, safe.x1 + pad_x)
@@ -187,16 +187,18 @@ def clear_safe_text_area(
 
     paper_img = Image.new("RGB", region.size, paper)
     diff = ImageChops.difference(region, paper_img).convert("L")
-    # 0–16 ≈ paper grain; 16–52 ramp; 52+ almost full wash
+    # Lower floor so pale florals still wash; stronger blend under type.
     lut = []
-    strength = 236 if corner_guard else 210
+    strength = 252 if corner_guard else 210
+    floor = 8 if corner_guard else 16
+    ramp_end = 36 if corner_guard else 52
     for v in range(256):
-        if v < 16:
+        if v < floor:
             lut.append(0)
-        elif v > 52:
+        elif v > ramp_end:
             lut.append(strength)
         else:
-            lut.append(int(strength * (v - 16) / 36))
+            lut.append(int(strength * (v - floor) / max(1, ramp_end - floor)))
     floral = diff.point(lut)
     floral = floral.filter(
         ImageFilter.GaussianBlur(radius=min(10, max(4, min(region.size) // 140)))

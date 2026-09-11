@@ -231,16 +231,36 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
         if len(parts) >= 2 and date_time and "\n" not in date_time:
             date_time = "\n".join(f"{part} | {date_time}" for part in parts)
 
-    if not footer:
-        footer = sanitize_overlay_field(
-            normalize_invitation_spelling(
-                format_family_signature(
-                    sanitize_user_text(structured.get("family_signature", ""), 120),
-                    lang,
-                ),
-                lang,
-            )
-        )
+    # Always normalize family signature into a respectful closing when present.
+    family_raw = sanitize_user_text(structured.get("family_signature", ""), 120)
+    if family_raw:
+        sig = format_family_signature(family_raw, lang)
+        if sig:
+            if lang.startswith("ru"):
+                prefix = "С глубоким уважением"
+            elif lang == "uz-cyrl" or bool(
+                re.search(r"[А-Яа-яЁёЎўҚқҒғҲҳ]", sig)
+            ):
+                prefix = "Юксак эҳтиром ила"
+            else:
+                prefix = "Yuksak ehtirom ila"
+            existing = (footer or "").strip()
+            head = existing.rsplit(",", 1)[0].strip() if "," in existing else ""
+            if head and re.search(
+                r"ehtirom|эҳтиром|уважен|ila|bilan|mehr",
+                head,
+                re.IGNORECASE,
+            ):
+                footer = sanitize_overlay_field(
+                    normalize_invitation_spelling(f"{head}, {sig}", lang)
+                )
+            else:
+                footer = sanitize_overlay_field(
+                    normalize_invitation_spelling(f"{prefix}, {sig}", lang)
+                )
+    elif not footer:
+        footer = ""
+
     child = sanitize_overlay_field(structured.get("child_name", ""))
     event_slug = _event_slug(invitation)
     if child and event_slug in ("aqiqa", "sunnat"):
@@ -351,12 +371,14 @@ TEXT CONSTRAINT (absolute):
   logos, QR codes, or fake typography in ANY language or script.
 - Software will typeset the real invitation text later onto a TEXT-SAFE ZONE.
 
-TEXT-SAFE ZONE (center ~50% of the card, continuous paper — NOT a floating panel):
+TEXT-SAFE ZONE (center ~55% of the card, continuous paper — NOT a floating panel):
 - Soft ivory/cream paper texture only in the middle.
 - NO floating white card, NO drop-shadow plate, NO frosted glass box, NO inner parchment rectangle.
 - Keep the center calm enough to read overlay text, but the REST of the card must feel richly designed.
-- Florals, leaves, petals, and gold filigree MUST STOP before the inner half of the card.
+- Florals, leaves, petals, and gold filigree MUST STOP well before the inner type column.
+  Leave clear empty paper under where title, body, and signature will sit — never under the text.
   They may hug the frame and corners only — never sit under the future title, body, or signature.
+  Keep at least ~12% of card height as empty paper between bottom florals and the signature line.
 """.strip()
 
 

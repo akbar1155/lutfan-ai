@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 import threading
 import time
 import uuid
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 from celery import shared_task
@@ -80,19 +82,72 @@ def enqueue_invitation_generation(
     )
 
 def _load_template_bytes(url: str) -> bytes | None:
-    """Load template image from local /media path or HTTP URL."""
+    """Load template image from local /media, catalog assets, S3, or HTTP."""
     if not url:
         return None
+
+    media_key: str | None = None
     if url.startswith("/media/"):
-        path = Path(settings.MEDIA_ROOT) / url.removeprefix("/media/")
-        if path.is_file():
-            return path.read_bytes()
-        return None
+        media_key = url.removeprefix("/media/")
+    else:
+        parsed = urlparse(url)
+        if parsed.path.startswith("/media/"):
+            media_key = parsed.path.removeprefix("/media/")
+        elif url.startswith("s3://"):
+            match = re.match(r"s3://[^/]+/(.+)", url)
+            if match:
+                media_key = match.group(1)
+
+    if media_key:
+        local = Path(settings.MEDIA_ROOT) / media_key
+        if local.is_file():
+            return local.read_bytes()
+        # Catalog JPGs shipped in the image under content/assets/templates/
+        asset = (
+            Path(__file__).resolve().parents[1]
+            / "content"
+            / "assets"
+            / "templates"
+            / Path(media_key).name
+        )
+        if asset.is_file():
+            return asset.read_bytes()
+        try:
+            from apps.ai_engine.storage import _s3_client
+
+            client = _s3_client()
+            for bucket in (
+                settings.AWS_STORAGE_BUCKET_NAME_PUBLIC,
+                settings.AWS_STORAGE_BUCKET_NAME_PRIVATE,
+            ):
+                try:
+                    obj = client.get_object(Bucket=bucket, Key=media_key)
+                    data = obj["Body"].read()
+                    if data:
+                        try:
+                            local.parent.mkdir(parents=True, exist_ok=True)
+                            local.write_bytes(data)
+                        except Exception:
+                            pass
+                        return data
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
     try:
         resolved = resolve_media_url(url) or url
-        resp = requests.get(resolved, timeout=20)
-        if resp.ok and resp.content:
-            return resp.content
+        if resolved.startswith("/media/"):
+            path = Path(settings.MEDIA_ROOT) / resolved.removeprefix("/media/")
+            if path.is_file():
+                return path.read_bytes()
+            base = getattr(settings, "APP_BASE_URL", "") or ""
+            if base:
+                resolved = f"{base.rstrip('/')}{resolved}"
+        if resolved.startswith("http://") or resolved.startswith("https://"):
+            resp = requests.get(resolved, timeout=20)
+            if resp.ok and resp.content:
+                return resp.content
     except requests.RequestException:
         return None
     return None
@@ -299,6 +354,16 @@ def generate_invitation_image(
                         fmt=fmt,
                         style_tags=style_tags,
                         language=invitation.language,
+                    )
+                else:
+                    bg = (
+                        invitation.template.bg_url
+                        if invitation.template
+                        else None
+                    )
+                    raise RuntimeError(
+                        "Selected JPG template could not be loaded. "
+                        f"bg_url={bg!r}"
                     )
 
             if gen_result is None:

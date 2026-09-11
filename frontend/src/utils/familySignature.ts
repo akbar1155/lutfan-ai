@@ -3,6 +3,7 @@
  * "Tohirov" → "Tohirovlar oilasi"
  * "Tohirovlar" → "Tohirovlar oilasi"
  * "Tohirovlar oilasi" → "Tohirovlar oilasi" (idempotent)
+ * "Nosirovlar oilasi" → "Nosirovlar oilasi"
  */
 export function formatFamilySignature(
   raw: string | null | undefined,
@@ -33,4 +34,19 @@ export function formatFamilySignature(
   }
 
   return isCyrl ? `${name} оиласи` : `${name} oilasi`;
+}
+
+/** Full card footer: "Yuksak ehtirom ila, Nosirovlar oilasi". */
+export function formatFamilyFooter(
+  raw: string | null | undefined,
+  language?: string,
+): string {
+  const sig = formatFamilySignature(raw, language);
+  if (!sig) return "";
+  const lang = (language || "").toLowerCase();
+  if (lang.startsWith("ru")) {
+    return `С глубоким уважением, ${sig}`;
+  }
+  const isCyrl = lang === "uz-cyrl" || /[А-Яа-яЁёЎўҚқҒғҲҳ]/.test(sig);
+  return isCyrl ? `Юксак эҳтиром ила, ${sig}` : `Yuksak ehtirom ila, ${sig}`;
 }

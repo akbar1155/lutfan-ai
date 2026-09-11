@@ -1,6 +1,10 @@
 /** Save a remote image to disk instead of opening it in a new tab. */
 export async function downloadImageFile(url: string, filename: string): Promise<void> {
-  const resp = await fetch(url, { credentials: "include" });
+  const absolute = /^https?:\/\//i.test(url);
+  const resp = await fetch(url, {
+    credentials: absolute ? "omit" : "include",
+    mode: absolute ? "cors" : "same-origin",
+  });
   if (!resp.ok) {
     throw new Error(`Download failed: ${resp.status}`);
   }
@@ -8,9 +12,10 @@ export async function downloadImageFile(url: string, filename: string): Promise<
   const objectUrl = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = objectUrl;
-  a.download = filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png")
-    ? filename
-    : `${filename}.jpg`;
+  a.download =
+    filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png")
+      ? filename
+      : `${filename}.jpg`;
   a.rel = "noopener";
   document.body.appendChild(a);
   a.click();

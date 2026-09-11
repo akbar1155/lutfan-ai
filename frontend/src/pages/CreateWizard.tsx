@@ -44,7 +44,7 @@ import {
 } from "../utils/eventSubtypes";
 import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
-import { formatFamilySignature } from "../utils/familySignature";
+import { formatFamilyFooter, formatFamilySignature } from "../utils/familySignature";
 import { invitationContinuePath } from "../utils/wizardResume";
 import { downloadImageFile } from "../utils/download";
 import {
@@ -1103,7 +1103,7 @@ export function TextPage() {
             ),
             date_time: dateTimeFromSchedule,
             address: venueLine,
-            footer: formatFamilySignature(
+            footer: formatFamilyFooter(
               fields.family_signature || "",
               inv.language,
             ),
@@ -1454,8 +1454,9 @@ export function StyleTemplatesPage() {
           api.templates(),
         ]);
         if (cancelled) return;
-        if (!list.length && attempt < 2) {
-          await new Promise((r) => window.setTimeout(r, 350 * (attempt + 1)));
+        // Keep spinner while catalog is empty — never flash EmptyState mid-load.
+        if (!list.length && attempt < 8) {
+          await new Promise((r) => window.setTimeout(r, 400 + attempt * 200));
           if (cancelled) return;
           return load(attempt + 1);
         }
@@ -1464,8 +1465,8 @@ export function StyleTemplatesPage() {
         setReady(true);
       } catch (err) {
         if (cancelled) return;
-        if (attempt < 2) {
-          await new Promise((r) => window.setTimeout(r, 350 * (attempt + 1)));
+        if (attempt < 5) {
+          await new Promise((r) => window.setTimeout(r, 400 + attempt * 200));
           if (cancelled) return;
           return load(attempt + 1);
         }
@@ -1929,7 +1930,7 @@ export function ResultPage() {
         text: t("shareImageHint"),
         url: publicInviteUrl(invitation.id),
       });
-      if (result === "shared" || result === "downloaded") {
+      if (result === "shared" || result === "copied" || result === "downloaded") {
         setSharedImage(true);
         window.setTimeout(() => setSharedImage(false), 2000);
       }
@@ -2020,7 +2021,7 @@ export function ResultPage() {
               onClick={() => void shareImage()}
             >
               <IconShare />
-              {sharedImage ? t("sharedImage") : t("shareImage")}
+              {sharedImage ? t("imageCopied") : t("shareImage")}
             </button>
           </div>
           {editing && (
