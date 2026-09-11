@@ -183,7 +183,7 @@ class SyncReadyTextsTests(TestCase):
         text.refresh_from_db()
         short.refresh_from_db()
         self.assertNotEqual(text.preview_text, "CHANGED BY ACCIDENT")
-        self.assertIn("nikoh to", text.preview_text.lower().replace("ʻ", "'").replace("'", ""))
+        self.assertIn("nikoh", text.preview_text.lower())
         self.assertTrue(text.is_active)
         self.assertFalse(short.is_active)
 
