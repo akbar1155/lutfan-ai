@@ -820,12 +820,81 @@ def _strip_retired_fields(fields_schema: dict | None) -> dict:
     return schema if changed or fields_schema is None else (fields_schema or {})
 
 
+def _sync_ready_texts(admin) -> int:
+    """Upsert catalog TextTemplates from ready_texts.json without touching JPG/events."""
+    catalog = _load_ready_texts()
+    if not catalog:
+        return 0
+
+    updated = 0
+    catalog_titles: dict[tuple[str, str], set[str]] = {}
+
+    for event_slug, by_lang in catalog.items():
+        event = EventConfig.objects.filter(slug=event_slug).first()
+        if event is None:
+            continue
+        if not isinstance(by_lang, dict):
+            continue
+        for lang, payloads in by_lang.items():
+            variants = payloads if isinstance(payloads, list) else [payloads]
+            titles_for_lang = catalog_titles.setdefault((event_slug, lang), set())
+            for idx, payload in enumerate(variants):
+                if not isinstance(payload, dict):
+                    continue
+                title = str(payload.get("title") or "").strip()
+                if not title:
+                    continue
+                titles_for_lang.add(title)
+                preview = (
+                    payload.get("preview") or payload.get("preview_text") or ""
+                )
+                defaults = {
+                    "preview_text": preview,
+                    "variables_used": _template_variables(preview),
+                    "tone": "classic" if idx == 0 else "warm",
+                    "sort_order": idx,
+                    "is_active": bool(event.is_active),
+                    "created_by_admin": admin,
+                }
+                existing = TextTemplate.objects.filter(
+                    event=event, language=lang, title=title
+                ).first()
+                if existing is None:
+                    TextTemplate.objects.create(
+                        event=event, language=lang, title=title, **defaults
+                    )
+                else:
+                    for key, value in defaults.items():
+                        setattr(existing, key, value)
+                    existing.save()
+                updated += 1
+
+    # Hide short fallback texts that are not part of the rich catalog.
+    for event_slug, by_lang in TEXT_BY_EVENT.items():
+        event = EventConfig.objects.filter(slug=event_slug).first()
+        if event is None:
+            continue
+        for lang, payloads in by_lang.items():
+            keep = catalog_titles.get((event_slug, lang)) or set()
+            variants = payloads if isinstance(payloads, list) else [payloads]
+            for payload in variants:
+                title = str((payload or {}).get("title") or "").strip()
+                if not title or title in keep:
+                    continue
+                TextTemplate.objects.filter(
+                    event=event, language=lang, title=title, is_active=True
+                ).update(is_active=False)
+
+    return updated
+
+
 class Command(BaseCommand):
     help = (
         "Seed MVP catalog (events, texts, templates, moods, presets). "
         "By default only creates missing rows — never overwrites or deletes "
         "admin edits. Use --force to refresh catalog fields; --purge-junk "
-        "to remove known placeholder templates."
+        "to remove known placeholder templates; --sync-texts to restore "
+        "ready-text catalog content from ready_texts.json."
     )
 
     def add_arguments(self, parser):
@@ -839,10 +908,20 @@ class Command(BaseCommand):
             action="store_true",
             help="Delete known placeholder/demo JPG templates only",
         )
+        parser.add_argument(
+            "--sync-texts",
+            action="store_true",
+            help=(
+                "Restore TextTemplate rows from ready_texts.json "
+                "(preview content + activate on live events). "
+                "Does not change EventConfig or JPG Template is_active."
+            ),
+        )
 
     def handle(self, *args, **options):
         force = bool(options.get("force"))
         purge_junk = bool(options.get("purge_junk"))
+        sync_texts = bool(options.get("sync_texts"))
         _ensure_media_templates()
 
         admin, _ = User.objects.get_or_create(
@@ -854,6 +933,15 @@ class Command(BaseCommand):
                 "is_superuser": True,
             },
         )
+
+        if sync_texts and not force and not purge_junk:
+            updated = _sync_ready_texts(admin)
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Ready texts restored from catalog ({updated} rows upserted)"
+                )
+            )
+            return
 
         for item in EVENTS:
             seed_active = bool(item.get("is_active", True))

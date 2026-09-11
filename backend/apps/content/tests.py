@@ -153,3 +153,53 @@ class SeedCatalogEventActiveTests(TestCase):
         call_command("seed_data")
         tpl.refresh_from_db()
         self.assertFalse(tpl.is_active)
+
+
+class SyncReadyTextsTests(TestCase):
+    def test_sync_texts_restores_preview_and_activates(self):
+        call_command("seed_data")
+        event = EventConfig.objects.get(slug="nikoh")
+        event.is_active = True
+        event.save(update_fields=["is_active", "updated_at"])
+
+        text = TextTemplate.objects.filter(
+            event=event, language="uz-latn", title="Klassik 1"
+        ).first()
+        self.assertIsNotNone(text)
+        text.preview_text = "CHANGED BY ACCIDENT"
+        text.is_active = False
+        text.save(update_fields=["preview_text", "is_active", "updated_at"])
+
+        short = TextTemplate.objects.create(
+            event=event,
+            language="uz-latn",
+            title="Klassik",
+            preview_text="short fallback",
+            is_active=True,
+            sort_order=99,
+        )
+
+        call_command("seed_data", sync_texts=True)
+        text.refresh_from_db()
+        short.refresh_from_db()
+        self.assertNotEqual(text.preview_text, "CHANGED BY ACCIDENT")
+        self.assertIn("nikoh to", text.preview_text.lower().replace("ʻ", "'").replace("'", ""))
+        self.assertTrue(text.is_active)
+        self.assertFalse(short.is_active)
+
+    def test_sync_texts_does_not_flip_event_or_jpg_flags(self):
+        call_command("seed_data")
+        event = EventConfig.objects.get(slug="aqiqa")
+        event.is_active = False
+        event.save(update_fields=["is_active", "updated_at"])
+        nikoh = EventConfig.objects.get(slug="nikoh")
+        tpl = Template.objects.filter(event=nikoh).first()
+        self.assertIsNotNone(tpl)
+        tpl.is_active = False
+        tpl.save(update_fields=["is_active", "updated_at"])
+
+        call_command("seed_data", sync_texts=True)
+        event.refresh_from_db()
+        tpl.refresh_from_db()
+        self.assertFalse(event.is_active)
+        self.assertFalse(tpl.is_active)

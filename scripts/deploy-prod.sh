@@ -59,4 +59,8 @@ if [[ "${RUN_SEED:-0}" == "1" ]]; then
     python manage.py seed_data || true
 fi
 
+# Restore invitation ready-texts from the catalog JSON (does not touch JPG/event flags).
+docker compose -f docker-compose.prod.yml exec -T backend \
+  python manage.py seed_data --sync-texts || true
+
 docker image prune -f >/dev/null
