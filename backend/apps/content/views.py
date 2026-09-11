@@ -78,7 +78,7 @@ class TemplateListView(generics.ListAPIView):
         subtype = self.request.query_params.get("subtype_slug")
         if subtype:
             qs = qs.filter(subtype_slug=subtype)
-        return qs.order_by("-is_featured", "theme_name", "-usage_count")
+        return qs.order_by("-created_at", "-is_featured", "theme_name")
 
 
 class TemplateDetailView(generics.RetrieveAPIView):

@@ -37,6 +37,7 @@ media/
 staticfiles/
 *.log
 logs/
+.tmp/
 
 # Docker volumes (if bind-mounted)
 .minio-data/

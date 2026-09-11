@@ -89,6 +89,9 @@ function isPastIsoDate(value?: string | null): boolean {
   return isIsoDate(value) && value < todayIsoDate();
 }
 
+/** Where "Orqaga" should go — prefer referrer state, else linear previous step. */
+type WizardNavState = { backTo?: string };
+
 function WizardChrome({
   step,
   title,
@@ -1399,28 +1402,60 @@ export function TextPage() {
 export function StylePage() {
   const { id } = useParams();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navState = (location.state as WizardNavState | null) || null;
+  const fallbackText = id ? `/create/${id}/text` : "/create";
+  const [backTo, setBackTo] = useState(navState?.backTo || fallbackText);
 
   // Warm the shared JPG catalog so "Tayyor dizayn" never flashes empty.
   useEffect(() => {
     void api.templates().catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    if (navState?.backTo) {
+      setBackTo(navState.backTo);
+      return;
+    }
+    if (!id) return;
+    // After a ready invite, "change style" should return to result even if state was lost.
+    void api
+      .getInvitation(id)
+      .then((inv) => {
+        if (inv.status === "ready") {
+          setBackTo(`/create/${id}/result`);
+        } else {
+          setBackTo(`/create/${id}/text`);
+        }
+      })
+      .catch(() => setBackTo(`/create/${id}/text`));
+  }, [id, navState?.backTo]);
+
   return (
     <WizardChrome step={5} title={t("style")} hint={t("styleHint")}>
       <div className="grid style-grid">
-        <Link className="card-link style-card" to={`/create/${id}/style/templates`}>
+        <Link
+          className="card-link style-card"
+          to={`/create/${id}/style/templates`}
+          state={{ backTo } satisfies WizardNavState}
+        >
           <strong>{t("pathTemplate")}</strong>
           <span>{t("pathTemplateDesc")}</span>
         </Link>
-        <Link className="card-link style-card" to={`/create/${id}/style/ai`}>
+        <Link
+          className="card-link style-card"
+          to={`/create/${id}/style/ai`}
+          state={{ backTo } satisfies WizardNavState}
+        >
           <strong>{t("pathAi")}</strong>
           <span>{t("pathAiDesc")}</span>
         </Link>
       </div>
       <div className="wizard-actions">
-        <Link className="ghost" to={`/create/${id}/text`}>
+        <button type="button" className="ghost" onClick={() => navigate(backTo)}>
           {t("back")}
-        </Link>
+        </button>
       </div>
     </WizardChrome>
   );
@@ -1430,6 +1465,8 @@ export function StyleTemplatesPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navState = (location.state as WizardNavState | null) || null;
   const { authLoading } = useWaitForAuth();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<JpgTemplate[]>([]);
@@ -1542,7 +1579,15 @@ export function StyleTemplatesPage() {
         />
       )}
       <div className="wizard-actions">
-        <Link className="ghost" to={`/create/${invitation.id}/style`}>
+        <Link
+          className="ghost"
+          to={`/create/${invitation.id}/style`}
+          state={
+            navState?.backTo
+              ? ({ backTo: navState.backTo } satisfies WizardNavState)
+              : undefined
+          }
+        >
           {t("back")}
         </Link>
       </div>
@@ -1554,6 +1599,8 @@ export function StyleAiPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navState = (location.state as WizardNavState | null) || null;
   const { authLoading } = useWaitForAuth();
   const lang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
@@ -1643,7 +1690,15 @@ export function StyleAiPage() {
         </section>
 
         <div className="wizard-actions">
-          <Link className="ghost" to={`/create/${invitation.id}/style`}>
+          <Link
+            className="ghost"
+            to={`/create/${invitation.id}/style`}
+            state={
+              navState?.backTo
+                ? ({ backTo: navState.backTo } satisfies WizardNavState)
+                : undefined
+            }
+          >
             {t("back")}
           </Link>
           <button
@@ -2011,7 +2066,15 @@ export function ResultPage() {
               {editing ? <IconClose /> : <IconEdit />}
               {editing ? t("cancelEdit") : t("editText")}
             </button>
-            <Link className="ghost btn-with-icon" to={`/create/${invitation.id}/style`}>
+            <Link
+              className="ghost btn-with-icon"
+              to={`/create/${invitation.id}/style`}
+              state={
+                {
+                  backTo: `/create/${invitation.id}/result`,
+                } satisfies WizardNavState
+              }
+            >
               <IconPalette />
               {t("changeStyle")}
             </Link>
