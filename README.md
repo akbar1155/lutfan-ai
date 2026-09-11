@@ -30,6 +30,7 @@ npm run dev
 - Django admin: http://localhost:8000/django-admin/  
   (production: https://lutfanai.uz/django-admin/)
 - React admin: http://localhost:5173/admin/
+- DB backup (daily Telegram DM): [`docs/DATABASE-BACKUP.md`](docs/DATABASE-BACKUP.md)
 
 В DEBUG режиме кнопка **Кириш** вызывает `POST /api/v1/auth/dev-login` (Telegram widget key bo‘lmasa ham oqimni sinash uchun).
 

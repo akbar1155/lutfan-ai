@@ -130,6 +130,29 @@ services:
     networks:
       - lutfan
 
+  backup:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backup
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lutfan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lutfan}
+      TZ: ${BACKUP_TIMEZONE:-Asia/Tashkent}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-true}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 21 * * *}
+      BACKUP_TIMEZONE: ${BACKUP_TIMEZONE:-Asia/Tashkent}
+      BACKUP_WORKDIR: /tmp/lutfan-backups
+      BACKUP_LOCAL_DIR: /var/lutfan-backups
+    volumes:
+      - backup_data:/var/lutfan-backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lutfan
+
   frontend:
     build:
       context: ./frontend
@@ -156,6 +179,7 @@ volumes:
   minio_data:
   media_data:
   static_data:
+  backup_data:
 
 networks:
   lutfan:

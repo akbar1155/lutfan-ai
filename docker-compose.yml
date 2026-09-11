@@ -174,7 +174,35 @@ services:
       redis:
         condition: service_healthy
 
+  backup:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backup
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-to-a-long-random-string}
+      DJANGO_DEBUG: "true"
+      DATABASE_URL: postgresql://lutfan:lutfan@postgres:5432/lutfan
+      TZ: ${BACKUP_TIMEZONE:-Asia/Tashkent}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-false}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 21 * * *}
+      BACKUP_TIMEZONE: ${BACKUP_TIMEZONE:-Asia/Tashkent}
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BACKUP_CHAT_ID: ${TELEGRAM_BACKUP_CHAT_ID:-}
+      BACKUP_KEEP_LOCAL: ${BACKUP_KEEP_LOCAL:-false}
+      BACKUP_LOCAL_RETENTION_DAYS: ${BACKUP_LOCAL_RETENTION_DAYS:-2}
+      BACKUP_WORKDIR: /tmp/lutfan-backups
+      BACKUP_LOCAL_DIR: /var/lutfan-backups
+      BACKUP_PROJECT_NAME: ${BACKUP_PROJECT_NAME:-Lutfan AI}
+    volumes:
+      - backup_data:/var/lutfan-backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
   minio_data:
+  backup_data:

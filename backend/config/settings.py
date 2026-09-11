@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.content",
     "apps.invitations",
     "apps.ai_engine",
+    "apps.backup",
 ]
 
 MIDDLEWARE = [
@@ -201,6 +202,18 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", default="")
 TELEGRAM_BOT_USERNAME = env("TELEGRAM_BOT_USERNAME", default="lutfan_ai_bot")
+# Personal Telegram chat id for DB backup DMs (not a channel).
+TELEGRAM_BACKUP_CHAT_ID = env("TELEGRAM_BACKUP_CHAT_ID", default="")
+
+BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=False)
+BACKUP_SCHEDULE = env("BACKUP_SCHEDULE", default="0 21 * * *")
+BACKUP_TIMEZONE = env("BACKUP_TIMEZONE", default="Asia/Tashkent")
+BACKUP_ENCRYPTION_KEY = env("BACKUP_ENCRYPTION_KEY", default="")
+BACKUP_KEEP_LOCAL = env.bool("BACKUP_KEEP_LOCAL", default=False)
+BACKUP_LOCAL_RETENTION_DAYS = env.int("BACKUP_LOCAL_RETENTION_DAYS", default=2)
+BACKUP_PROJECT_NAME = env("BACKUP_PROJECT_NAME", default="Lutfan AI")
+BACKUP_WORKDIR = env("BACKUP_WORKDIR", default="/tmp/lutfan-backups")
+BACKUP_LOCAL_DIR = env("BACKUP_LOCAL_DIR", default="/var/lutfan-backups")
 
 GOOGLE_AI_API_KEY = env("GOOGLE_AI_API_KEY", default="")
 NANO_BANANA_MODEL = env("NANO_BANANA_MODEL", default="gemini-2.5-flash-image")

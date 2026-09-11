@@ -1,0 +1,30 @@
+FROM python:3.13-slim-bookworm
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    TZ=Asia/Tashkent
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        libpq5 \
+        postgresql-client \
+        tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -r /app/requirements.txt
+
+COPY . /app
+
+RUN mkdir -p /tmp/lutfan-backups /var/lutfan-backups \
+    && chmod +x /app/entrypoint.backup.sh
+
+ENTRYPOINT ["/app/entrypoint.backup.sh"]
+CMD ["python", "manage.py", "run_backup_scheduler"]

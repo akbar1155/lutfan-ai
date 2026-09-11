@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import { IconBan, IconBtn, IconEye, IconInvite, IconPower, IconSearch, IconSessions } from "../components/ActionIcons";
+import { IconBan, IconBtn, IconEye, IconPower, IconSearch } from "../components/ActionIcons";
 import {
   formatDisplayDateTimeStamp,
   formatRelativeTime,
@@ -263,16 +263,12 @@ function UsersEmptyBlock({
 function RowActions({
   user,
   onViewProfile,
-  onViewSessions,
-  onViewInvitations,
   onToggleBan,
   busy,
   t,
 }: {
   user: UserRow;
   onViewProfile: () => void;
-  onViewSessions: () => void;
-  onViewInvitations: () => void;
   onToggleBan: () => void;
   busy: boolean;
   t: (k: string) => string;
@@ -290,26 +286,6 @@ function RowActions({
         }}
       >
         <IconEye />
-      </IconBtn>
-      <IconBtn
-        label={t("adminActionViewInvitations")}
-        disabled={busy}
-        onClick={(e) => {
-          e.stopPropagation();
-          onViewInvitations();
-        }}
-      >
-        <IconInvite />
-      </IconBtn>
-      <IconBtn
-        label={t("adminActionViewSessions")}
-        disabled={busy}
-        onClick={(e) => {
-          e.stopPropagation();
-          onViewSessions();
-        }}
-      >
-        <IconSessions />
       </IconBtn>
       <IconBtn
         label={banned ? t("adminActionUnban") : t("adminActionBan")}
@@ -782,8 +758,6 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                                 busy={!!actionBusy}
                                 t={t}
                                 onViewProfile={() => openUser(id, "profile")}
-                                onViewInvitations={() => openUser(id, "invitations")}
-                                onViewSessions={() => openUser(id, "sessions")}
                                 onToggleBan={() => handleToggleBan(u)}
                               />
                             </td>
@@ -847,8 +821,6 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                             busy={!!actionBusy}
                             t={t}
                             onViewProfile={() => openUser(id, "profile")}
-                            onViewInvitations={() => openUser(id, "invitations")}
-                            onViewSessions={() => openUser(id, "sessions")}
                             onToggleBan={() => handleToggleBan(u)}
                           />
                         </div>
