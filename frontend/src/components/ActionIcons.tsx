@@ -230,9 +230,9 @@ export function IconExternal() {
   );
 }
 
-function Svg({ children }: { children: ReactNode }) {
+function Svg({ children, size = 16 }: { children: ReactNode; size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
       {children}
     </svg>
   );
@@ -477,6 +477,51 @@ export function IconRefresh() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </Svg>
+  );
+}
+
+export function IconSparkles({ size = 16 }: { size?: number }) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M12 3.2 13.4 8.6 19 10l-5.6 1.4L12 16.8l-1.4-5.4L5 10l5.6-1.4z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.2 15.2 18.8 17.2 20.8 17.8 18.8 18.4 18.2 20.4 17.6 18.4 15.6 17.8 17.6 17.2z"
+        fill="currentColor"
+      />
+      <path
+        d="M6.4 15.6 7 17.2 8.6 17.8 7 18.4 6.4 20 5.8 18.4 4.2 17.8 5.8 17.2z"
+        fill="currentColor"
+      />
+    </Svg>
+  );
+}
+
+export function IconTemplate({ size = 16 }: { size?: number }) {
+  return (
+    <Svg size={size}>
+      <rect
+        x="4.2"
+        y="5.2"
+        width="15.6"
+        height="13.6"
+        rx="2.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M7.2 14.6 10.1 11.4 12.4 13.5 15.1 10.2 19.2 14.6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.4" cy="8.6" r="1.15" fill="currentColor" />
     </Svg>
   );
 }

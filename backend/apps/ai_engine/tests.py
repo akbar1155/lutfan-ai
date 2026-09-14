@@ -264,6 +264,75 @@ class ChildNameOverlayTests(SimpleTestCase):
         self.assertEqual(blocks["date_time"], "")
         self.assertNotIn("07:00", blocks["date_time"])
 
+    def test_build_text_blocks_keeps_cleared_address_and_footer_empty(self):
+        """Edit → clear Manzil / Yakun → regenerate must not restore Ma'lumotlar."""
+
+        class Event:
+            slug = "aqiqa"
+            subtypes = []
+
+        class Inv:
+            language = "uz-latn"
+            event = Event()
+            event_id = "aqiqa"
+            subtype_slug = None
+            subtype_slugs = []
+            event_data = {
+                "final_text_blocks": {
+                    "header": "",
+                    "body": "",
+                    "date_time": "",
+                    "address": "",
+                    "footer": "",
+                },
+                "structured_fields": {
+                    "child_name": "Sardor",
+                    "event_date": "2026-09-16",
+                    "event_time": "07:00",
+                    "venue_name": "Asr toyxonasi",
+                    "venue_address": "dcac",
+                    "family_signature": "Muroodov",
+                },
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertEqual(blocks["header"], "")
+        self.assertEqual(blocks["body"], "")
+        self.assertEqual(blocks["date_time"], "")
+        self.assertEqual(blocks["address"], "")
+        self.assertEqual(blocks["footer"], "")
+
+    def test_build_text_blocks_fills_address_footer_when_keys_omitted(self):
+        """First generate without edit keys still uses Ma'lumotlar venue / imzo."""
+
+        class Event:
+            slug = "nikoh"
+            subtypes = []
+
+        class Inv:
+            language = "uz-latn"
+            event = Event()
+            event_id = "nikoh"
+            subtype_slug = None
+            subtype_slugs = []
+            event_data = {
+                "final_text_blocks": {
+                    "header": "Assalomu alaykum!",
+                    "body": "Sizni nikoh to‘yimizga taklif etamiz.",
+                },
+                "structured_fields": {
+                    "venue_name": "Asr toyxonasi",
+                    "venue_address": "Toshkent",
+                    "family_signature": "Karimov",
+                },
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertIn("Asr toyxonasi", blocks["address"])
+        self.assertIn("Toshkent", blocks["address"])
+        self.assertIn("Karimov", blocks["footer"])
+        self.assertIn("Yuksak ehtirom ila", blocks["footer"])
+
 
 class MultiCeremonyBodyTests(SimpleTestCase):
     def test_build_text_blocks_keeps_full_body_with_schedule(self):

@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, type EventConfig, type JpgTemplate } from "../api/client";
 import { EventIcon } from "../components/EventIcons";
 import { EmptyState, PageLoader } from "../components/UiStates";
+import SmartImage from "../components/SmartImage";
 import { eventDisplayName, normalizeUiLang, pickTranslation } from "../i18n/lang";
 
 export function HowItWorksPage() {
@@ -150,7 +151,7 @@ export function GalleryPage() {
                 })
               }
             >
-              <img src={tpl.bg_url_preview} alt={tpl.theme_name} />
+              <SmartImage src={tpl.bg_url_preview} alt={tpl.theme_name} />
               <span>{tpl.theme_name}</span>
               <small>{t("galleryUseThis")}</small>
             </button>
@@ -238,7 +239,7 @@ export function PublicInvitationPage() {
         />
       ) : imageUrl ? (
         <div className="result-stage">
-          <img className="result-img" src={imageUrl} alt={t("resultAlt")} />
+          <SmartImage className="result-img" eager src={imageUrl} alt={t("resultAlt")} />
         </div>
       ) : (
         <PageLoader label={t("loading")} />

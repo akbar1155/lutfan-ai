@@ -16,7 +16,7 @@ def _save_pair(img: Image.Image, dest_dir: Path, stem: str) -> None:
     full = img.resize((W, H), Image.Resampling.LANCZOS)
     preview = img.resize((PW, PH), Image.Resampling.LANCZOS)
     full.save(dest_dir / f"{stem}.jpg", quality=93, optimize=True)
-    preview.save(dest_dir / f"{stem}_preview.jpg", quality=90, optimize=True)
+    preview.save(dest_dir / f"{stem}_preview.jpg", quality=90, optimize=True, progressive=True)
 
 
 def _paper(

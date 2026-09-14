@@ -159,9 +159,12 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     data = invitation.event_data or {}
     raw_blocks = data.get("final_text_blocks")
     blocks = raw_blocks if isinstance(raw_blocks, dict) else {}
-    # Explicit date_time key in saved edits (even "") must not be refilled
-    # from Ma'lumotlar / ceremony schedule on regenerate.
-    user_locked_date_time = isinstance(raw_blocks, dict) and "date_time" in raw_blocks
+    # Explicit keys in saved edits (even "") must not be refilled from
+    # Ma'lumotlar / ceremony schedule on Matnni tahrirlash regenerate.
+    user_locked_date_time = "date_time" in blocks
+    user_locked_address = "address" in blocks
+    user_locked_footer = "footer" in blocks
+    user_locked_body = "body" in blocks
     lang = invitation.language
     header = normalize_invitation_spelling(
         format_dates_in_text(
@@ -275,9 +278,9 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
         if len(parts) >= 2 and date_time and "\n" not in date_time:
             date_time = "\n".join(f"{part} | {date_time}" for part in parts)
 
-    # Auto closing only when the user left Yakun empty — never overwrite edits.
+    # Auto closing only when Yakun was never set — never refill a cleared edit.
     family_raw = sanitize_user_text(structured.get("family_signature", ""), 120)
-    if family_raw and not footer:
+    if family_raw and not footer and not user_locked_footer:
         sig = format_family_signature(family_raw, lang)
         if sig:
             if lang.startswith("ru"):
@@ -292,7 +295,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
                 normalize_invitation_spelling(f"{prefix}, {sig}", lang)
             )
 
-    if not address:
+    if not address and not user_locked_address:
         venue = sanitize_overlay_field(
             ", ".join(
                 p
@@ -309,7 +312,8 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     child = sanitize_overlay_field(structured.get("child_name", ""))
     event_slug = _event_slug(invitation)
     if child and event_slug in ("aqiqa", "sunnat"):
-        body = _inject_child_name(body, child, lang)
+        if body or not user_locked_body:
+            body = _inject_child_name(body, child, lang)
         if footer and footer.lower() == child.lower():
             footer = ""
 

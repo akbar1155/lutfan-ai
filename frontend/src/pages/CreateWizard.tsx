@@ -63,7 +63,10 @@ import {
   IconPlus,
   IconRefresh,
   IconShare,
+  IconSparkles,
+  IconTemplate,
 } from "../components/ActionIcons";
+import SmartImage from "../components/SmartImage";
 
 type FieldDef = {
   key: string;
@@ -1496,19 +1499,27 @@ export function StylePage() {
       <div className="grid style-grid">
         <Link
           className="card-link style-card"
-          to={`/create/${id}/style/templates`}
+          to={`/create/${id}/style/ai`}
           state={{ backTo } satisfies WizardNavState}
+          data-style="ai"
         >
-          <strong>{t("pathTemplate")}</strong>
-          <span>{t("pathTemplateDesc")}</span>
+          <span className="event-icon-wrap" aria-hidden>
+            <IconSparkles size={22} />
+          </span>
+          <strong>{t("pathAi")}</strong>
+          <span>{t("pathAiDesc")}</span>
         </Link>
         <Link
           className="card-link style-card"
-          to={`/create/${id}/style/ai`}
+          to={`/create/${id}/style/templates`}
           state={{ backTo } satisfies WizardNavState}
+          data-style="template"
         >
-          <strong>{t("pathAi")}</strong>
-          <span>{t("pathAiDesc")}</span>
+          <span className="event-icon-wrap" aria-hidden>
+            <IconTemplate size={22} />
+          </span>
+          <strong>{t("pathTemplate")}</strong>
+          <span>{t("pathTemplateDesc")}</span>
         </Link>
       </div>
       <div className="wizard-actions">
@@ -1589,7 +1600,7 @@ export function StyleTemplatesPage() {
     <WizardChrome step={5} title={t("pathTemplate")} error={error}>
       {templates.length ? (
         <div className="grid template-picks">
-          {templates.map((tpl) => {
+          {templates.map((tpl, idx) => {
             const preferred = invitation.template_id === tpl.id;
             return (
               <button
@@ -1619,7 +1630,11 @@ export function StyleTemplatesPage() {
                     });
                 }}
               >
-                <img src={tpl.bg_url_preview} alt={tpl.theme_name} />
+                <SmartImage
+                  src={tpl.bg_url_preview}
+                  alt={tpl.theme_name}
+                  eager={preferred || idx < 4}
+                />
                 <span>{tpl.theme_name}</span>
                 {preferred ? (
                   <small className="template-pick-badge">{t("gallerySelected")}</small>
@@ -1707,29 +1722,31 @@ export function StyleAiPage() {
               <div key={category} className="mood-group">
                 <h3>{t(`mood_${category}`, { defaultValue: category })}</h3>
                 <div className="choice-row">
-                  {tags.map((tag) => {
-                    const active = selected.includes(tag.slug);
-                    return (
-                      <button
-                        key={tag.slug}
-                        type="button"
-                        className={active ? "choice-pill active" : "choice-pill"}
-                        aria-pressed={active}
-                        onClick={() =>
-                          setSelected((prev) =>
-                            active
-                              ? prev.filter((s) => s !== tag.slug)
-                              : [...prev, tag.slug],
-                          )
-                        }
-                      >
-                        {t(`mood_${tag.slug}`, {
-                          defaultValue:
-                            pickTranslation(tag.name_translations, lang) || tag.slug,
-                        })}
-                      </button>
-                    );
-                  })}
+                  {tags
+                    .filter((tag) => tag.slug !== "burgundy" && tag.slug !== "beige")
+                    .map((tag) => {
+                      const active = selected.includes(tag.slug);
+                      return (
+                        <button
+                          key={tag.slug}
+                          type="button"
+                          className={active ? "choice-pill active" : "choice-pill"}
+                          aria-pressed={active}
+                          onClick={() =>
+                            setSelected((prev) =>
+                              active
+                                ? prev.filter((s) => s !== tag.slug)
+                                : [...prev, tag.slug],
+                            )
+                          }
+                        >
+                          {t(`mood_${tag.slug}`, {
+                            defaultValue:
+                              pickTranslation(tag.name_translations, lang) || tag.slug,
+                          })}
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
             ))}
@@ -1739,11 +1756,13 @@ export function StyleAiPage() {
             <p id="custom-note-hint" className="mood-note-hint">
               {t("customNoteHint")}
             </p>
-            <input
+            <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t("customNotePlaceholder")}
               aria-describedby="custom-note-hint"
+              maxLength={400}
+              rows={3}
             />
           </label>
         </section>
@@ -2077,8 +2096,9 @@ export function ResultPage() {
     <WizardChrome step={6} title={t("result")} error={error}>
       {invitation.final_image_url ? (
         <div className="result-stage">
-          <img
+          <SmartImage
             className="result-img"
+            eager
             src={
               invitation.updated_at
                 ? `${invitation.final_image_url}${

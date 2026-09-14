@@ -14,6 +14,7 @@ import {
 } from "../components/ActionIcons";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import { EventIcon } from "../components/EventIcons";
+import SmartImage from "../components/SmartImage";
 import { eventDisplayName, normalizeUiLang } from "../i18n/lang";
 import { subtypeLabel } from "../utils/eventSubtypes";
 import { formatDisplayDateTimeStamp } from "../utils/date";
@@ -230,7 +231,7 @@ export function AccountPage() {
                   className="account-invite-card"
                 >
                   {inv.final_image_url ? (
-                    <img
+                    <SmartImage
                       className="account-invite-thumb"
                       src={inv.final_image_url}
                       alt=""

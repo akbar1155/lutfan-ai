@@ -127,7 +127,7 @@ def _preview_and_palette(image_bytes: bytes) -> tuple[bytes, list[str]]:
     for _, rgb in colors[:5]:
         dominant.append("#%02x%02x%02x" % rgb)
     out = io.BytesIO()
-    preview.save(out, format="JPEG", quality=88, optimize=True)
+    preview.save(out, format="JPEG", quality=88, optimize=True, progressive=True)
     return out.getvalue(), dominant
 
 

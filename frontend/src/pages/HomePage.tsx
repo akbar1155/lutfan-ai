@@ -1,6 +1,32 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+function LandingCard({
+  slug,
+  className,
+  eager = false,
+}: {
+  slug: string;
+  className: string;
+  eager?: boolean;
+}) {
+  const v = "v=8";
+  return (
+    <picture>
+      <source srcSet={`/landing-card-${slug}.webp?${v}`} type="image/webp" />
+      <img
+        className={className}
+        src={`/landing-card-${slug}.jpg?${v}`}
+        alt=""
+        width={1200}
+        height={1500}
+        decoding="async"
+        fetchPriority={eager ? "high" : "low"}
+      />
+    </picture>
+  );
+}
+
 export default function HomePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -17,31 +43,9 @@ export default function HomePage() {
             </button>
           </div>
           <div className="home-hero-stage" aria-hidden="true">
-            <img
-              className="home-hero-card is-left"
-              src="/landing-card-aqiqa.png?v=7"
-              alt=""
-              width={1200}
-              height={1500}
-              decoding="async"
-            />
-            <img
-              className="home-hero-card is-center"
-              src="/landing-card-nikoh.png?v=7"
-              alt=""
-              width={1200}
-              height={1500}
-              decoding="async"
-              fetchPriority="high"
-            />
-            <img
-              className="home-hero-card is-right"
-              src="/landing-card-birthday.png?v=7"
-              alt=""
-              width={1200}
-              height={1500}
-              decoding="async"
-            />
+            <LandingCard slug="aqiqa" className="home-hero-card is-left" />
+            <LandingCard slug="nikoh" className="home-hero-card is-center" eager />
+            <LandingCard slug="birthday" className="home-hero-card is-right" />
           </div>
         </section>
 
