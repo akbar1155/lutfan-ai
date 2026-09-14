@@ -865,7 +865,6 @@ def _sync_ready_texts(admin) -> int:
                         event=event, language=lang, title=title, **defaults
                     )
                 else:
-                    defaults.pop("is_active", None)
                     for key, value in defaults.items():
                         setattr(existing, key, value)
                     existing.save()
