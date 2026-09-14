@@ -230,6 +230,40 @@ class ChildNameOverlayTests(SimpleTestCase):
         self.assertIn("Custom sana", blocks["date_time"])
         self.assertIn("Navruz Hall", blocks["address"])
 
+    def test_build_text_blocks_keeps_cleared_date_time_empty(self):
+        """Edit → clear sana/vaqt → regenerate must not restore Ma'lumotlar date."""
+
+        class Event:
+            slug = "hudoyi"
+            subtypes = []
+
+        class Inv:
+            language = "uz-latn"
+            event = Event()
+            event_id = "hudoyi"
+            subtype_slug = None
+            subtype_slugs = []
+            event_data = {
+                "final_text_blocks": {
+                    "header": "Assalomu alaykum!",
+                    "body": "Hudoyi dasturxoniga taklif etamiz.",
+                    "date_time": "",
+                    "address": "Asr toyxonasi",
+                    "footer": "Yuksak ehtirom ila, Tohirovlar oilasi",
+                },
+                "structured_fields": {
+                    "event_date": "2026-09-16",
+                    "event_time": "07:00",
+                    "venue_name": "Asr toyxonasi",
+                    "venue_address": "Zafar diyor 119",
+                    "family_signature": "Tohirov",
+                },
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertEqual(blocks["date_time"], "")
+        self.assertNotIn("07:00", blocks["date_time"])
+
 
 class MultiCeremonyBodyTests(SimpleTestCase):
     def test_build_text_blocks_keeps_full_body_with_schedule(self):
@@ -258,7 +292,7 @@ class MultiCeremonyBodyTests(SimpleTestCase):
                 "final_text_blocks": {
                     "header": "Aziz mehmonlar!",
                     "body": full_body,
-                    "date_time": "",
+                    # date_time omitted → auto-build from ceremony_schedule
                     "address": "versal, Yubnusabod",
                     "footer": "",
                 },
@@ -317,4 +351,41 @@ class HayitOccasionOverlayTests(SimpleTestCase):
         blocks = build_text_blocks(Inv())
         self.assertEqual(blocks["date_time"], "")
         self.assertIn("Qurbon hayiti", blocks["body"])
+
+
+class GuestRequestPromptTests(SimpleTestCase):
+    def test_guest_request_is_mandatory_in_modules(self):
+        from apps.ai_engine.prompts import compose_design_modules
+
+        text = compose_design_modules(
+            event_slug="nikoh",
+            fmt="4:5",
+            multi=False,
+            subtype_label="",
+            mood="gold frame",
+            preset={
+                "style": "classic",
+                "decoration": "floral",
+                "frame": "ornamental",
+                "palette": "emerald_gold",
+                "density": "luxury",
+            },
+            user_request="Mercedes belgisi bo‘lsin",
+        )
+        self.assertIn("Mercedes belgisi", text)
+        self.assertIn("GUEST REQUEST", text)
+        self.assertIn("highest visual priority", text)
+
+    def test_negative_drops_logo_ban_when_guest_asks(self):
+        from apps.ai_engine.prompts import (
+            DEFAULT_NEGATIVE,
+            relax_negative_for_guest_request,
+        )
+
+        neg = relax_negative_for_guest_request(
+            DEFAULT_NEGATIVE, "mers mashina belgisi"
+        )
+        self.assertNotIn("logo", neg.lower())
+        untouched = relax_negative_for_guest_request(DEFAULT_NEGATIVE, "")
+        self.assertIn("logo", untouched.lower())
 

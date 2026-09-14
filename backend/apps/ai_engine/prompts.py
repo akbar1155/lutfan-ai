@@ -64,6 +64,31 @@ def sanitize_user_text(value: str, max_len: int = 400) -> str:
     return text
 
 
+def guest_request_block(user_request: str) -> str:
+    note = (user_request or "").strip()
+    if not note:
+        return ""
+    return (
+        "GUEST REQUEST (mandatory — highest visual priority; beats default "
+        "'no logos / no extra objects' rules):\n"
+        f'The customer extra instruction MUST be visible in the artwork: "{note}".\n'
+        "Understand Uzbek, Russian, or English. "
+        "If they ask for a brand emblem (Mercedes, BMW, …), a car, a motif, a color, "
+        "or any object — paint that exact thing as a tasteful stationery ornament "
+        "(small metallic emblem / icon / object at top-center or a corner). "
+        "Do NOT ignore it. Do NOT replace it with generic flowers. "
+        "Do NOT paint the request as letters — paint the actual symbol or object."
+    )
+
+
+def relax_negative_for_guest_request(negative: str, user_request: str) -> str:
+    """Drop the default 'logo' ban when the guest asked for an extra motif."""
+    if not (user_request or "").strip():
+        return negative
+    cleaned = re.sub(r",?\s*\blogos?\b", "", negative or "", flags=re.I)
+    return re.sub(r"\s{2,}", " ", cleaned).strip(" ,;")
+
+
 def _event_slug(invitation: Invitation) -> str:
     if getattr(invitation, "event", None):
         return invitation.event.slug or ""
@@ -132,7 +157,11 @@ def _inject_child_name(body: str, child: str, lang: str) -> str:
 
 def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     data = invitation.event_data or {}
-    blocks = data.get("final_text_blocks") or {}
+    raw_blocks = data.get("final_text_blocks")
+    blocks = raw_blocks if isinstance(raw_blocks, dict) else {}
+    # Explicit date_time key in saved edits (even "") must not be refilled
+    # from Ma'lumotlar / ceremony schedule on regenerate.
+    user_locked_date_time = isinstance(raw_blocks, dict) and "date_time" in raw_blocks
     lang = invitation.language
     header = normalize_invitation_spelling(
         format_dates_in_text(
@@ -169,7 +198,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
 
     # Custom text sometimes puts the date in body and junk in date_time
     if _looks_like_datetime_line(body):
-        if not date_time:
+        if not date_time and not user_locked_date_time:
             date_time = body
         body = ""
 
@@ -187,7 +216,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     from apps.core.dates import format_display_datetime as _fmt_dt
 
     structured_dt = ""
-    if not date_time:
+    if not date_time and not user_locked_date_time:
         structured_dt = _fmt_dt(
             (structured.get("event_date") or "").strip() or None,
             (structured.get("event_time") or "").strip() or None,
@@ -205,9 +234,12 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
         or "",
         lang,
     )
-    date_time_is_auto = (not date_time) or (
-        auto_single_dt and date_time.strip() == auto_single_dt.strip()
-    )
+    if user_locked_date_time:
+        date_time_is_auto = False
+    else:
+        date_time_is_auto = (not date_time) or (
+            auto_single_dt and date_time.strip() == auto_single_dt.strip()
+        )
 
     if len(valid_slots) >= 2 and date_time_is_auto:
         # Keep the user's full body — layout shrinks fonts to fit; do not truncate.
@@ -783,6 +815,7 @@ def compose_design_modules(
 
     parts = [
         ART_DIRECTOR_ROLE,
+        guest_request_block(user_request),
         BASE_DESIGN_PROMPT,
         text_constraint,
         CORNER_DECORATION_SYSTEM,
@@ -798,7 +831,6 @@ def compose_design_modules(
         f"Visual style cues from SELECTED moods (follow these strictly): {mood}." if mood else "",
         occasion,
         hayit_extra,
-        f"Additional art direction: {user_request}" if user_request else "",
         text_payload if include_text and text_payload else "",
         ANTI_PLAIN_RULES,
         quality,
@@ -877,8 +909,7 @@ def build_prompt(
         ]
     custom_note = ""
     if invitation.custom_style_note:
-        custom_note = sanitize_user_text(invitation.custom_style_note, 200)
-        mood_snippets.append(custom_note)
+        custom_note = sanitize_user_text(invitation.custom_style_note, 400)
 
     rose_allowed = any(s in ("rose_gold", "peonies", "pink") for s in mood_slugs)
     if mood_slugs and not rose_allowed:
@@ -920,6 +951,7 @@ def build_prompt(
         neg = (negative or DEFAULT_NEGATIVE).strip()
         if "any text" not in neg.lower():
             neg = f"{DEFAULT_NEGATIVE}; {neg}"
+        neg = relax_negative_for_guest_request(neg, custom_note)
         return prompt, neg, model_params
 
     header = (text_blocks.get("header") or "").strip()
@@ -1004,4 +1036,5 @@ def build_prompt(
             neg = f"{DEFAULT_NEGATIVE}; {neg}"
         if mood_slugs and not rose_allowed:
             neg = f"{neg}; roses, rose bouquets, rose petals, pink rose clusters"
+    neg = relax_negative_for_guest_request(neg, custom_note)
     return prompt, neg, model_params

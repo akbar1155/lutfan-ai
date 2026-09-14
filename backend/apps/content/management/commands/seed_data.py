@@ -230,22 +230,10 @@ MOOD_TAGS = [
         {"uz-cyrl": "Пушти", "uz-latn": "Pushti", "ru": "Розовый"},
     ),
     (
-        "burgundy",
-        "color",
-        "deep burgundy accents with antique gold on warm cream invitation paper",
-        {"uz-cyrl": "Бордо", "uz-latn": "Bordo", "ru": "Бордовый"},
-    ),
-    (
         "blue",
         "color",
         "soft navy and sky-blue accents on cream paper with muted silver-gold highlights",
         {"uz-cyrl": "Кўк", "uz-latn": "Ko‘k", "ru": "Синий"},
-    ),
-    (
-        "beige",
-        "color",
-        "warm beige and sand tones with soft champagne accents on cream paper",
-        {"uz-cyrl": "Беж", "uz-latn": "Bej", "ru": "Бежевый"},
     ),
     (
         "silver",
