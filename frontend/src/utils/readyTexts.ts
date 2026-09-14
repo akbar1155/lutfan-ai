@@ -35,6 +35,7 @@ type ReadyTextsFile = {
   catalog: CatalogItem[];
   nikohTopics?: Record<string, EventTopic>;
   nikohBySubtype?: Record<string, Record<string, Partial<Record<Lang, NikohBlock>>>>;
+  eventByStyle?: Record<string, Record<string, Partial<Record<Lang, NikohBlock>>>>;
   eventTopics: Record<string, EventTopic>;
   templates: Record<string, I18nText>;
 };
@@ -120,19 +121,39 @@ function nikohBlock(
   return byStyle[lang] || byStyle["uz-latn"] || null;
 }
 
+function eventStyleBlock(
+  eventSlug: string,
+  styleId: string,
+  lang: Lang,
+): NikohBlock | null {
+  const byStyle = data.eventByStyle?.[eventSlug]?.[styleId];
+  if (!byStyle) return null;
+  return byStyle[lang] || byStyle["uz-latn"] || null;
+}
+
+function richTextBlock(
+  eventSlug: string,
+  styleId: string,
+  lang: Lang,
+  subtypeSlugs?: string[] | null,
+): NikohBlock | null {
+  if (eventSlug === "nikoh") {
+    return nikohBlock(styleId, lang, subtypeSlugs);
+  }
+  return eventStyleBlock(eventSlug, styleId, lang);
+}
+
 function bodyFor(
   eventSlug: string,
   styleId: string,
   lang: Lang,
   subtypeSlugs?: string[] | null,
 ): string {
-  if (eventSlug === "nikoh") {
-    const block = nikohBlock(styleId, lang, subtypeSlugs);
-    if (block) {
-      return [block.header, block.body, `${FOOTER_MARK}${block.closing}`]
-        .filter(Boolean)
-        .join("\n");
-    }
+  const block = richTextBlock(eventSlug, styleId, lang, subtypeSlugs);
+  if (block) {
+    return [block.header, block.body, `${FOOTER_MARK}${block.closing}`]
+      .filter(Boolean)
+      .join("\n");
   }
   const topic = topicFor(eventSlug, subtypeSlugs);
   const tpl = data.templates[styleId]?.[lang] || "";
@@ -145,10 +166,12 @@ function pack(
   subtypeSlugs?: string[] | null,
 ): TextTemplate[] {
   const lang = normalizeLang(language);
+  const usesRichCatalog =
+    eventSlug === "nikoh" || Boolean(data.eventByStyle?.[eventSlug]);
   const nameLine =
-    eventSlug === "aqiqa" || eventSlug === "sunnat"
+    !usesRichCatalog && (eventSlug === "aqiqa" || eventSlug === "sunnat")
       ? "{child_name}\n"
-      : eventSlug === "birthday"
+      : !usesRichCatalog && eventSlug === "birthday"
         ? "{person_name}\n"
         : "";
   const withDate = eventSlug !== "hayit";

@@ -447,5 +447,267 @@
         }
       }
     }
+  },
+  "eventByStyle": {
+    "sunnat": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom — farzandimizning Sunnat to‘yi munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu quvonchli kunda mehmonimiz bo‘lib, to‘kin dasturxonimiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Dilbandimizning Sunnat to‘yi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Yoshimizning mustaqil hayot sari qo‘yayotgan ilk ildam qadamlarida guvoh bo‘lib, chiroyli duolaringiz bilan davramiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Qalbimizdagi cheksiz shukronalik va mehr bilan Sizni farzandimizning Sunnat to‘yi tantanasiga chorlaymiz. Hayotimizdagi eng go‘zal va quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga olam-olam mamnuniyat bag‘ishlaydi. Shunday unutilmas kunda yonimizda bo‘ling!",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Oila quvonchi va farzand kutilgan baxti yaqinlar jam bo‘lgandagina to‘liq bo‘ladi. Xonadonimizdagi Sunnat to‘yi dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, go‘zal xotiralar ulashaylik!",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamizdagi shukuhli tantana — farzandimizning Sunnat to‘yi munosabati bilan Sizni ushbu qutlug‘ kecha/dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!",
+          "body": "Sunnati nabaviyga muvofiq, farzandimizning Sunnat to‘yi munosabati bilan yozilgan dasturxonimizga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, jajji farzandimiz haqqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Farzandimizning Sunnat to‘yi munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling va baxtimizga sherik bo‘ling!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "Qahramonimizning mard yig‘it bo‘lib ulg‘ayishi yolida o‘tkazilayotgan Sunnat to‘yida barchangizni kutamiz! Samimiy kayfiyat, yaxshi gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz!",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilamiz tarixidagi eng sharafli va unutilmas ayyom — farzandimizning Sunnat to‘yi munosabati bilan Sizni shukuhli el dasturxoniga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va baxtimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    },
+    "birthday": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom — {person_name}ning tug‘ilgan kuni munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu quvonchli kunda mehmonimiz bo‘lib, davramiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Qadrli {person_name}ning tavallud ayyomi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli va samimiy davramizda ishtirok etib, chiroyli tilaklaringiz bilan quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Umrning har bir yili va har bir fasli yaqinlar davrasida go‘zaldir. Qalbimizdagi samimiy mehr bilan Sizni tavallud ayyomimizni birgalikda nishonlashga chorlaymiz. Hayotimizdagi quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga cheksiz mamnuniyat bag‘ishlaydi.",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Bayram quvonchi va shukuhli onlar yaqinlar jam bo‘lgandagina mukammal bo‘ladi. Tug‘ilgan kun munosabati bilan yozilayotgan ushbu dasturxonda aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, go‘zal xotiralar ulashaylik!",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamizning ardoqli insoni — {person_name}ning qutlug‘ yubiley tavallud ayyomi munosabati bilan Sizni ushbu tantanali kechaga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!",
+          "body": "Yaratganning bergan umr ne’matiga shukronalik ramzi o‘laroq, {person_name}ning tavallud ayyomi munosabati bilan yozilgan dasturxonimizga Sizni taklif etamiz. Ushbu xayrli kunda jam bo‘lib, chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "{person_name}ning tug‘ilgan kuni munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "Yanada tajribali, quvnoq va baxtli bo‘lgan bir yoshimni nishonlaymiz! Ushbu unutilmas oqshomda barchangizni kutaman. Ajoyib kayfiyat, jo‘shqin gurunglar va unutilmas xotiralar bilan boyitilgan kechada birga bo‘laylik!",
+          "closing": "Samimiyat va ehtirom ila, {person_name}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilamiz tarixidagi shukuhli va unutilmas ayyom — {person_name}ning tavallud ayyomi munosabati bilan Sizni go‘zal bayram oqshomiga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va bayramimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    },
+    "hudoyi": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizda yozilayotgan ehson dasturxoni — Hudoyi marosimiga taklif etamiz. Ushbu xayrli va shukuhli gurungda mehmonimiz bo‘lib, dasturxonimiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Xonadonimizda tashkil etilayotgan Hudoyi marosimi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli davramizda ishtirok etib, biz bilan birga bo‘lishingiz biz uchun ulkan sharafdir.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Qalbimizdagi samimiy mehr va shukronalik bilan Sizni Hudoyi dasturxonimizga chorlaymiz. Yaxshi kunlarimizda va xayrli amallarda Siz kabi qadrli insonlar bilan birga bo‘lish bizga cheksiz mamnuniyat bag‘ishlaydi. Qutlug‘ davramizda yonimizda bo‘ling!",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Xonadonimizda yozilayotgan ehson dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, samimiy va chiroyli suhbatlar atrofida birga bo‘laylik.",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamiz tomonidan tashkil etilayotgan Hudoyi marosimi munosabati bilan Sizni ushbu dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz va baraka bag‘ishlaydi. Dasturxonimiz atrofida mehmon bo‘lishingizni so‘raymiz.",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!",
+          "body": "Yaratganning roziligi yo‘lida va o‘tganlarimiz yodi uchun yozilgan Hudoyi dasturxonimizga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, o‘tganlarimiz haqqiga tilovatlar va chiroyli duolar qilishingiz hamda ehsonimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Xonadonimizda yozilayotgan Hudoyi marosimi munosabati bilan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Fayzli gurungimizda kutib qolamiz!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "Xonadonimizda bo‘lib o‘tadigan Hudoyi marosimi va ehson dasturxonida barchangizni kutamiz! Samimiy gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz.",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Xonadonimizda tashkil etilayotgan Hudoyi va ehson marosimi munosabati bilan Sizni shukuhli dasturxonimizga taklif etamiz. Ushbu xayrli davrada Sizning ishtirokingiz biz uchun yuksak ehtirom va davramizning mukammalligidir. Chin qalbimizdan taklif etib qolamiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    },
+    "aqiqa": {
+      "classic1": {
+        "uz-latn": {
+          "header": "Hurmatli va e’zozli mehmonimiz!",
+          "body": "Sizni va oila a’zolaringizni xonadonimizdagi quvonchli ayyom — farzandimizning Aqiqa marosimi munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu xayrli tongda mehmonimiz bo‘lib, to‘kin dasturxonimiz fayzini oshirishingizni so‘raymiz.",
+          "closing": "Yuksak ehtirom ila, {family_signature}"
+        }
+      },
+      "classic2": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonlar!",
+          "body": "Xonadonimizga in’om etilgan ilohiy ne’mat — dilbandimizning Aqiqa to‘yi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli davramizda ishtirok etib, jajji farzandimiz kelajagiga ezgu tilaklar bildirishingiz biz uchun ulkan sharafdir.",
+          "closing": "Samimiy ehtirom bilan, {family_signature}"
+        }
+      },
+      "warm1": {
+        "uz-latn": {
+          "header": "Aziz va mehribon yaqinlarimiz!",
+          "body": "Qalbimizdagi cheksiz shukronalik va mehr bilan Sizni farzandimizning Aqiqa marosimiga chorlaymiz. Hayotimizdagi eng go‘zal va quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga olam-olam mamnuniyat bag‘ishlaydi. Qutlug‘ davramizda yonimizda bo‘ling!",
+          "closing": "Qalbimizdagi cheksiz mehr ila, {family_signature}"
+        }
+      },
+      "warm2": {
+        "uz-latn": {
+          "header": "Qadrdon va e’zozli mehmonimiz!",
+          "body": "Oila quvonchi va farzand baxti yaqinlar jam bo‘lgandagina to‘liq bo‘ladi. Xonadonimizdagi Aqiqa dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ertalabki fayzli gurungda birga bo‘laylik va go‘zal xotiralar ulashaylik!",
+          "closing": "Chuqur samimiyat va ehtirom bilan, {family_signature}"
+        }
+      },
+      "formal": {
+        "uz-latn": {
+          "header": "Qadrli va muhtaram mehmonimiz!",
+          "body": "Oilamizdagi shukuhli tantana — farzandimizning Aqiqa marosimi munosabati bilan Sizni ushbu qutlug‘ kecha/dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!",
+          "closing": "Tashkilotchilar oilasi"
+        }
+      },
+      "dua": {
+        "uz-latn": {
+          "header": "Bismillahir Rohmanir Rohim.",
+          "body": "Yaratganning inoyati va bergan ne’matiga shukronalik ramzi o‘laroq yozilgan farzandimizning Aqiqa dasturxoniga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, jajji dilbandimizning haqqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.",
+          "closing": "Xayrli duolar va ehtirom ila, {family_signature}"
+        }
+      },
+      "minimal": {
+        "uz-latn": {
+          "header": "Aziz mehmonimiz!",
+          "body": "Farzandimizning Aqiqa marosimi munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling!",
+          "closing": "Ehtirom ila, {family_signature}"
+        }
+      },
+      "modern": {
+        "uz-latn": {
+          "header": "Qadrli do‘stlar va qadrdonlar!",
+          "body": "Oilamizning yangi va eng mitti a’zosi sharafiga yozilayotgan Aqiqa dasturxonida barchangizni kutamiz! Samimiy kayfiyat, yaxshi gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz!",
+          "closing": "Samimiyat va ehtirom ila, {family_signature}"
+        }
+      },
+      "premium": {
+        "uz-latn": {
+          "header": "Muhtaram va qadrli mehmonimiz!",
+          "body": "Oilamizga in’om etilgan muqaddas ne’mat — farzandimizning Aqiqa to‘yi munosabati bilan Sizni shukuhli el oshiga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va baxtimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.",
+          "closing": "Yuksak ehtirom va e’zoz ila, {family_signature}"
+        }
+      }
+    }
   }
 }

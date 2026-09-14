@@ -119,39 +119,39 @@
     "uz-latn": [
       {
         "title": "Klassik 1",
-        "preview": "Assalomu alaykum!\nHurmat va ehtirom ila sizni farzandimizning aqiqa marosimiga mehmon bo‘lishga chorlaymiz. Ushbu quvonchli kunda sizning ishtirokingiz oilamiz uchun behad muhimdir. Marhamat qilib, davramiz ko‘rkiga ko‘rk qo‘shing.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
-      },
-      {
-        "title": "Samimiy 1",
-        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Hurmatli va e’zozli mehmonimiz!\nSizni va oila a’zolaringizni xonadonimizdagi quvonchli ayyom — farzandimizning Aqiqa marosimi munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu xayrli tongda mehmonimiz bo‘lib, to‘kin dasturxonimiz fayzini oshirishingizni so‘raymiz.\n@@FOOTER@@Yuksak ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
-        "preview": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — farzandimizning aqiqa marosimidir. Shu munosabat bilan sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida sizni ko‘rishdan behad mamnun bo‘lamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonlar!\nXonadonimizga in’om etilgan ilohiy ne’mat — dilbandimizning Aqiqa to‘yi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli davramizda ishtirok etib, jajji farzandimiz kelajagiga ezgu tilaklar bildirishingiz biz uchun ulkan sharafdir.\n@@FOOTER@@Samimiy ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Aziz va mehribon yaqinlarimiz!\nQalbimizdagi cheksiz shukronalik va mehr bilan Sizni farzandimizning Aqiqa marosimiga chorlaymiz. Hayotimizdagi eng go‘zal va quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga olam-olam mamnuniyat bag‘ishlaydi. Qutlug‘ davramizda yonimizda bo‘ling!\n@@FOOTER@@Qalbimizdagi cheksiz mehr ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Samimiy 2",
-        "preview": "Aziz do‘stlar!\nAqiqa marosimida sizning xushkayfiyatingiz va samimiy tilaklaringiz yangrab tursin. Kelib, oilaviy quvonchimizni baham ko‘ring, chunki har bir mehmon biz uchun qadrli va mo‘tabardir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrdon va e’zozli mehmonimiz!\nOila quvonchi va farzand baxti yaqinlar jam bo‘lgandagina to‘liq bo‘ladi. Xonadonimizdagi Aqiqa dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ertalabki fayzli gurungda birga bo‘laylik va go‘zal xotiralar ulashaylik!\n@@FOOTER@@Chuqur samimiyat va ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Tantanavor",
-        "preview": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila sizni farzandimizning aqiqa marosimiga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzat va sharafdir. Marhamat qilib, tantanamizda ishtirok eting.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli va muhtaram mehmonimiz!\nOilamizdagi shukuhli tantana — farzandimizning Aqiqa marosimi munosabati bilan Sizni ushbu qutlug‘ kecha/dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!\n@@FOOTER@@Tashkilotchilar oilasi\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Duoli",
-        "preview": "Bismillahir rohmanir rohiym.\nFarzandimizning aqiqa marosimida Alloh taolodan farzandimizga sihat-salomatlik, solih umr va baraka so‘raymiz. Sizning chiroyli duolaringiz shu kunning eng ulug‘ sovg‘asidir. Kelib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Bismillahir Rohmanir Rohim.\nYaratganning inoyati va bergan ne’matiga shukronalik ramzi o‘laroq yozilgan farzandimizning Aqiqa dasturxoniga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, jajji dilbandimizning haqqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.\n@@FOOTER@@Xayrli duolar va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Qisqa va lo‘nda",
-        "preview": "Aziz mehmonlar!\nSizni farzandimizning aqiqa marosimiga taklif etamiz. Intizorlik bilan kutib qolamiz!\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonimiz!\nFarzandimizning Aqiqa marosimi munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling!\n@@FOOTER@@Ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Zamonaviy",
-        "preview": "Qadrli do‘stlar!\nAqiqa marosimi bo‘lib o‘tadi va siz unda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, chiroyli suratga tushaylik va ajoyib kayfiyat ulashaylik!\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli do‘stlar va qadrdonlar!\nOilamizning yangi va eng mitti a’zosi sharafiga yozilayotgan Aqiqa dasturxonida barchangizni kutamiz! Samimiy kayfiyat, yaxshi gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz!\n@@FOOTER@@Samimiyat va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Premium variant",
-        "preview": "Aziz va e’zozli mehmonlar!\nOilamiz tarixidagi eng muhim va sharafli kunlardan biri — farzandimizning aqiqa marosimidir. Shu tantanada sizning ishtirokingiz biz uchun sharaf va baxtimizning to‘liqligidir. Ezgu niyatlaringiz ila kelib, oilaviy quvonchimizga fayz va mehr bag‘ishlang.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonimiz!\nOilamizga in’om etilgan muqaddas ne’mat — farzandimizning Aqiqa to‘yi munosabati bilan Sizni shukuhli el oshiga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va baxtimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.\n@@FOOTER@@Yuksak ehtirom va e’zoz ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       }
     ],
     "uz-cyrl": [
@@ -235,39 +235,39 @@
     "uz-latn": [
       {
         "title": "Klassik 1",
-        "preview": "Assalomu alaykum!\nHurmat va ehtirom ila sizni o‘g‘limizning sunnat to‘yi tantanasiga mehmon bo‘lishga chorlaymiz. Ushbu quvonchli kunda sizning ishtirokingiz oilamiz uchun behad muhimdir. Marhamat qilib, davramiz ko‘rkiga ko‘rk qo‘shing.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
-      },
-      {
-        "title": "Samimiy 1",
-        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Hurmatli va e’zozli mehmonimiz!\nSizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom — farzandimizning Sunnat to‘yi munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu quvonchli kunda mehmonimiz bo‘lib, to‘kin dasturxonimiz fayzini oshirishingizni so‘raymiz.\n@@FOOTER@@Yuksak ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
-        "preview": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — o‘g‘limizning sunnat to‘yi tantanasidir. Shu munosabat bilan sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida sizni ko‘rishdan behad mamnun bo‘lamiz.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonlar!\nDilbandimizning Sunnat to‘yi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Yoshimizning mustaqil hayot sari qo‘yayotgan ilk ildam qadamlarida guvoh bo‘lib, chiroyli duolaringiz bilan davramiz fayzini oshirishingizni so‘raymiz.\n@@FOOTER@@Samimiy ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Aziz va mehribon yaqinlarimiz!\nQalbimizdagi cheksiz shukronalik va mehr bilan Sizni farzandimizning Sunnat to‘yi tantanasiga chorlaymiz. Hayotimizdagi eng go‘zal va quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga olam-olam mamnuniyat bag‘ishlaydi. Shunday unutilmas kunda yonimizda bo‘ling!\n@@FOOTER@@Qalbimizdagi cheksiz mehr ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Samimiy 2",
-        "preview": "Aziz do‘stlar!\nSunnat to‘yida sizning xushkayfiyatingiz va samimiy tilaklaringiz yangrab tursin. Kelib, oilaviy quvonchimizni baham ko‘ring, chunki har bir mehmon biz uchun qadrli va mo‘tabardir.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrdon va e’zozli mehmonimiz!\nOila quvonchi va farzand kutilgan baxti yaqinlar jam bo‘lgandagina to‘liq bo‘ladi. Xonadonimizdagi Sunnat to‘yi dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, go‘zal xotiralar ulashaylik!\n@@FOOTER@@Chuqur samimiyat va ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Tantanavor",
-        "preview": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila sizni o‘g‘limizning sunnat to‘yi tantanasiga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzat va sharafdir. Marhamat qilib, tantanamizda ishtirok eting.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli va muhtaram mehmonimiz!\nOilamizdagi shukuhli tantana — farzandimizning Sunnat to‘yi munosabati bilan Sizni ushbu qutlug‘ kecha/dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy tantanavor shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!\n@@FOOTER@@Tashkilotchilar oilasi\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Duoli",
-        "preview": "Bismillahir rohmanir rohiym.\nO‘g‘limizning sunnat to‘yi tantanasida Alloh taolodan o‘g‘limizga el koriga yaraydigan baxt, salomatlik va to‘g‘ri yo‘l so‘raymiz. Sizning chiroyli duolaringiz shu kunning eng ulug‘ sovg‘asidir. Kelib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!\nSunnati nabaviyga muvofiq, farzandimizning Sunnat to‘yi munosabati bilan yozilgan dasturxonimizga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, jajji farzandimiz haqqiga chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.\n@@FOOTER@@Xayrli duolar va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Qisqa va lo‘nda",
-        "preview": "Aziz mehmonlar!\nSizni o‘g‘limizning sunnat to‘yi tantanasiga taklif etamiz. Intizorlik bilan kutib qolamiz!\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonimiz!\nFarzandimizning Sunnat to‘yi munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling va baxtimizga sherik bo‘ling!\n@@FOOTER@@Ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Zamonaviy",
-        "preview": "Qadrli do‘stlar!\nSunnat to‘yi bo‘lib o‘tadi va siz unda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, chiroyli suratga tushaylik va ajoyib kayfiyat ulashaylik!\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli do‘stlar va qadrdonlar!\nQahramonimizning mard yig‘it bo‘lib ulg‘ayishi yolida o‘tkazilayotgan Sunnat to‘yida barchangizni kutamiz! Samimiy kayfiyat, yaxshi gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz!\n@@FOOTER@@Samimiyat va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Premium variant",
-        "preview": "Aziz va e’zozli mehmonlar!\nOilamiz tarixidagi eng muhim va sharafli kunlardan biri — o‘g‘limizning sunnat to‘yi tantanasidir. Shu tantanada sizning ishtirokingiz biz uchun sharaf va baxtimizning to‘liqligidir. Ezgu niyatlaringiz ila kelib, oilaviy quvonchimizga fayz va mehr bag‘ishlang.\n{child_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonimiz!\nOilamiz tarixidagi eng sharafli va unutilmas ayyom — farzandimizning Sunnat to‘yi munosabati bilan Sizni shukuhli el dasturxoniga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va baxtimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.\n@@FOOTER@@Yuksak ehtirom va e’zoz ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       }
     ],
     "uz-cyrl": [
@@ -351,39 +351,39 @@
     "uz-latn": [
       {
         "title": "Klassik 1",
-        "preview": "Assalomu alaykum!\nHurmat va ehtirom ila sizni tug‘ilgan kun bayramimizga mehmon bo‘lishga chorlaymiz. Ushbu quvonchli kunda sizning ishtirokingiz oilamiz uchun behad muhimdir. Marhamat qilib, davramiz ko‘rkiga ko‘rk qo‘shing.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
-      },
-      {
-        "title": "Samimiy 1",
-        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Hurmatli va e’zozli mehmonimiz!\nSizni va oila a’zolaringizni xonadonimizdagi qutlug‘ ayyom — {person_name}ning tug‘ilgan kuni munosabati bilan yozilayotgan shukuhli dasturxonimizga taklif etamiz. Ushbu quvonchli kunda mehmonimiz bo‘lib, davramiz fayzini oshirishingizni so‘raymiz.\n@@FOOTER@@Yuksak ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
-        "preview": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — tug‘ilgan kun bayramimizdir. Shu munosabat bilan sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida sizni ko‘rishdan behad mamnun bo‘lamiz.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonlar!\nQadrli {person_name}ning tavallud ayyomi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli va samimiy davramizda ishtirok etib, chiroyli tilaklaringiz bilan quvonchimizga sherik bo‘lishingizni so‘raymiz.\n@@FOOTER@@Samimiy ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Aziz va mehribon yaqinlarimiz!\nUmrning har bir yili va har bir fasli yaqinlar davrasida go‘zaldir. Qalbimizdagi samimiy mehr bilan Sizni tavallud ayyomimizni birgalikda nishonlashga chorlaymiz. Hayotimizdagi quvonchli onlarni Siz kabi qadrli insonlar bilan baham ko‘rish bizga cheksiz mamnuniyat bag‘ishlaydi.\n@@FOOTER@@Qalbimizdagi cheksiz mehr ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Samimiy 2",
-        "preview": "Aziz do‘stlar!\nTug‘ilgan kun ayyomida sizning xushkayfiyatingiz va samimiy tilaklaringiz yangrab tursin. Kelib, oilaviy quvonchimizni baham ko‘ring, chunki har bir mehmon biz uchun qadrli va mo‘tabardir.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrdon va e’zozli mehmonimiz!\nBayram quvonchi va shukuhli onlar yaqinlar jam bo‘lgandagina mukammal bo‘ladi. Tug‘ilgan kun munosabati bilan yozilayotgan ushbu dasturxonda aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, go‘zal xotiralar ulashaylik!\n@@FOOTER@@Chuqur samimiyat va ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Tantanavor",
-        "preview": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila sizni tug‘ilgan kun bayramimizga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzat va sharafdir. Marhamat qilib, tantanamizda ishtirok eting.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli va muhtaram mehmonimiz!\nOilamizning ardoqli insoni — {person_name}ning qutlug‘ yubiley tavallud ayyomi munosabati bilan Sizni ushbu tantanali kechaga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz, bayramimizga esa haqiqiy shukuh bag‘ishlaydi. Ezgu niyatlaringiz bilan kelib, quvonchimizga sherik bo‘ling!\n@@FOOTER@@Tashkilotchilar oilasi\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Duoli",
-        "preview": "Bismillahir rohmanir rohiym.\nTug‘ilgan kun bayramimizda Alloh taolodan mustahkam sog‘liq, mazmunli umr va omad so‘raymiz. Sizning chiroyli duolaringiz shu kunning eng ulug‘ sovg‘asidir. Kelib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!\nYaratganning bergan umr ne’matiga shukronalik ramzi o‘laroq, {person_name}ning tavallud ayyomi munosabati bilan yozilgan dasturxonimizga Sizni taklif etamiz. Ushbu xayrli kunda jam bo‘lib, chiroyli duolar qilishingiz hamda quvonchimizga sherik bo‘lishingizni so‘raymiz.\n@@FOOTER@@Xayrli duolar va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Qisqa va lo‘nda",
-        "preview": "Aziz mehmonlar!\nSizni tug‘ilgan kun bayramimizga taklif etamiz. Intizorlik bilan kutib qolamiz!\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonimiz!\n{person_name}ning tug‘ilgan kuni munosabati bilan yozilayotgan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Quvonchli onlarda yonimizda bo‘ling!\n@@FOOTER@@Ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Zamonaviy",
-        "preview": "Qadrli do‘stlar!\nTug‘ilgan kun ayyomi bo‘lib o‘tadi va siz unda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, chiroyli suratga tushaylik va ajoyib kayfiyat ulashaylik!\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli do‘stlar va qadrdonlar!\nYanada tajribali, quvnoq va baxtli bo‘lgan bir yoshimni nishonlaymiz! Ushbu unutilmas oqshomda barchangizni kutaman. Ajoyib kayfiyat, jo‘shqin gurunglar va unutilmas xotiralar bilan boyitilgan kechada birga bo‘laylik!\n@@FOOTER@@Samimiyat va ehtirom ila, {person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Premium variant",
-        "preview": "Aziz va e’zozli mehmonlar!\nOilamiz tarixidagi eng muhim va sharafli kunlardan biri — tug‘ilgan kun bayramimizdir. Shu tantanada sizning ishtirokingiz biz uchun sharaf va baxtimizning to‘liqligidir. Ezgu niyatlaringiz ila kelib, oilaviy quvonchimizga fayz va mehr bag‘ishlang.\n{person_name}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonimiz!\nOilamiz tarixidagi shukuhli va unutilmas ayyom — {person_name}ning tavallud ayyomi munosabati bilan Sizni go‘zal bayram oqshomiga taklif etamiz. Ushbu qutlug‘ tantanada Sizning ishtirokingiz biz uchun yuksak ehtirom va bayramimizning mukammalligidir. Oq tilaklaringiz ila davramiz ko‘rkiga ko‘rk bag‘ishlashingizni chin qalbimizdan so‘raymiz.\n@@FOOTER@@Yuksak ehtirom va e’zoz ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       }
     ],
     "uz-cyrl": [
@@ -467,39 +467,39 @@
     "uz-latn": [
       {
         "title": "Klassik 1",
-        "preview": "Assalomu alaykum!\nHurmat va ehtirom ila sizni xudoyi dasturxonimizga mehmon bo‘lishga chorlaymiz. Ushbu quvonchli kunda sizning ishtirokingiz oilamiz uchun behad muhimdir. Marhamat qilib, davramiz ko‘rkiga ko‘rk qo‘shing.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
-      },
-      {
-        "title": "Samimiy 1",
-        "preview": "Aziz mehmonlar!\nBaxtli kunlar quvonchi eng yaqin va qadrli insonlar bilan baham ko‘rilgandagina mukammal bo‘ladi. Hayotimizdagi eng go‘zal tantana qalbimizdagi mehr va quvonchni siz azizlar bilan bo‘lishishni istaymiz. Shunday unutilmas kunda yonimizda bo‘lishingiz bizga cheksiz baxt bag‘ishlaydi.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Hurmatli va e’zozli mehmonimiz!\nSizni va oila a’zolaringizni xonadonimizda yozilayotgan ehson dasturxoni — Hudoyi marosimiga taklif etamiz. Ushbu xayrli va shukuhli gurungda mehmonimiz bo‘lib, dasturxonimiz fayzini oshirishingizni so‘raymiz.\n@@FOOTER@@Yuksak ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Klassik 2",
-        "preview": "Aziz mehmonlar!\nOilamizdagi qutlug‘ va muhim kun — xudoyi dasturxonimizdir. Shu munosabat bilan sizni tantanaga taklif etamiz. E’zozli mehmonlarimiz safida sizni ko‘rishdan behad mamnun bo‘lamiz.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonlar!\nXonadonimizda tashkil etilayotgan Hudoyi marosimi munosabati bilan yozilgan ushbu taklifnomamizni samimiyat ila qabul qilgaysiz. Fayzli davramizda ishtirok etib, biz bilan birga bo‘lishingiz biz uchun ulkan sharafdir.\n@@FOOTER@@Samimiy ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+      },
+      {
+        "title": "Samimiy 1",
+        "preview": "Aziz va mehribon yaqinlarimiz!\nQalbimizdagi samimiy mehr va shukronalik bilan Sizni Hudoyi dasturxonimizga chorlaymiz. Yaxshi kunlarimizda va xayrli amallarda Siz kabi qadrli insonlar bilan birga bo‘lish bizga cheksiz mamnuniyat bag‘ishlaydi. Qutlug‘ davramizda yonimizda bo‘ling!\n@@FOOTER@@Qalbimizdagi cheksiz mehr ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Samimiy 2",
-        "preview": "Aziz do‘stlar!\nXudoyi dasturxonida sizning xushkayfiyatingiz va samimiy tilaklaringiz yangrab tursin. Kelib, oilaviy quvonchimizni baham ko‘ring, chunki har bir mehmon biz uchun qadrli va mo‘tabardir.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrdon va e’zozli mehmonimiz!\nXonadonimizda yozilayotgan ehson dasturxonida aynan Sizning ishtirokingiz biz uchun juda muhim. Keling, ushbu fayzli davramizda jam bo‘lib, samimiy va chiroyli suhbatlar atrofida birga bo‘laylik.\n@@FOOTER@@Chuqur samimiyat va ehtirom bilan, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Tantanavor",
-        "preview": "Hurmatli mehmonlar!\nYuksak ehtirom va samimiy e’zoz ila sizni xudoyi dasturxonimizga taklif etamiz. Tashrifingiz oilamiz uchun yuksak izzat va sharafdir. Marhamat qilib, tantanamizda ishtirok eting.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli va muhtaram mehmonimiz!\nOilamiz tomonidan tashkil etilayotgan Hudoyi marosimi munosabati bilan Sizni ushbu dasturxonga taklif etamiz. Tashrifingiz xonadonimizga buyuk fayz va baraka bag‘ishlaydi. Dasturxonimiz atrofida mehmon bo‘lishingizni so‘raymiz.\n@@FOOTER@@Tashkilotchilar oilasi\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Duoli",
-        "preview": "Bismillahir rohmanir rohiym.\nXudoyi dasturxonimizda Alloh taolodan oilamizga tinchlik, baraka va el-yurtga omonlik so‘raymiz. Sizning chiroyli duolaringiz shu kunning eng ulug‘ sovg‘asidir. Kelib, ezgu tilaklaringiz bilan quvonchimizga sherik bo‘ling.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Bismillahir Rohmanir Rohim. Aziz va qadrdon dindoshimiz!\nYaratganning roziligi yo‘lida va o‘tganlarimiz yodi uchun yozilgan Hudoyi dasturxonimizga Sizni taklif etamiz. Ushbu muborak va xayrli kunda jam bo‘lib, o‘tganlarimiz haqqiga tilovatlar va chiroyli duolar qilishingiz hamda ehsonimizga sherik bo‘lishingizni so‘raymiz.\n@@FOOTER@@Xayrli duolar va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Qisqa va lo‘nda",
-        "preview": "Aziz mehmonlar!\nSizni xudoyi dasturxonimizga taklif etamiz. Intizorlik bilan kutib qolamiz!\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Aziz mehmonimiz!\nXonadonimizda yozilayotgan Hudoyi marosimi munosabati bilan dasturxonimizda Sizni ko‘rishdan behad mamnun bo‘lamiz. Fayzli gurungimizda kutib qolamiz!\n@@FOOTER@@Ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Zamonaviy",
-        "preview": "Qadrli do‘stlar!\nXudoyi dasturxoni bo‘lib o‘tadi va siz unda bo‘lishingizni juda xohlaymiz. Kelib, birga quvonaylik, chiroyli suratga tushaylik va ajoyib kayfiyat ulashaylik!\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Qadrli do‘stlar va qadrdonlar!\nXonadonimizda bo‘lib o‘tadigan Hudoyi marosimi va ehson dasturxonida barchangizni kutamiz! Samimiy gurung va do‘stona davrada birga bo‘laylik. Tashrifingizni intizorlik bilan kutib qolamiz.\n@@FOOTER@@Samimiyat va ehtirom ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       },
       {
         "title": "Premium variant",
-        "preview": "Aziz va e’zozli mehmonlar!\nOilamiz tarixidagi eng muhim va sharafli kunlardan biri — xudoyi dasturxonimizdir. Shu tantanada sizning ishtirokingiz biz uchun sharaf va baxtimizning to‘liqligidir. Ezgu niyatlaringiz ila kelib, oilaviy quvonchimizga fayz va mehr bag‘ishlang.\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
+        "preview": "Muhtaram va qadrli mehmonimiz!\nXonadonimizda tashkil etilayotgan Hudoyi va ehson marosimi munosabati bilan Sizni shukuhli dasturxonimizga taklif etamiz. Ushbu xayrli davrada Sizning ishtirokingiz biz uchun yuksak ehtirom va davramizning mukammalligidir. Chin qalbimizdan taklif etib qolamiz.\n@@FOOTER@@Yuksak ehtirom va e’zoz ila, {family_signature}\n{event_date}, soat {event_time} da\n{venue_name}, {venue_address}"
       }
     ],
     "uz-cyrl": [
