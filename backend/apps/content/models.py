@@ -53,7 +53,9 @@ class TextTemplate(TimeStampedModel):
     is_active = models.BooleanField(default=True)
     created_by_admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="created_text_templates",
     )
 
@@ -89,7 +91,9 @@ class Template(TimeStampedModel):
     usage_count = models.IntegerField(default=0)
     created_by_admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="created_templates",
     )
 

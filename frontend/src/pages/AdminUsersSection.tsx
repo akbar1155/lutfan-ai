@@ -11,11 +11,13 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
+import { resolveAssetUrl } from "../api/envTarget";
 import { IconBan, IconBtn, IconEye, IconPower, IconSearch } from "../components/ActionIcons";
 import {
   formatDisplayDateTimeStamp,
   formatRelativeTime,
   formatSessionActivity,
+  parseServerDate,
 } from "../utils/date";
 import UiSelect from "../components/UiSelect";
 
@@ -94,7 +96,16 @@ function userStatus(u: UserRow): "banned" | "inactive" | "active" {
 
 function lastActivityAt(u: UserRow): unknown {
   // Prefer server-computed activity. Never use updated_at (admin edits).
-  return u.last_activity_at || u.last_seen_at || u.last_login_at || null;
+  return u.last_activity_at || u.last_seen_at || u.last_login_at || u.created_at || null;
+}
+
+function isUserOnline(u: UserRow): boolean {
+  if (u.is_online === true) return true;
+  const at = lastActivityAt(u);
+  if (at == null || at === "") return false;
+  const d = parseServerDate(at);
+  if (!d) return false;
+  return Date.now() - d.getTime() < 5 * 60 * 1000;
 }
 
 function formatCount(n: number): string {
@@ -121,7 +132,7 @@ function UsersTableSkeleton({ rows = 8 }: { rows?: number }) {
       <table className="admin-table admin-users-table">
         <thead>
           <tr>
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 9 }).map((_, i) => (
               <th key={i}>
                 <div className="admin-users-skeleton cell" />
               </th>
@@ -131,7 +142,7 @@ function UsersTableSkeleton({ rows = 8 }: { rows?: number }) {
         <tbody>
           {Array.from({ length: rows }).map((_, r) => (
             <tr key={r}>
-              {Array.from({ length: 8 }).map((_, c) => (
+              {Array.from({ length: 9 }).map((_, c) => (
                 <td key={c}>
                   <div
                     className={`admin-users-skeleton cell ${c === 1 ? "wide" : ""}`}
@@ -193,6 +204,46 @@ function StatusBadge({ status, t }: { status: "active" | "inactive" | "banned"; 
       <span className="admin-users-status-dot" aria-hidden />
       {labels[status]}
     </span>
+  );
+}
+
+function ActivityStamp({
+  activity,
+  online,
+  lang,
+  t,
+}: {
+  activity: unknown;
+  online: boolean;
+  lang: string;
+  t: (k: string) => string;
+}) {
+  if (!activity) return <span>—</span>;
+  if (online) {
+    return (
+      <>
+        <span className="admin-users-relative is-online">
+          <span className="admin-users-status-dot" aria-hidden />
+          {t("adminOnlineNow")}
+        </span>
+        <span className="admin-users-activity-exact">
+          {formatDisplayDateTimeStamp(activity)}
+        </span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span
+        className="admin-users-relative"
+        title={formatDisplayDateTimeStamp(activity)}
+      >
+        {formatRelativeTime(activity, lang)}
+      </span>
+      <span className="admin-users-activity-exact">
+        {formatDisplayDateTimeStamp(activity)}
+      </span>
+    </>
   );
 }
 
@@ -569,20 +620,17 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
 
   return (
     <section className="admin-section admin-users-section">
-      <div className="admin-users-summary">
+      <div className={`admin-users-toolbar ${filtersActive ? "has-filters" : ""}`}>
         <div className="admin-users-summary-main">
           <strong>{formatCount(totalCount)}</strong>
           <span>{t("adminUsersTotalLabel")}</span>
+          {filtersActive ? (
+            <span className="admin-users-summary-filtered">{t("adminUsersFiltered")}</span>
+          ) : null}
+          {listLoading && users.length > 0 ? (
+            <span className="admin-users-summary-loading">{t("loading")}</span>
+          ) : null}
         </div>
-        {filtersActive && (
-          <span className="admin-users-summary-filtered">{t("adminUsersFiltered")}</span>
-        )}
-        {listLoading && users.length > 0 && (
-          <span className="admin-users-summary-loading">{t("loading")}</span>
-        )}
-      </div>
-
-      <div className={`admin-users-toolbar ${filtersActive ? "has-filters" : ""}`}>
         <div className="admin-users-search">
           <span className="admin-users-search-icon" aria-hidden>
             <IconSearch />
@@ -629,12 +677,12 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
             <option value="inactive">{t("adminStatusInactive")}</option>
             <option value="banned">{t("adminStatusBanned")}</option>
           </UiSelect>
+          {filtersActive ? (
+            <button type="button" className="admin-users-clear" onClick={clearFilters}>
+              {t("adminClearFilters")}
+            </button>
+          ) : null}
         </div>
-        {filtersActive && (
-          <button type="button" className="admin-users-clear" onClick={clearFilters}>
-            {t("adminClearFilters")}
-          </button>
-        )}
       </div>
 
       {filtersActive && (
@@ -678,6 +726,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       <th className="hide-tablet">Telegram</th>
                       <th>{t("adminColRole")}</th>
                       <th>{t("adminColStatus")}</th>
+                      <th>{t("adminColRegistered")}</th>
                       <th>{t("adminColLastActivity")}</th>
                       <th className="num">{t("adminColInvites")}</th>
                       <th className="actions-col">{t("adminColActions")}</th>
@@ -727,18 +776,30 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                             <td>
                               <StatusBadge status={status} t={t} />
                             </td>
+                            <td className="date-col">
+                              {u.created_at ? (
+                                <>
+                                  <span
+                                    className="admin-users-relative"
+                                    title={formatDisplayDateTimeStamp(u.created_at)}
+                                  >
+                                    {formatRelativeTime(u.created_at, lang)}
+                                  </span>
+                                  <span className="admin-users-activity-exact">
+                                    {formatDisplayDateTimeStamp(u.created_at)}
+                                  </span>
+                                </>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
                             <td className="activity-col">
-                              <span
-                                className="admin-users-relative"
-                                title={formatDisplayDateTimeStamp(activity)}
-                              >
-                                {activity ? formatRelativeTime(activity, lang) : "—"}
-                              </span>
-                              {activity ? (
-                                <span className="admin-users-activity-exact">
-                                  {formatDisplayDateTimeStamp(activity)}
-                                </span>
-                              ) : null}
+                              <ActivityStamp
+                                activity={activity}
+                                online={isUserOnline(u)}
+                                lang={lang}
+                                t={t}
+                              />
                             </td>
                             <td className="num">
                               <button
@@ -766,7 +827,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       })
                     ) : (
                       <tr>
-                        <td colSpan={8}>
+                        <td colSpan={9}>
                           <UsersEmptyBlock
                             filtersActive={filtersActive}
                             t={t}
@@ -808,9 +869,21 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                           <StatusBadge status={status} t={t} />
                         </div>
                         <div className="admin-users-card-foot">
-                          <span title={formatDisplayDateTimeStamp(activity)}>
-                            {activity ? formatRelativeTime(activity, lang) : "—"}
+                          <span title={formatDisplayDateTimeStamp(u.created_at)}>
+                            {t("adminColRegistered")}:{" "}
+                            {u.created_at
+                              ? formatDisplayDateTimeStamp(u.created_at)
+                              : "—"}
                           </span>
+                          <span title={formatDisplayDateTimeStamp(activity)}>
+                            {isUserOnline(u)
+                              ? t("adminOnlineNow")
+                              : activity
+                                ? formatRelativeTime(activity, lang)
+                                : "—"}
+                          </span>
+                        </div>
+                        <div className="admin-users-card-foot">
                           <span className="mono">
                             {String(u.invitation_count ?? 0)} · {String(u.telegram_id)}
                           </span>
@@ -1010,9 +1083,11 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                         <MetaRow
                           label={t("adminColLastActivity")}
                           value={
-                            lastActivityAt(drawerUser || {})
-                              ? formatDisplayDateTimeStamp(lastActivityAt(drawerUser || {}))
-                              : "—"
+                            drawerUser && isUserOnline(drawerUser)
+                              ? t("adminOnlineNow")
+                              : lastActivityAt(drawerUser || {})
+                                ? formatDisplayDateTimeStamp(lastActivityAt(drawerUser || {}))
+                                : "—"
                           }
                         />
                         <MetaRow
@@ -1113,7 +1188,7 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
                       {userDetail.invitations.length ? (
                         <ul className="admin-users-invite-list">
                           {userDetail.invitations.map((inv, idx) => {
-                            const imageUrl = String(inv.final_image_url || "");
+                            const imageUrl = resolveAssetUrl(String(inv.final_image_url || ""));
                             const inviteId = String(inv.id);
                             const styleNote = String(inv.custom_style_note || "").trim();
                             const openPreview = () => {

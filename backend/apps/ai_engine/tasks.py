@@ -194,11 +194,8 @@ def _load_decor_bytes(invitation: Invitation, fmt: str) -> tuple[bytes | None, b
         data = _load_template_bytes(str(decor_url))
         if data:
             return data, False
-    # Text-only regenerate: reuse the last finished card as décor.
-    if invitation.final_image_url:
-        data = _load_template_bytes(str(invitation.final_image_url))
-        if data:
-            return data, False
+    # Never reuse final_image_url here: it already has typeset text, so a
+    # text-only pass would paint new copy on top of the old one.
     return None, False
 
 
@@ -413,7 +410,12 @@ def generate_invitation_image(
                 )
 
             image_meta = gen_result
-            object_key = f"invitations/{invitation.id}/hd_{fmt.replace(':', '_')}.jpg"
+            # Versioned key so CDN/browser never serve a stale regenerated card.
+            gen_n = int(invitation.generation_count or 0) + 1
+            object_key = (
+                f"invitations/{invitation.id}/"
+                f"hd_{fmt.replace(':', '_')}_g{gen_n}.jpg"
+            )
             result_stored_url = upload_bytes(gen_result.data, object_key, private=True)
             AIGenerationCache.objects.create(
                 cache_key=key,

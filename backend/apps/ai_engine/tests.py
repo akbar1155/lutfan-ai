@@ -170,6 +170,48 @@ class ChildNameOverlayTests(SimpleTestCase):
         self.assertIn("Sardor", blocks["body"])
         self.assertNotEqual(blocks["footer"].lower(), "sardor")
 
+    def test_build_text_blocks_keeps_edited_nikoh_footer(self):
+        class Event:
+            slug = "nikoh"
+            subtypes = [
+                {"slug": "nikoh_oqshomi", "names": {"uz-latn": "Nikoh oqshomi"}},
+            ]
+
+        class Inv:
+            language = "uz-latn"
+            event = Event()
+            event_id = "nikoh"
+            subtype_slug = "nikoh_oqshomi"
+            subtype_slugs = ["nikoh_oqshomi"]
+            event_data = {
+                "final_text_blocks": {
+                    "header": "EDITED HEADER",
+                    "body": "EDITED BODY for the invitation card.",
+                    "date_time": "Custom sana: 21-sentabr, soat 19:00",
+                    "address": "Navruz Hall, Toshkent",
+                    "footer": "EDITED FOOTER — custom closing",
+                },
+                "structured_fields": {
+                    "family_signature": "Karimov",
+                    "event_date": "2026-09-21",
+                    "event_time": "19:00",
+                    "venue_name": "Navruz Hall",
+                    "venue_address": "Toshkent",
+                },
+                "ceremony_schedule": {
+                    "nikoh_oqshomi": {"date": "2026-09-21", "time": "19:00"},
+                    "maslahat_oshi": {"date": "2026-09-20", "time": "11:00"},
+                },
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertEqual(blocks["header"], "EDITED HEADER")
+        self.assertIn("EDITED BODY", blocks["body"])
+        self.assertIn("EDITED FOOTER", blocks["footer"])
+        self.assertNotIn("Karimovlar", blocks["footer"])
+        self.assertIn("Custom sana", blocks["date_time"])
+        self.assertIn("Navruz Hall", blocks["address"])
+
 
 class MultiCeremonyBodyTests(SimpleTestCase):
     def test_build_text_blocks_keeps_full_body_with_schedule(self):

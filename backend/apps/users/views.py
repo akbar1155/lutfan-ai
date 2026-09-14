@@ -51,12 +51,21 @@ def _set_refresh_cookie(response, refresh: RefreshToken) -> None:
 def _issue_auth_response(request, user: User) -> Response:
     refresh = RefreshToken.for_user(user)
     ip, ua = _client_meta(request)
+    now = timezone.now()
+    # Drop leftover tokens from the same browser so "active sessions"
+    # is not a pile of 30-day zombies from repeated logins.
+    if ua:
+        UserSession.objects.filter(
+            user=user,
+            user_agent=ua,
+            revoked_at__isnull=True,
+        ).update(revoked_at=now)
     UserSession.objects.create(
         user=user,
         refresh_token_hash=hash_refresh_token(str(refresh)),
         ip_address=ip or None,
         user_agent=ua or None,
-        expires_at=timezone.now() + timedelta(days=30),
+        expires_at=now + timedelta(days=30),
     )
     response = Response(
         {

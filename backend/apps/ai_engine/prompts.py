@@ -167,24 +167,13 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     address = sanitize_overlay_field(address)
     footer = sanitize_overlay_field(footer)
 
-    from apps.core.dates import format_display_datetime
-
-    if not date_time:
-        recovered = format_display_datetime(
-            (structured.get("event_date") or "").strip() or None,
-            (structured.get("event_time") or "").strip() or None,
-            language=lang,
-        )
-        if recovered:
-            date_time = normalize_invitation_spelling(recovered, lang)
-
     # Custom text sometimes puts the date in body and junk in date_time
     if _looks_like_datetime_line(body):
         if not date_time:
             date_time = body
         body = ""
 
-    # Prefer per-part schedule when user hasn't already set a multi-line date block
+    # Prefer per-part schedule only when the user hasn't set a custom date block.
     if isinstance(schedule, dict):
         valid_slots = {
             k: v
@@ -195,13 +184,36 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     else:
         valid_slots = {}
 
-    if len(valid_slots) >= 2:
-        from apps.core.dates import format_display_datetime
+    from apps.core.dates import format_display_datetime as _fmt_dt
 
+    structured_dt = ""
+    if not date_time:
+        structured_dt = _fmt_dt(
+            (structured.get("event_date") or "").strip() or None,
+            (structured.get("event_time") or "").strip() or None,
+            language=lang,
+        )
+        if structured_dt:
+            date_time = normalize_invitation_spelling(structured_dt, lang)
+
+    auto_single_dt = normalize_invitation_spelling(
+        _fmt_dt(
+            (structured.get("event_date") or "").strip() or None,
+            (structured.get("event_time") or "").strip() or None,
+            language=lang,
+        )
+        or "",
+        lang,
+    )
+    date_time_is_auto = (not date_time) or (
+        auto_single_dt and date_time.strip() == auto_single_dt.strip()
+    )
+
+    if len(valid_slots) >= 2 and date_time_is_auto:
         # Keep the user's full body — layout shrinks fonts to fit; do not truncate.
         lines: list[str] = []
         preferred = list(invitation.subtype_slugs or []) or list(valid_slots.keys())
-        # Chronological; primary nikoh first on ties
+
         def _slot_key(slug: str) -> tuple:
             slot = valid_slots.get(slug) or {}
             d = (slot.get("date") or "9999-99-99").strip()
@@ -220,20 +232,20 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
             d = (slot.get("date") or "").strip()
             tm = (slot.get("time") or "").strip()
             label = _subtype_name(invitation, slug)
-            when = format_display_datetime(d or None, tm or None, language=lang)
+            when = _fmt_dt(d or None, tm or None, language=lang)
             if when:
                 lines.append(f"{label} | {when}" if label else when)
         if lines:
             date_time = normalize_invitation_spelling("\n".join(lines), lang)
-    else:
+    elif date_time_is_auto:
         subtype_label = _subtype_label(invitation)
         parts = [p.strip() for p in subtype_label.split(",") if p.strip()]
         if len(parts) >= 2 and date_time and "\n" not in date_time:
             date_time = "\n".join(f"{part} | {date_time}" for part in parts)
 
-    # Always normalize family signature into a respectful closing when present.
+    # Auto closing only when the user left Yakun empty — never overwrite edits.
     family_raw = sanitize_user_text(structured.get("family_signature", ""), 120)
-    if family_raw:
+    if family_raw and not footer:
         sig = format_family_signature(family_raw, lang)
         if sig:
             if lang.startswith("ru"):
@@ -244,22 +256,23 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
                 prefix = "Юксак эҳтиром ила"
             else:
                 prefix = "Yuksak ehtirom ila"
-            existing = (footer or "").strip()
-            head = existing.rsplit(",", 1)[0].strip() if "," in existing else ""
-            if head and re.search(
-                r"ehtirom|эҳтиром|уважен|ila|bilan|mehr",
-                head,
-                re.IGNORECASE,
-            ):
-                footer = sanitize_overlay_field(
-                    normalize_invitation_spelling(f"{head}, {sig}", lang)
+            footer = sanitize_overlay_field(
+                normalize_invitation_spelling(f"{prefix}, {sig}", lang)
+            )
+
+    if not address:
+        venue = sanitize_overlay_field(
+            ", ".join(
+                p
+                for p in (
+                    sanitize_user_text(structured.get("venue_name", ""), 120),
+                    sanitize_user_text(structured.get("venue_address", ""), 200),
                 )
-            else:
-                footer = sanitize_overlay_field(
-                    normalize_invitation_spelling(f"{prefix}, {sig}", lang)
-                )
-    elif not footer:
-        footer = ""
+                if p
+            )
+        )
+        if venue:
+            address = venue
 
     child = sanitize_overlay_field(structured.get("child_name", ""))
     event_slug = _event_slug(invitation)

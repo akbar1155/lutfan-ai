@@ -153,3 +153,40 @@ export function ensurePersonalMessageInBody(
   if (trimmed.toLowerCase().includes(msg.toLowerCase())) return trimmed;
   return `${trimmed}\n\n${msg}`;
 }
+
+/** Split stored preview_text for admin editing (header / body / yakun). */
+export function parseTextTemplatePreview(preview: string): {
+  header: string;
+  body: string;
+  footer: string;
+} {
+  const raw = String(preview || "").replace(/\r\n/g, "\n");
+  let main = raw;
+  let footer = "";
+  const markAt = raw.indexOf(FOOTER_MARK);
+  if (markAt >= 0) {
+    main = raw.slice(0, markAt).replace(/\n+$/, "");
+    footer = raw.slice(markAt + FOOTER_MARK.length).replace(/^\n+/, "").trim();
+  }
+  const lines = main.split("\n");
+  const header = (lines[0] || "").trimEnd();
+  const body = lines.slice(1).join("\n").replace(/^\n+/, "").replace(/\n+$/, "");
+  return { header, body, footer };
+}
+
+/** Recompose preview_text with optional @@FOOTER@@ yakun line. */
+export function composeTextTemplatePreview(
+  header: string,
+  body: string,
+  footer: string,
+): string {
+  const parts = [header.trimEnd(), body.replace(/^\n+/, "").replace(/\n+$/, "")].filter(
+    (p) => p.length > 0,
+  );
+  let text = parts.join("\n");
+  const closing = footer.trim();
+  if (closing) {
+    text = text ? `${text}\n${FOOTER_MARK}${closing}` : `${FOOTER_MARK}${closing}`;
+  }
+  return text;
+}

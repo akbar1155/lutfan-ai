@@ -34,7 +34,7 @@ from apps.invitations.rate_limit import (
     get_generation_limits,
     invalidate_generation_limits_cache,
 )
-from apps.users.last_seen import resolve_last_activity_at
+from apps.users.last_seen import is_currently_online, resolve_last_activity_at
 from apps.users.models import Role, User
 from apps.users.permissions import IsAdminRole
 
@@ -237,7 +237,14 @@ class AdminDashboardView(APIView):
 
 
 def _admin_user_payload(user: User, *, invitation_count: int | None = None) -> dict:
-    last_invitation_at = getattr(user, "last_invitation_at", None)
+    last_activity_at = resolve_last_activity_at(
+        last_seen_at=user.last_seen_at,
+        last_login_at=user.last_login_at,
+        last_login=user.last_login,
+        last_invitation_at=getattr(user, "last_invitation_at", None),
+        last_session_at=getattr(user, "last_session_at", None),
+        created_at=user.created_at,
+    )
     payload = {
         "id": str(user.id),
         "telegram_id": user.telegram_id,
@@ -252,14 +259,10 @@ def _admin_user_payload(user: User, *, invitation_count: int | None = None) -> d
         "ban_reason": user.ban_reason,
         "is_active": user.is_active,
         "is_staff": user.is_staff,
+        "is_online": is_currently_online(last_activity_at),
         "last_login_at": user.last_login_at,
         "last_seen_at": user.last_seen_at,
-        "last_activity_at": resolve_last_activity_at(
-            last_seen_at=user.last_seen_at,
-            last_login_at=user.last_login_at,
-            last_login=user.last_login,
-            last_invitation_at=last_invitation_at,
-        ),
+        "last_activity_at": last_activity_at,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
@@ -309,6 +312,10 @@ class AdminUsersView(APIView):
             last_invitation_at=Max(
                 "invitations__updated_at",
                 filter=Q(invitations__deleted_at__isnull=True),
+            ),
+            last_session_at=Max(
+                "sessions__created_at",
+                filter=Q(sessions__revoked_at__isnull=True),
             ),
         )
         total = qs.count()
@@ -361,10 +368,23 @@ class AdminUserDetailView(APIView):
             .values_list("updated_at", flat=True)
             .first()
         )
+        last_session_at = (
+            user.sessions.filter(revoked_at__isnull=True)
+            .order_by("-created_at")
+            .values_list("created_at", flat=True)
+            .first()
+        )
         user.last_invitation_at = last_invitation_at
-        active_sessions = user.sessions.filter(
-            revoked_at__isnull=True, expires_at__gt=timezone.now()
-        ).count()
+        user.last_session_at = last_session_at
+        now = timezone.now()
+        user_online = is_currently_online(user.last_seen_at, now=now)
+        newest_open_id = (
+            user.sessions.filter(revoked_at__isnull=True, expires_at__gt=now)
+            .order_by("-created_at")
+            .values_list("id", flat=True)
+            .first()
+        )
+        active_sessions = 1 if user_online and newest_open_id else 0
         return Response(
             {
                 "user": {
@@ -379,9 +399,14 @@ class AdminUserDetailView(APIView):
                         "created_at": s["created_at"],
                         "expires_at": s["expires_at"],
                         "revoked_at": s["revoked_at"],
-                        "is_active": s["revoked_at"] is None
-                        and s["expires_at"] is not None
-                        and s["expires_at"] > timezone.now(),
+                        "is_active": (
+                            user_online
+                            and newest_open_id is not None
+                            and s["id"] == newest_open_id
+                            and s["revoked_at"] is None
+                            and s["expires_at"] is not None
+                            and s["expires_at"] > now
+                        ),
                     }
                     for s in sessions
                 ],
@@ -538,10 +563,21 @@ class AdminTextTemplatesView(APIView):
     permission_classes = [IsAdminRole]
 
     def get(self, request):
-        qs = TextTemplate.objects.select_related("event").order_by("event_id", "sort_order")
+        qs = TextTemplate.objects.select_related("event").order_by(
+            "-is_active", "event_id", "language", "sort_order", "title"
+        )
         event_slug = request.query_params.get("event_slug")
         if event_slug:
             qs = qs.filter(event_id=event_slug)
+        language = request.query_params.get("language")
+        if language:
+            qs = qs.filter(language=language)
+        status_filter = (request.query_params.get("status") or "").strip().lower()
+        if status_filter == "active":
+            qs = qs.filter(is_active=True)
+        elif status_filter in {"inactive", "off"}:
+            qs = qs.filter(is_active=False)
+        limit = min(max(int(request.query_params.get("limit", 500)), 1), 1000)
         return Response(
             [
                 {
@@ -556,9 +592,10 @@ class AdminTextTemplatesView(APIView):
                     "tone": t.tone,
                     "sort_order": t.sort_order,
                     "is_featured": t.is_featured,
+                    "usage_count": t.usage_count,
                     "is_active": t.is_active,
                 }
-                for t in qs[:200]
+                for t in qs[:limit]
             ]
         )
 
@@ -566,16 +603,28 @@ class AdminTextTemplatesView(APIView):
         data = request.data
         event = get_object_or_404(EventConfig, slug=data.get("event_slug"))
         preview = data.get("preview_text") or ""
+        language = data.get("language") or "uz-latn"
+        sort_order = data.get("sort_order")
+        if sort_order is None or sort_order == "":
+            last = (
+                TextTemplate.objects.filter(event=event, language=language)
+                .order_by("-sort_order")
+                .values_list("sort_order", flat=True)
+                .first()
+            )
+            sort_order = int(last or 0) + 1
+        else:
+            sort_order = int(sort_order)
         tpl = TextTemplate.objects.create(
             event=event,
             subtype_slug=data.get("subtype_slug") or None,
             inviter_type=data.get("inviter_type") or None,
-            language=data.get("language") or "uz-latn",
+            language=language,
             title=data.get("title") or "Untitled",
             preview_text=preview,
             variables_used=_extract_vars(preview),
             tone=data.get("tone") or None,
-            sort_order=int(data.get("sort_order") or 0),
+            sort_order=sort_order,
             is_featured=bool(data.get("is_featured", False)),
             is_active=bool(data.get("is_active", True)),
             created_by_admin=request.user,

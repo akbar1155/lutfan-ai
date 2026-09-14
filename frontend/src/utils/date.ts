@@ -282,13 +282,12 @@ export function formatRelativeTime(
   const diffMs = Date.now() - d.getTime();
   if (diffMs < 0) return formatDisplayDateTimeStamp(value);
 
-  const secs = Math.floor(diffMs / 1000);
   const mins = Math.floor(diffMs / 60_000);
   const hours = Math.floor(diffMs / 3_600_000);
   const days = Math.floor(diffMs / 86_400_000);
 
   if (lang === "ru") {
-    if (secs < 45) return "только что";
+    if (mins < 5) return "только что";
     if (mins < 60) return `${Math.max(1, mins)} мин. назад`;
     if (hours < 24) return `${hours} ч. назад`;
     if (days < 30) return `${days} дн. назад`;
@@ -296,14 +295,14 @@ export function formatRelativeTime(
   }
 
   if (lang === "uz-cyrl") {
-    if (secs < 45) return "ҳозир";
+    if (mins < 5) return "ҳозир";
     if (mins < 60) return `${Math.max(1, mins)} дақиқа олдин`;
     if (hours < 24) return `${hours} соат олдин`;
     if (days < 30) return `${days} кун олдин`;
     return formatDisplayDateTimeStamp(value);
   }
 
-  if (secs < 45) return "hozirgina";
+  if (mins < 5) return "hozirgina";
   if (mins < 60) return `${Math.max(1, mins)} daqiqa oldin`;
   if (hours < 24) return `${hours} soat oldin`;
   if (days < 30) return `${days} kun oldin`;

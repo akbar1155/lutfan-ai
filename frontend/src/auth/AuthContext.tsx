@@ -8,6 +8,11 @@ import {
   type ReactNode,
 } from "react";
 import { api, type User } from "../api/client";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  setAuthTokens,
+} from "../api/envTarget";
 
 type AuthContextValue = {
   user: User | null;
@@ -32,13 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    const hadUser = Boolean(localStorage.getItem("access_token"));
+    const hadUser = Boolean(getAccessToken());
     // Only show the global loading gate on first restore (no known session yet).
     if (!hadUser) setLoading(true);
     try {
       // localStorage may be empty after a hard refresh while httpOnly
       // refresh cookie is still valid — restore before calling /auth/me.
-      if (!localStorage.getItem("access_token")) {
+      if (!getAccessToken()) {
         const restored = await api.ensureSession();
         if (!restored) {
           setUser(null);
@@ -48,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const me = await api.me();
       setUser(me);
     } catch {
-      if (!localStorage.getItem("access_token")) {
+      if (!getAccessToken()) {
         setUser(null);
       }
     } finally {
@@ -65,13 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void refreshMe();
     };
     window.addEventListener("auth:changed", handler);
-    return () => window.removeEventListener("auth:changed", handler);
+    window.addEventListener("api-target:changed", handler);
+    return () => {
+      window.removeEventListener("auth:changed", handler);
+      window.removeEventListener("api-target:changed", handler);
+    };
   }, [refreshMe]);
 
   const applyAuth = useCallback(
     (data: { user: User; access: string; refresh?: string }) => {
-      localStorage.setItem("access_token", data.access);
-      if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
+      setAuthTokens(data.access, data.refresh);
       setUser(data.user);
     },
     [],
@@ -88,8 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         applyAuth(data);
       } catch (err) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         setUser(null);
         throw err instanceof Error ? err : new Error("Login failed");
       }
@@ -103,8 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await api.adminLogin({ username, password });
         applyAuth(data);
       } catch (err) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         setUser(null);
         throw err instanceof Error ? err : new Error("Login failed");
       }
@@ -118,8 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await api.phoneLogin(payload);
         applyAuth(data);
       } catch (err) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         setUser(null);
         throw err instanceof Error ? err : new Error("Login failed");
       }
@@ -138,8 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await api.phoneRegister(payload);
         applyAuth(data);
       } catch (err) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         setUser(null);
         throw err instanceof Error ? err : new Error("Register failed");
       }
@@ -153,8 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearAuthTokens();
     setUser(null);
   }, []);
 

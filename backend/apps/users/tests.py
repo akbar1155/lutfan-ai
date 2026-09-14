@@ -167,3 +167,48 @@ class PhoneAuthTests(TestCase):
         tg.refresh_from_db()
         self.assertEqual(tg.telegram_id, 777001)
         self.assertEqual(User.objects.filter(telegram_id=777001).count(), 1)
+
+
+class LastSeenTests(TestCase):
+    def test_touch_updates_stale_last_seen(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.users.last_seen import is_currently_online, touch_user_last_seen
+
+        user = User.objects.create_user(telegram_id=501, first_name="Seen")
+        stale = timezone.now() - timedelta(days=4)
+        User.objects.filter(pk=user.pk).update(last_seen_at=stale)
+        touch_user_last_seen(user.pk)
+        user.refresh_from_db()
+        self.assertTrue(is_currently_online(user.last_seen_at))
+
+    def test_resolve_picks_newest_timestamp(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.users.last_seen import resolve_last_activity_at
+
+        now = timezone.now()
+        picked = resolve_last_activity_at(
+            last_seen_at=now - timedelta(days=4),
+            last_login_at=now - timedelta(days=4),
+            last_invitation_at=now - timedelta(days=4),
+            last_session_at=now - timedelta(minutes=1),
+            created_at=now - timedelta(days=10),
+        )
+        self.assertEqual(picked, now - timedelta(minutes=1))
+
+    def test_authenticated_request_marks_online(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        user = User.objects.create_user(telegram_id=502, first_name="Api")
+        token = str(RefreshToken.for_user(user).access_token)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        res = client.get("/api/v1/auth/me")
+        self.assertEqual(res.status_code, 200)
+        user.refresh_from_db()
+        self.assertIsNotNone(user.last_seen_at)

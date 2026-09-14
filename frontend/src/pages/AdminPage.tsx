@@ -2,6 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, Children, cloneEleme
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
+import {
+  getAccessToken,
+  getApiTarget,
+  isApiTargetSwitchEnabled,
+  resolveAssetUrl,
+  setApiTarget,
+  type ApiTarget,
+} from "../api/envTarget";
 import { useAuth } from "../auth/AuthContext";
 import {
   IconBan,
@@ -13,6 +21,10 @@ import {
 import { EmptyState } from "../components/UiStates";
 import UiSelect from "../components/UiSelect";
 import { formatDisplayDateTimeStamp, isIsoDateTime } from "../utils/date";
+import {
+  composeTextTemplatePreview,
+  parseTextTemplatePreview,
+} from "../utils/textBlocks";
 import AdminUsersSection, { type AdminUsersSectionHandle } from "./AdminUsersSection";
 import AdminDashboardSection from "./AdminDashboardSection";
 
@@ -248,6 +260,7 @@ export default function AdminPage() {
   const [texts, setTexts] = useState<Array<Record<string, unknown>>>([]);
   const [textsLang, setTextsLang] = useState<string>("uz-latn");
   const [textsEventSlug, setTextsEventSlug] = useState<string>("");
+  const [textsStatus, setTextsStatus] = useState<string>("");
   const [templates, setTemplates] = useState<Array<Record<string, unknown>>>([]);
   const [moods, setMoods] = useState<Array<Record<string, unknown>>>([]);
   const [presets, setPresets] = useState<Array<Record<string, unknown>>>([]);
@@ -257,6 +270,30 @@ export default function AdminPage() {
   const [limitsHour, setLimitsHour] = useState("20");
   const [limitsDay, setLimitsDay] = useState("50");
   const [limitsSavedAt, setLimitsSavedAt] = useState<string | null>(null);
+  const [apiTarget, setApiTargetState] = useState<ApiTarget>(() => getApiTarget());
+
+  useEffect(() => {
+    if (!isApiTargetSwitchEnabled()) return;
+    const sync = () => setApiTargetState(getApiTarget());
+    window.addEventListener("api-target:changed", sync);
+    return () => window.removeEventListener("api-target:changed", sync);
+  }, []);
+
+  const switchApiTarget = (next: ApiTarget) => {
+    if (next === apiTarget) return;
+    setApiTarget(next);
+    setApiTargetState(next);
+    setDashboard(null);
+    setInvitations([]);
+    setEvents([]);
+    setTexts([]);
+    setTemplates([]);
+    setMoods([]);
+    setPresets([]);
+    setGenerations([]);
+    setLogs([]);
+    setError(null);
+  };
 
   const [editingEvent, setEditingEvent] = useState<Record<string, unknown> | null>(null);
   const [editingText, setEditingText] = useState<Record<string, unknown> | null>(null);
@@ -310,7 +347,7 @@ export default function AdminPage() {
     } finally {
       setBusy(false);
     }
-  }, [tab, user, invStatus, genStatus]);
+  }, [tab, user, invStatus, genStatus, apiTarget]);
 
   useEffect(() => {
     void load();
@@ -336,7 +373,7 @@ export default function AdminPage() {
   };
 
   const exportCsv = () => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
     void fetch(api.adminAnalyticsExportUrl(), {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
@@ -371,14 +408,6 @@ export default function AdminPage() {
     return map;
   }, [events, i18n.language]);
 
-  useEffect(() => {
-    if (tab !== "texts") return;
-    if (textsEventSlug) return;
-    if (!eventOptions.length) return;
-    // Default to first available event for a “single list” UX.
-    setTextsEventSlug(eventOptions[0]);
-  }, [tab, textsEventSlug, eventOptions]);
-
   // Wait for session restore so refresh never flashes the login gate,
   // and keep the URL tab (e.g. ?tab=templates) after auth resolves.
   if (authLoading && !user) {
@@ -405,6 +434,29 @@ export default function AdminPage() {
             <span className="admin-login-badge">{t("brand")}</span>
             <h1 id="admin-login-title">{t("admin")}</h1>
             <p>{t("adminLoginHint")}</p>
+            {isApiTargetSwitchEnabled() ? (
+              <>
+                <div className="admin-api-target admin-api-target-login" role="group" aria-label={t("adminApiTarget")}>
+                  <button
+                    type="button"
+                    className={apiTarget === "local" ? "active" : ""}
+                    onClick={() => switchApiTarget("local")}
+                  >
+                    Local
+                  </button>
+                  <button
+                    type="button"
+                    className={apiTarget === "prod" ? "active is-prod" : ""}
+                    onClick={() => switchApiTarget("prod")}
+                  >
+                    Prod
+                  </button>
+                </div>
+                {apiTarget === "prod" ? (
+                  <p className="admin-login-prod-hint">{t("adminApiTargetProdLogin")}</p>
+                ) : null}
+              </>
+            ) : null}
           </div>
           <form
             className="admin-login-card"
@@ -502,27 +554,37 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
-          <div className="admin-nav-group">
-            <p className="admin-nav-label">{t("adminGroupSystem")}</p>
-            <div className="admin-nav-children" role="group" aria-label={t("adminGroupSystem")}>
-              <a
-                className="admin-nav-item"
-                href="/django-admin/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t("adminNavDjango")}
-              </a>
-            </div>
-          </div>
         </nav>
         <div className="admin-sidebar-foot">
+          {isApiTargetSwitchEnabled() ? (
+            <div className="admin-api-target" role="group" aria-label={t("adminApiTarget")}>
+              <button
+                type="button"
+                className={apiTarget === "local" ? "active" : ""}
+                onClick={() => switchApiTarget("local")}
+              >
+                Local
+              </button>
+              <button
+                type="button"
+                className={apiTarget === "prod" ? "active is-prod" : ""}
+                onClick={() => switchApiTarget("prod")}
+              >
+                Prod
+              </button>
+            </div>
+          ) : null}
           <span>{user.first_name || user.username || "Admin"}</span>
           <small>{t("adminRoleBadge")}</small>
         </div>
       </aside>
 
       <div className="admin-main">
+        {isApiTargetSwitchEnabled() && apiTarget === "prod" ? (
+          <div className="admin-prod-banner" role="status">
+            {t("adminApiTargetProdBanner")}
+          </div>
+        ) : null}
         <header className="admin-topbar">
           <div className="admin-topbar-left">
             <div>
@@ -612,7 +674,7 @@ export default function AdminPage() {
                       label={t("adminOpenImage")}
                       onClick={() =>
                         setPreviewImage({
-                          src: String(row.final_image_url),
+                          src: resolveAssetUrl(String(row.final_image_url)),
                           title: String(row.event_slug || t("adminOpenImage")),
                         })
                       }
@@ -741,9 +803,10 @@ export default function AdminPage() {
                   value={textsEventSlug}
                   onChange={(e) => setTextsEventSlug(e.target.value)}
                 >
+                  <option value="">{t("adminFilterAll")}</option>
                   {eventOptions.map((slug) => (
                     <option key={slug} value={slug}>
-                      {slug}
+                      {eventLabels[slug] || slug}
                     </option>
                   ))}
                 </UiSelect>
@@ -753,9 +816,20 @@ export default function AdminPage() {
                   value={textsLang}
                   onChange={(e) => setTextsLang(e.target.value)}
                 >
-                  <option value="uz-cyrl">uz-cyrl</option>
-                  <option value="uz-latn">uz-latn</option>
-                  <option value="ru">ru</option>
+                  <option value="">{t("adminFilterAll")}</option>
+                  <option value="uz-latn">{t("adminLangUzLatn")}</option>
+                  <option value="uz-cyrl">{t("adminLangUzCyrl")}</option>
+                  <option value="ru">{t("adminLangRu")}</option>
+                </UiSelect>
+                <UiSelect
+                  label={t("adminColStatus")}
+                  size="sm"
+                  value={textsStatus}
+                  onChange={(e) => setTextsStatus(e.target.value)}
+                >
+                  <option value="">{t("adminFilterAll")}</option>
+                  <option value="active">{t("adminActive")}</option>
+                  <option value="inactive">{t("adminInactive")}</option>
                 </UiSelect>
                 <button
                   type="button"
@@ -764,10 +838,13 @@ export default function AdminPage() {
                     setEditingText({
                       event_slug: textsEventSlug || eventOptions[0] || "nikoh",
                       subtype_slug: "",
-                      language: textsLang,
+                      language: textsLang || "uz-latn",
                       title: "",
                       preview_text: "",
                       tone: "classic",
+                      sort_order: 0,
+                      is_active: true,
+                      is_featured: false,
                     });
                     setShowCreate(true);
                   }}
@@ -784,10 +861,12 @@ export default function AdminPage() {
                     setEditingText(null);
                     setShowCreate(false);
                   }}
+                  wide
                 >
                   <TextForm
                     initial={editingText}
-                    eventOptions={eventOptions}
+                    events={events}
+                    eventLabels={eventLabels}
                     busy={!!actionBusy}
                     onCancel={() => {
                       setEditingText(null);
@@ -804,69 +883,127 @@ export default function AdminPage() {
                 </AdminModal>
               )}
               {(() => {
-                const visibleTexts = texts.filter(
-                  (row) =>
-                    String(row.language || "") === textsLang &&
-                    (!textsEventSlug || String(row.event_slug || "") === textsEventSlug),
-                );
+                const visibleTexts = texts.filter((row) => {
+                  if (textsLang && String(row.language || "") !== textsLang) return false;
+                  if (textsEventSlug && String(row.event_slug || "") !== textsEventSlug) {
+                    return false;
+                  }
+                  if (textsStatus === "active" && !row.is_active) return false;
+                  if (textsStatus === "inactive" && row.is_active) return false;
+                  return true;
+                });
+                const activeCount = visibleTexts.filter((r) => r.is_active).length;
+                const inactiveCount = visibleTexts.length - activeCount;
                 return (
-                  <AdminTable
-                empty={t("adminEmpty")}
-                hasData={visibleTexts.length > 0}
-                headers={[
-                  t("adminColEvent"),
-                  t("adminColLang"),
-                  t("adminColTitle"),
-                  t("adminColStatus"),
-                  t("adminColActions"),
-                ]}
-              >
-                    {visibleTexts.map((row) => (
-                      <tr key={String(row.id)}>
-                        <td>{String(row.event_slug)}</td>
-                        <td>{String(row.language)}</td>
-                        <td>{String(row.title)}</td>
-                        <td>
-                          <StatusBadge tone={row.is_active ? "ok" : "muted"}>
-                            {row.is_active ? t("adminActive") : t("adminInactive")}
-                          </StatusBadge>
-                        </td>
-                        <td className="admin-actions">
-                          <IconBtn
-                            label={t("adminEdit")}
-                            onClick={() =>
-                              setEditingText({
-                                id: row.id,
-                                event_slug: row.event_slug,
-                                subtype_slug: row.subtype_slug || "",
-                                language: row.language,
-                                title: row.title,
-                                preview_text: row.preview_text,
-                                tone: row.tone || "classic",
-                              })
-                            }
-                          >
-                            <IconEdit />
-                          </IconBtn>
-                          <IconBtn
-                            label={
-                              row.is_active ? t("adminDisable") : t("adminEnable")
-                            }
-                            tone={row.is_active ? "danger" : "ok"}
-                            onClick={() =>
-                              void run(String(row.id), () =>
-                                api.adminPatchTextTemplate(String(row.id), {
-                                  is_active: !row.is_active,
-                                }),
-                              )
-                            }
-                          >
-                            {row.is_active ? <IconBan /> : <IconPower />}
-                          </IconBtn>
-                        </td>
-                      </tr>
-                    ))}
-                  </AdminTable>
+                  <>
+                    <p className="hint admin-texts-summary">
+                      {t("adminTextsSummary", {
+                        total: visibleTexts.length,
+                        active: activeCount,
+                        inactive: inactiveCount,
+                      })}
+                    </p>
+                    {inactiveCount > 0 ? (
+                      <div className="admin-toolbar-row">
+                        <button
+                          type="button"
+                          className="admin-btn"
+                          disabled={!!actionBusy}
+                          onClick={() =>
+                            void run("texts-enable", async () => {
+                              const ids = visibleTexts
+                                .filter((r) => !r.is_active)
+                                .map((r) => String(r.id));
+                              for (const id of ids) {
+                                await api.adminPatchTextTemplate(id, { is_active: true });
+                              }
+                            })
+                          }
+                        >
+                          {t("adminTextsEnableVisible")}
+                        </button>
+                      </div>
+                    ) : null}
+                    <AdminTable
+                      empty={t("adminEmpty")}
+                      hasData={visibleTexts.length > 0}
+                      headers={[
+                        t("adminColEvent"),
+                        t("adminColLang"),
+                        t("adminColTitle"),
+                        t("adminColTone"),
+                        t("adminPreviewText"),
+                        t("adminColStatus"),
+                        t("adminColActions"),
+                      ]}
+                    >
+                      {visibleTexts.map((row) => {
+                        const preview = String(row.preview_text || "").replace(/\s+/g, " ").trim();
+                        const snippet =
+                          preview.length > 80 ? `${preview.slice(0, 80)}…` : preview || "—";
+                        return (
+                          <tr key={String(row.id)}>
+                            <td>{eventLabels[String(row.event_slug)] || String(row.event_slug)}</td>
+                            <td>
+                              {String(row.language) === "uz-latn"
+                                ? t("adminLangUzLatn")
+                                : String(row.language) === "uz-cyrl"
+                                  ? t("adminLangUzCyrl")
+                                  : String(row.language) === "ru"
+                                    ? t("adminLangRu")
+                                    : String(row.language)}
+                            </td>
+                            <td>{String(row.title)}</td>
+                            <td>{String(row.tone || "—")}</td>
+                            <td className="admin-texts-snippet" title={preview}>
+                              {snippet}
+                            </td>
+                            <td>
+                              <StatusBadge tone={row.is_active ? "ok" : "muted"}>
+                                {row.is_active ? t("adminActive") : t("adminInactive")}
+                              </StatusBadge>
+                            </td>
+                            <td className="admin-actions">
+                              <IconBtn
+                                label={t("adminEdit")}
+                                onClick={() =>
+                                  setEditingText({
+                                    id: row.id,
+                                    event_slug: row.event_slug,
+                                    subtype_slug: row.subtype_slug || "",
+                                    language: row.language,
+                                    title: row.title,
+                                    preview_text: row.preview_text,
+                                    tone: row.tone || "classic",
+                                    sort_order: row.sort_order ?? 0,
+                                    is_active: row.is_active,
+                                    is_featured: row.is_featured,
+                                  })
+                                }
+                              >
+                                <IconEdit />
+                              </IconBtn>
+                              <IconBtn
+                                label={
+                                  row.is_active ? t("adminDisable") : t("adminEnable")
+                                }
+                                tone={row.is_active ? "danger" : "ok"}
+                                onClick={() =>
+                                  void run(String(row.id), () =>
+                                    api.adminPatchTextTemplate(String(row.id), {
+                                      is_active: !row.is_active,
+                                    }),
+                                  )
+                                }
+                              >
+                                {row.is_active ? <IconBan /> : <IconPower />}
+                              </IconBtn>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </AdminTable>
+                  </>
                 );
               })()}
             </section>
@@ -940,14 +1077,14 @@ export default function AdminPage() {
                           className="admin-media-thumb"
                           onClick={() =>
                             setPreviewImage({
-                              src: String(tpl.bg_url || tpl.bg_url_preview),
+                              src: resolveAssetUrl(String(tpl.bg_url || tpl.bg_url_preview)),
                               title: String(tpl.theme_name || ""),
                             })
                           }
                           aria-label={t("adminOpenImage")}
                         >
                           <img
-                            src={String(tpl.bg_url_preview || tpl.bg_url)}
+                            src={resolveAssetUrl(String(tpl.bg_url_preview || tpl.bg_url))}
                             alt={String(tpl.theme_name)}
                           />
                         </button>
@@ -1007,6 +1144,10 @@ export default function AdminPage() {
 
           {tab === "moods" && (
             <section className="admin-section">
+              <div className="admin-info-card">
+                <strong>{t("adminMoodsInfoTitle")}</strong>
+                <p>{t("adminMoodsInfoBody")}</p>
+              </div>
               <div className="admin-toolbar-row">
                 <button
                   type="button"
@@ -1045,9 +1186,20 @@ export default function AdminPage() {
               )}
               <SimpleTable
                 empty={t("adminEmpty")}
-                rows={moods}
+                rows={moods.map((row) => {
+                  const names = (row.name_translations || {}) as Record<string, string>;
+                  return {
+                    ...row,
+                    name_uz_latn: names["uz-latn"] || "—",
+                    name_uz_cyrl: names["uz-cyrl"] || "—",
+                    name_ru: names.ru || "—",
+                  };
+                })}
                 columns={[
                   ["slug", "Slug"],
+                  ["name_uz_latn", t("adminLangUzLatn")],
+                  ["name_uz_cyrl", t("adminLangUzCyrl")],
+                  ["name_ru", t("adminLangRu")],
                   ["category", t("adminColCategory")],
                   ["prompt_snippet", "Prompt"],
                   ["is_active", t("adminColStatus")],
@@ -1092,6 +1244,10 @@ export default function AdminPage() {
 
           {tab === "presets" && (
             <section className="admin-section">
+              <div className="admin-info-card">
+                <strong>{t("adminPresetsInfoTitle")}</strong>
+                <p>{t("adminPresetsInfoBody")}</p>
+              </div>
               <div className="admin-toolbar-row">
                 <button
                   type="button"
@@ -1532,11 +1688,11 @@ function EventForm({
         />
       </Field>
       <div className="admin-actions">
+        <button type="button" className="admin-btn" onClick={onCancel}>
+          {t("adminCloseDrawer")}
+        </button>
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
-        </button>
-        <button type="button" className="admin-btn" onClick={onCancel}>
-          {t("back")}
         </button>
       </div>
     </form>
@@ -1545,31 +1701,102 @@ function EventForm({
 
 function TextForm({
   initial,
-  eventOptions,
+  events,
+  eventLabels,
   onSubmit,
   onCancel,
   busy,
 }: {
   initial: Record<string, unknown>;
-  eventOptions: string[];
+  events: Array<Record<string, unknown>>;
+  eventLabels: Record<string, string>;
   onSubmit: (body: Record<string, unknown>, id?: string) => void;
   onCancel: () => void;
   busy: boolean;
 }) {
   const { t } = useTranslation();
   const [form, setForm] = useState(initial);
-  useEffect(() => setForm(initial), [initial]);
-  const vars = extractVars(String(form.preview_text || ""));
-  const preview = String(form.preview_text || "")
-    .replace(/\{event_date\}/g, "20.08.2026")
-    .replace(/\{venue_name\}/g, "Navruz Hall")
-    .replace(/\{venue_address\}/g, "Toshkent")
-    .replace(/\{child_name\}/g, "Ali")
-    .replace(/\{person_name\}/g, "Dilnoza");
+  const [blocks, setBlocks] = useState(() =>
+    parseTextTemplatePreview(String(initial.preview_text || "")),
+  );
+  const [focusBlock, setFocusBlock] = useState<"header" | "body" | "footer">(
+    "body",
+  );
+
+  useEffect(() => {
+    setForm(initial);
+    setBlocks(parseTextTemplatePreview(String(initial.preview_text || "")));
+  }, [initial]);
+
+  const eventSlug = String(form.event_slug || "");
+  const selectedEvent = events.find((e) => String(e.slug) === eventSlug);
+  const subtypes = Array.isArray(selectedEvent?.subtypes)
+    ? (selectedEvent?.subtypes as Array<Record<string, unknown>>)
+    : [];
+
+  const previewText = composeTextTemplatePreview(
+    blocks.header,
+    blocks.body,
+    blocks.footer,
+  );
+  const vars = extractVars(previewText);
+
+  const sampleVars: Record<string, string> = {
+    event_date: "20.08.2026",
+    event_time: "18:00",
+    venue_name: "Navruz Hall",
+    venue_address: "Toshkent",
+    child_name: "Ali",
+    person_name: "Dilnoza",
+    family_signature: "Karimovlar oilasi",
+    host_name: "Akbar",
+    hayit_occasion: "Hayit",
+  };
+
+  const fillPreview = (text: string) =>
+    text
+      .replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key: string) =>
+        sampleVars[key] != null ? sampleVars[key] : `{${key}}`,
+      )
+      .replace(/@@FOOTER@@/g, "")
+      .trim();
+
+  const suggestedVars = useMemo(() => {
+    const base = ["event_date", "event_time", "venue_name", "venue_address"];
+    if (eventSlug === "aqiqa" || eventSlug === "sunnat") base.unshift("child_name");
+    if (eventSlug === "birthday") base.unshift("person_name");
+    if (eventSlug === "nikoh") base.push("family_signature");
+    if (eventSlug === "hayit") base.unshift("hayit_occasion");
+    return Array.from(new Set([...base, ...vars]));
+  }, [eventSlug, vars]);
+
+  const updateBlock = (key: "header" | "body" | "footer", value: string) => {
+    setBlocks((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const insertVar = (name: string) => {
+    const token = `{${name}}`;
+    setBlocks((prev) => {
+      const current = prev[focusBlock] || "";
+      const needsSpace = current.length > 0 && !/\s$/.test(current);
+      return {
+        ...prev,
+        [focusBlock]: `${current}${needsSpace ? " " : ""}${token}`,
+      };
+    });
+  };
+
+  const tones = [
+    { value: "classic", labelKey: "adminToneClassic" },
+    { value: "warm", labelKey: "adminToneWarm" },
+    { value: "formal", labelKey: "adminToneFormal" },
+    { value: "poetic", labelKey: "adminTonePoetic" },
+    { value: "modern", labelKey: "adminToneModern" },
+  ] as const;
 
   return (
     <form
-      className="admin-form"
+      className="admin-form admin-text-form"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(
@@ -1578,79 +1805,248 @@ function TextForm({
             subtype_slug: form.subtype_slug || null,
             language: form.language,
             title: form.title,
-            preview_text: form.preview_text,
-            tone: form.tone || null,
+            preview_text: composeTextTemplatePreview(
+              blocks.header,
+              blocks.body,
+              blocks.footer,
+            ),
+            tone: form.tone || "classic",
+            sort_order: Number(form.sort_order || 0),
+            is_featured: Boolean(form.is_featured),
+            is_active: form.is_active !== false,
           },
           form.id ? String(form.id) : undefined,
         );
       }}
     >
-      <h3>{form.id ? t("adminEdit") : t("adminNewText")}</h3>
-      <div className="admin-form-grid">
-        <Field label={t("adminColEvent")}>
-          <UiSelect
-            value={String(form.event_slug || "")}
-            onChange={(e) => setForm({ ...form, event_slug: e.target.value })}
-          >
-            {eventOptions.map((slug) => (
-              <option key={slug} value={slug}>
-                {slug}
-              </option>
-            ))}
-          </UiSelect>
-        </Field>
-        <Field label="subtype_slug">
-          <input
-            value={String(form.subtype_slug || "")}
-            onChange={(e) => setForm({ ...form, subtype_slug: e.target.value })}
-            placeholder="optional"
-          />
-        </Field>
-        <Field label={t("adminColLang")}>
-          <UiSelect
-            value={String(form.language || "uz-latn")}
-            onChange={(e) => setForm({ ...form, language: e.target.value })}
-          >
-            <option value="uz-cyrl">uz-cyrl</option>
-            <option value="uz-latn">uz-latn</option>
-            <option value="ru">ru</option>
-          </UiSelect>
-        </Field>
-        <Field label={t("adminColTitle")}>
-          <input
-            required
-            value={String(form.title || "")}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-          />
-        </Field>
-        <Field label="Tone">
-          <input
-            value={String(form.tone || "")}
-            onChange={(e) => setForm({ ...form, tone: e.target.value })}
-          />
-        </Field>
+      <div className="admin-text-form-layout">
+        <div className="admin-text-form-main">
+          <section className="admin-text-section">
+            <header className="admin-text-section-head">
+              <h4>{t("adminTextsMeta")}</h4>
+              <p>{t("adminTextsFormHint")}</p>
+            </header>
+            <div className="admin-form-grid admin-text-meta-grid">
+              <Field label={t("adminColEvent")}>
+                <UiSelect
+                  value={eventSlug}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      event_slug: e.target.value,
+                      subtype_slug: "",
+                    })
+                  }
+                >
+                  {events.map((ev) => {
+                    const slug = String(ev.slug || "");
+                    return (
+                      <option key={slug} value={slug}>
+                        {eventLabels[slug] || slug}
+                      </option>
+                    );
+                  })}
+                </UiSelect>
+              </Field>
+              <Field label={t("adminColSubtype")}>
+                <UiSelect
+                  value={String(form.subtype_slug || "")}
+                  onChange={(e) =>
+                    setForm({ ...form, subtype_slug: e.target.value })
+                  }
+                >
+                  <option value="">{t("adminSubtypeAny")}</option>
+                  {subtypes.map((sub) => {
+                    const slug = String(sub.slug || "");
+                    const names = (sub.name_translations || {}) as Record<
+                      string,
+                      string
+                    >;
+                    const label =
+                      names["uz-latn"] || names["uz-cyrl"] || names.ru || slug;
+                    return (
+                      <option key={slug} value={slug}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </UiSelect>
+              </Field>
+              <Field label={t("adminColLang")}>
+                <UiSelect
+                  value={String(form.language || "uz-latn")}
+                  onChange={(e) => setForm({ ...form, language: e.target.value })}
+                >
+                  <option value="uz-latn">{t("adminLangUzLatn")}</option>
+                  <option value="uz-cyrl">{t("adminLangUzCyrl")}</option>
+                  <option value="ru">{t("adminLangRu")}</option>
+                </UiSelect>
+              </Field>
+              <Field label={t("adminColTone")}>
+                <UiSelect
+                  value={String(form.tone || "classic")}
+                  onChange={(e) => setForm({ ...form, tone: e.target.value })}
+                >
+                  {tones.map((tone) => (
+                    <option key={tone.value} value={tone.value}>
+                      {t(tone.labelKey)}
+                    </option>
+                  ))}
+                </UiSelect>
+              </Field>
+              <Field label={t("adminColTitle")}>
+                <input
+                  required
+                  value={String(form.title || "")}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Klassik 1"
+                />
+              </Field>
+              <Field label={t("adminColSort")}>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={String(form.sort_order ?? 0)}
+                  onChange={(e) =>
+                    setForm({ ...form, sort_order: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+            <div className="admin-text-toggles" role="group">
+              <label
+                className={`check-chip admin-text-toggle ${form.is_active !== false ? "active is-on" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.is_active !== false}
+                  onChange={(e) =>
+                    setForm({ ...form, is_active: e.target.checked })
+                  }
+                />
+                <span>{t("adminActive")}</span>
+              </label>
+              <label
+                className={`check-chip admin-text-toggle ${form.is_featured ? "active is-on" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.is_featured)}
+                  onChange={(e) =>
+                    setForm({ ...form, is_featured: e.target.checked })
+                  }
+                />
+                <span>{t("adminColFeatured")}</span>
+              </label>
+            </div>
+          </section>
+
+          <section className="admin-text-section">
+            <header className="admin-text-section-head">
+              <h4>{t("adminTextsContent")}</h4>
+              <p>{t("adminTextsContentHint")}</p>
+            </header>
+            <div className="admin-text-var-row">
+              <span className="admin-text-var-label">{t("adminTextsVars")}</span>
+              <div className="admin-text-var-chips">
+                {suggestedVars.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className="admin-text-var-chip"
+                    onClick={() => insertVar(name)}
+                    title={t("adminTextsInsertVar", { name })}
+                  >
+                    {`{${name}}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="admin-text-blocks">
+              {(
+                [
+                  {
+                    key: "header" as const,
+                    step: "1",
+                    rows: 2,
+                    required: true,
+                    hint: t("adminTextsHeaderHint"),
+                  },
+                  {
+                    key: "body" as const,
+                    step: "2",
+                    rows: 7,
+                    required: true,
+                    hint: t("adminTextsBodyHint"),
+                  },
+                  {
+                    key: "footer" as const,
+                    step: "3",
+                    rows: 2,
+                    required: false,
+                    hint: t("adminTextsFooterHint"),
+                  },
+                ] as const
+              ).map((block) => (
+                <label
+                  key={block.key}
+                  className={`admin-text-block ${focusBlock === block.key ? "is-focused" : ""}`}
+                >
+                  <div className="admin-text-block-head">
+                    <span className="admin-text-step">{block.step}</span>
+                    <div>
+                      <strong>
+                        {block.key === "header"
+                          ? t("block_header")
+                          : block.key === "body"
+                            ? t("block_body")
+                            : t("block_footer")}
+                      </strong>
+                      <small>{block.hint}</small>
+                    </div>
+                  </div>
+                  <textarea
+                    required={block.required}
+                    rows={block.rows}
+                    value={blocks[block.key]}
+                    onFocus={() => setFocusBlock(block.key)}
+                    onChange={(e) => updateBlock(block.key, e.target.value)}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <aside className="admin-text-form-preview" aria-live="polite">
+          <div className="admin-text-card-preview">
+            <span className="admin-text-card-kicker">{t("adminPreview")}</span>
+            <p className="admin-text-card-header">
+              {fillPreview(blocks.header) || "—"}
+            </p>
+            <p className="admin-text-card-body">
+              {fillPreview(blocks.body) || t("adminTextsPreviewEmpty")}
+            </p>
+            {fillPreview(blocks.footer) ? (
+              <p className="admin-text-card-footer">
+                {fillPreview(blocks.footer)}
+              </p>
+            ) : (
+              <p className="admin-text-card-footer is-empty">
+                {t("adminTextsFooterEmpty")}
+              </p>
+            )}
+          </div>
+        </aside>
       </div>
-      <Field label={t("adminPreviewText")}>
-        <textarea
-          required
-          rows={5}
-          value={String(form.preview_text || "")}
-          onChange={(e) => setForm({ ...form, preview_text: e.target.value })}
-        />
-      </Field>
-      <p className="hint">
-        variables: {vars.length ? vars.map((v) => `{${v}}`).join(", ") : "—"}
-      </p>
-      <div className="admin-preview-box">
-        <strong>{t("adminPreview")}</strong>
-        <pre>{preview}</pre>
-      </div>
-      <div className="admin-actions">
-        <button type="submit" className="admin-btn primary" disabled={busy}>
-          {t("adminSave")}
-        </button>
+
+      <div className="admin-actions admin-text-form-actions">
         <button type="button" className="admin-btn" onClick={onCancel}>
-          {t("back")}
+          {t("adminCloseDrawer")}
+        </button>
+        <button type="submit" className="admin-btn primary" disabled={busy}>
+          {busy ? t("loading") : t("adminSave")}
         </button>
       </div>
     </form>
@@ -1717,11 +2113,14 @@ function TemplateForm({
   const labelFor = (slug: string) => eventLabels?.[slug] || slug;
   const existingPreview =
     previewUrl ||
-    (typeof form.bg_url_preview === "string" && form.bg_url_preview
-      ? form.bg_url_preview
-      : typeof form.bg_url === "string" && form.bg_url
-        ? form.bg_url
-        : null);
+    resolveAssetUrl(
+      typeof form.bg_url_preview === "string" && form.bg_url_preview
+        ? form.bg_url_preview
+        : typeof form.bg_url === "string" && form.bg_url
+          ? form.bg_url
+          : "",
+    ) ||
+    null;
 
   const canSave =
     !busy &&
@@ -1887,11 +2286,11 @@ function TemplateForm({
       </div>
 
       <div className="admin-actions">
+        <button type="button" className="admin-btn" onClick={onCancel}>
+          {t("adminCloseDrawer")}
+        </button>
         <button type="submit" className="admin-btn primary" disabled={!canSave}>
           {busy ? t("loading") : t("adminSave")}
-        </button>
-        <button type="button" className="admin-btn" onClick={onCancel}>
-          {t("back")}
         </button>
       </div>
     </form>
@@ -1996,11 +2395,11 @@ function MoodForm({
         />
       </Field>
       <div className="admin-actions">
+        <button type="button" className="admin-btn" onClick={onCancel}>
+          {t("adminCloseDrawer")}
+        </button>
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
-        </button>
-        <button type="button" className="admin-btn" onClick={onCancel}>
-          {t("back")}
         </button>
       </div>
     </form>
@@ -2096,11 +2495,11 @@ function PresetForm({
         />
       </Field>
       <div className="admin-actions">
+        <button type="button" className="admin-btn" onClick={onCancel}>
+          {t("adminCloseDrawer")}
+        </button>
         <button type="submit" className="admin-btn primary" disabled={busy}>
           {t("adminSave")}
-        </button>
-        <button type="button" className="admin-btn" onClick={onCancel}>
-          {t("back")}
         </button>
       </div>
     </form>

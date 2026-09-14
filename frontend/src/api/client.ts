@@ -1,17 +1,13 @@
-function resolveApiBase(): string {
-  const fromEnv = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "/api/v1";
-  // Public tunnels (ngrok etc.): never call the developer's localhost from the visitor's browser.
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "[::1]";
-    if (!isLocal && /localhost|127\.0\.0\.1/.test(fromEnv)) {
-      return "/api/v1";
-    }
-  }
-  return fromEnv;
-}
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getApiBase,
+  getRefreshToken,
+  setAuthTokens,
+} from "./envTarget";
 
-const API_BASE = resolveApiBase();
+export { getApiBase, resolveAssetUrl, getApiTarget, setApiTarget, isApiTargetSwitchEnabled } from "./envTarget";
+export type { ApiTarget } from "./envTarget";
 
 type ApiError = {
   error?: {
@@ -33,7 +29,7 @@ function formatApiError(body: ApiError, fallback: string): string {
 }
 
 function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return token
     ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
     : { "Content-Type": "application/json" };
@@ -45,33 +41,31 @@ async function refreshAccessToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
     try {
-      const storedRefresh = localStorage.getItem("refresh_token");
+      const storedRefresh = getRefreshToken();
       // Always hit refresh with credentials so httpOnly cookie can restore
       // the session even when localStorage was wiped (e.g. after refresh).
-      const res = await fetch(`${API_BASE}/auth/refresh`, {
+      // Prod target uses a same-origin Vite proxy; cookies from lutfanai.uz
+      // are not available — refresh body token is required there.
+      const res = await fetch(`${getApiBase()}/auth/refresh`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storedRefresh ? { refresh: storedRefresh } : {}),
       });
       if (!res.ok) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         return false;
       }
       const data = (await res.json()) as { access?: string; refresh?: string };
       if (!data.access) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         return false;
       }
-      localStorage.setItem("access_token", data.access);
-      if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
+      setAuthTokens(data.access, data.refresh);
       window.dispatchEvent(new Event("auth:changed"));
       return true;
     } catch {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+      clearAuthTokens();
       return false;
     }
   })().finally(() => {
@@ -82,7 +76,7 @@ async function refreshAccessToken(): Promise<boolean> {
 
 /** Restore access token from refresh cookie/body when localStorage is empty. */
 export async function ensureSession(): Promise<boolean> {
-  if (localStorage.getItem("access_token")) return true;
+  if (getAccessToken()) return true;
   return refreshAccessToken();
 }
 
@@ -91,7 +85,7 @@ async function request<T>(
   init?: RequestInit,
   opts?: { skipAuthRefresh?: boolean },
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${getApiBase()}${path}`, {
     credentials: "include",
     ...init,
     headers: { ...authHeaders(), ...(init?.headers || {}) },
@@ -128,8 +122,8 @@ async function request<T>(
 
 async function requestForm<T>(path: string, formData: FormData): Promise<T> {
   const doFetch = () => {
-    const token = localStorage.getItem("access_token");
-    return fetch(`${API_BASE}${path}`, {
+    const token = getAccessToken();
+    return fetch(`${getApiBase()}${path}`, {
       method: "POST",
       credentials: "include",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -156,8 +150,8 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
 
 async function patchForm<T>(path: string, formData: FormData): Promise<T> {
   const doFetch = () => {
-    const token = localStorage.getItem("access_token");
-    return fetch(`${API_BASE}${path}`, {
+    const token = getAccessToken();
+    return fetch(`${getApiBase()}${path}`, {
       method: "PATCH",
       credentials: "include",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -292,7 +286,7 @@ export const api = {
     }),
   me: () => request<User>("/auth/me"),
   logout: () => {
-    const refresh = localStorage.getItem("refresh_token");
+    const refresh = getRefreshToken();
     return request<{ ok: boolean }>("/auth/logout", {
       method: "POST",
       body: refresh ? JSON.stringify({ refresh }) : undefined,
@@ -421,10 +415,20 @@ export const api = {
     }),
   adminDeleteEvent: (id: string) =>
     request<{ ok: boolean }>(`/admin/events/${id}`, { method: "DELETE" }),
-  adminTextTemplates: (eventSlug?: string) =>
-    request<Array<Record<string, unknown>>>(
-      `/admin/text-templates${eventSlug ? `?event_slug=${eventSlug}` : ""}`,
-    ),
+  adminTextTemplates: (params?: {
+    eventSlug?: string;
+    language?: string;
+    status?: string;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.eventSlug) q.set("event_slug", params.eventSlug);
+    if (params?.language) q.set("language", params.language);
+    if (params?.status) q.set("status", params.status);
+    const qs = q.toString();
+    return request<Array<Record<string, unknown>>>(
+      `/admin/text-templates${qs ? `?${qs}` : ""}`,
+    );
+  },
   adminCreateTextTemplate: (body: Record<string, unknown>) =>
     request<{ id: string }>("/admin/text-templates", {
       method: "POST",
@@ -525,5 +529,5 @@ export const api = {
       "/admin/generation-limits",
       { method: "PATCH", body: JSON.stringify(body) },
     ),
-  adminAnalyticsExportUrl: () => `${API_BASE}/admin/analytics/export`,
+  adminAnalyticsExportUrl: () => `${getApiBase()}/admin/analytics/export`,
 };

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getApiBase } from "../api/envTarget";
+import { setAuthTokens } from "../api/envTarget";
 import { canShowTelegramLoginWidget } from "./flags";
 
 declare global {
@@ -7,20 +9,6 @@ declare global {
     [key: string]: unknown;
   }
 }
-
-function resolveApiBase(): string {
-  const fromEnv = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "/api/v1";
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "[::1]";
-    if (!isLocal && /localhost|127\.0\.0\.1/.test(fromEnv)) {
-      return "/api/v1";
-    }
-  }
-  return fromEnv;
-}
-
-const API_BASE = resolveApiBase();
 
 export default function TelegramLoginWidget() {
   const { t } = useTranslation();
@@ -47,7 +35,7 @@ export default function TelegramLoginWidget() {
     (window as Record<string, unknown>)[callbackName] = async (user: unknown) => {
       try {
         const payload = user || {};
-        const res = await fetch(`${API_BASE}/auth/telegram`, {
+        const res = await fetch(`${getApiBase()}/auth/telegram`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -60,8 +48,7 @@ export default function TelegramLoginWidget() {
         if (!data.access) {
           throw new Error("Missing access token from backend");
         }
-        localStorage.setItem("access_token", data.access);
-        if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
+        setAuthTokens(data.access, data.refresh);
         window.dispatchEvent(new Event("auth:changed"));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Telegram login failed");

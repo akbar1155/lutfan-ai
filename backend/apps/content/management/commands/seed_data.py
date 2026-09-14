@@ -853,7 +853,8 @@ def _sync_ready_texts(admin) -> int:
                     "variables_used": _template_variables(preview),
                     "tone": "classic" if idx == 0 else "warm",
                     "sort_order": idx,
-                    "is_active": bool(event.is_active),
+                    # Catalog texts stay available even if the event is temporarily off.
+                    "is_active": True,
                     "created_by_admin": admin,
                 }
                 existing = TextTemplate.objects.filter(
@@ -864,6 +865,7 @@ def _sync_ready_texts(admin) -> int:
                         event=event, language=lang, title=title, **defaults
                     )
                 else:
+                    defaults.pop("is_active", None)
                     for key, value in defaults.items():
                         setattr(existing, key, value)
                     existing.save()
@@ -1033,7 +1035,8 @@ class Command(BaseCommand):
                         "variables_used": _template_variables(preview),
                         "tone": "classic" if idx == 0 else "warm",
                         "sort_order": idx,
-                        "is_active": active,
+                        # Independent of event.is_active — admin toggles texts separately.
+                        "is_active": True,
                         "created_by_admin": admin,
                     }
                     existing_text = TextTemplate.objects.filter(
