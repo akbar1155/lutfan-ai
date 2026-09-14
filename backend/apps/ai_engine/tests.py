@@ -75,6 +75,24 @@ class OverlaySafeRegionTests(SimpleTestCase):
         sample = out.getpixel((safe.x0 + 120, safe.y1 - 80))[:3]
         self.assertGreater(sum(sample), sum(floral) + 120)
 
+    def test_safe_area_washes_pale_gold_filigree_under_type(self):
+        """JPG templates often paint gold rules through the body — wash them out."""
+        paper = (248, 242, 228)
+        gold = (196, 168, 110)
+        img = Image.new("RGB", (2400, 3000), paper)
+        draw = ImageDraw.Draw(img)
+        for y in (980, 1120, 1680, 1820):
+            draw.line((520, y, 1880, y), fill=gold, width=3)
+            draw.line((520, y + 10, 1880, y + 10), fill=gold, width=2)
+        safe = analyze_safe_region(img, corner_guard=False)
+        out = clear_safe_text_area(img, safe, corner_guard=False)
+        sample = out.getpixel((1200, 980))[:3]
+        # Gold hairline must move clearly toward paper so glyphs stay readable.
+        self.assertGreater(sum(sample), sum(gold) + 80)
+        dist_to_paper = sum(abs(a - b) for a, b in zip(sample, paper))
+        dist_to_gold = sum(abs(a - b) for a, b in zip(sample, gold))
+        self.assertLess(dist_to_paper, dist_to_gold)
+
     def test_russian_orphan_last_word_is_merged(self):
         img = Image.new("RGB", (2400, 3000), (250, 244, 232))
         draw = ImageDraw.Draw(img)

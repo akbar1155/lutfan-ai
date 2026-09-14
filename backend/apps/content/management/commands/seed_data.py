@@ -96,15 +96,15 @@ EVENTS = [
         "subtypes": [],
         "fields_schema": {
             "required": [
+                {"key": "family_signature", "type": "string", "maxLength": 80},
                 {"key": "child_gender", "type": "enum", "options": ["boy", "girl"]},
+                {"key": "child_name", "type": "string", "maxLength": 50},
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
                 {"key": "venue_name", "type": "string", "maxLength": 100},
                 {"key": "venue_address", "type": "string", "maxLength": 200},
             ],
-            "optional": [
-                {"key": "child_name", "type": "string", "maxLength": 50},
-            ],
+            "optional": [],
         },
     },
     {
@@ -117,6 +117,7 @@ EVENTS = [
         },
         "fields_schema": {
             "required": [
+                {"key": "family_signature", "type": "string", "maxLength": 80},
                 {"key": "child_name", "type": "string", "maxLength": 50},
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
@@ -136,6 +137,7 @@ EVENTS = [
         },
         "fields_schema": {
             "required": [
+                {"key": "family_signature", "type": "string", "maxLength": 80},
                 {"key": "person_name", "type": "string", "maxLength": 50},
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
@@ -155,6 +157,7 @@ EVENTS = [
         },
         "fields_schema": {
             "required": [
+                {"key": "family_signature", "type": "string", "maxLength": 80},
                 {"key": "event_date", "type": "date", "min": "today"},
                 {"key": "event_time", "type": "time"},
                 {"key": "venue_name", "type": "string", "maxLength": 100},
@@ -797,6 +800,15 @@ def _template_variables(preview: str) -> list[str]:
 
 RETIRED_FIELD_KEYS = frozenset({"personal_message", "personalMessage"})
 
+# Non-nikoh events that should collect a family surname for the card footer.
+FAMILY_SIGNATURE_EVENTS: dict[str, list[str]] = {
+    # key order for required fields (remaining keys keep relative order after these)
+    "aqiqa": ["family_signature", "child_gender", "child_name"],
+    "sunnat": ["family_signature", "child_name"],
+    "birthday": ["family_signature", "person_name"],
+    "hudoyi": ["family_signature"],
+}
+
 
 def _strip_retired_fields(fields_schema: dict | None) -> dict:
     """Drop retired keys from event field schemas without clobbering other edits."""
@@ -818,6 +830,87 @@ def _strip_retired_fields(fields_schema: dict | None) -> dict:
             schema[bucket] = cleaned
             changed = True
     return schema if changed or fields_schema is None else (fields_schema or {})
+
+
+def _field_def(key: str) -> dict:
+    if key == "family_signature":
+        return {"key": "family_signature", "type": "string", "maxLength": 80}
+    if key == "child_name":
+        return {"key": "child_name", "type": "string", "maxLength": 50}
+    if key == "child_gender":
+        return {"key": "child_gender", "type": "enum", "options": ["boy", "girl"]}
+    if key == "person_name":
+        return {"key": "person_name", "type": "string", "maxLength": 50}
+    return {"key": key, "type": "string", "maxLength": 100}
+
+
+def _ensure_family_field_schemas(schema: dict | None, event_slug: str) -> dict:
+    """
+    Ensure non-nikoh events expose Oila familiyasi first (and aqiqa child_name
+    after gender). Does not modify nikoh.
+    """
+    if event_slug == "nikoh" or event_slug not in FAMILY_SIGNATURE_EVENTS:
+        return dict(schema or {})
+    desired = FAMILY_SIGNATURE_EVENTS[event_slug]
+    out = dict(schema or {})
+    required = [
+        row
+        for row in (out.get("required") or [])
+        if isinstance(row, dict) and str(row.get("key") or "")
+    ]
+    optional = [
+        row
+        for row in (out.get("optional") or [])
+        if isinstance(row, dict) and str(row.get("key") or "")
+    ]
+    by_key: dict[str, dict] = {}
+    for row in required + optional:
+        by_key[str(row["key"])] = dict(row)
+
+    for key in desired:
+        if key not in by_key:
+            by_key[key] = _field_def(key)
+
+    # Rebuild required: desired keys first, then other former-required keys.
+    required_keys = {str(r["key"]) for r in required}
+    required_keys.update(desired)
+    # child_name moves from optional → required for aqiqa
+    if event_slug == "aqiqa":
+        required_keys.add("child_name")
+
+    ordered: list[dict] = []
+    seen: set[str] = set()
+    for key in desired:
+        ordered.append(by_key[key])
+        seen.add(key)
+    for row in required:
+        key = str(row["key"])
+        if key in seen:
+            continue
+        if key in required_keys:
+            ordered.append(by_key[key])
+            seen.add(key)
+
+    new_optional = [
+        by_key[str(row["key"])]
+        for row in optional
+        if str(row["key"]) not in seen
+    ]
+    out["required"] = ordered
+    out["optional"] = new_optional
+    return out
+
+
+def _apply_event_schema_fixes(event: EventConfig) -> bool:
+    """Strip retired fields + ensure family_signature order for non-nikoh."""
+    raw = event.fields_schema if isinstance(event.fields_schema, dict) else {}
+    cleaned = _strip_retired_fields(raw)
+    updated = _ensure_family_field_schemas(cleaned, event.slug)
+    if updated != (event.fields_schema or {}):
+        event.fields_schema = updated
+        event.save(update_fields=["fields_schema", "updated_at"])
+        return True
+    return False
 
 
 def _sync_ready_texts(admin) -> int:
@@ -1012,13 +1105,8 @@ class Command(BaseCommand):
 
             # Never overwrite admin is_active on existing events.
 
-            # Always drop retired optional fields (e.g. personal_message) from schema.
-            cleaned_schema = _strip_retired_fields(
-                event.fields_schema if isinstance(event.fields_schema, dict) else {}
-            )
-            if cleaned_schema != (event.fields_schema or {}):
-                event.fields_schema = cleaned_schema
-                event.save(update_fields=["fields_schema", "updated_at"])
+            # Drop retired fields + ensure family_signature for non-nikoh events.
+            _apply_event_schema_fixes(event)
 
             active = bool(event.is_active)
 

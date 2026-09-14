@@ -61,6 +61,51 @@ class HayitSubtypeConfigTests(SimpleTestCase):
         )
 
 
+class FamilySignatureSchemaTests(SimpleTestCase):
+    def test_non_nikoh_events_lead_with_family_signature(self):
+        expected = {
+            "aqiqa": ["family_signature", "child_gender", "child_name"],
+            "sunnat": ["family_signature", "child_name"],
+            "birthday": ["family_signature", "person_name"],
+            "hudoyi": ["family_signature"],
+        }
+        for slug, head in expected.items():
+            item = next(row for row in EVENTS if row["slug"] == slug)
+            keys = [r["key"] for r in item["fields_schema"]["required"]]
+            self.assertEqual(keys[: len(head)], head, slug)
+
+    def test_nikoh_schema_unchanged_by_ensure_helper(self):
+        from apps.content.management.commands.seed_data import (
+            _ensure_family_field_schemas,
+        )
+
+        nikoh = next(row for row in EVENTS if row["slug"] == "nikoh")
+        original = nikoh["fields_schema"]
+        self.assertEqual(
+            _ensure_family_field_schemas(original, "nikoh"),
+            original,
+        )
+
+    def test_ensure_promotes_aqiqa_child_name_after_gender(self):
+        from apps.content.management.commands.seed_data import (
+            _ensure_family_field_schemas,
+        )
+
+        messy = {
+            "required": [
+                {"key": "child_gender", "type": "enum", "options": ["boy", "girl"]},
+                {"key": "event_date", "type": "date", "min": "today"},
+            ],
+            "optional": [
+                {"key": "child_name", "type": "string", "maxLength": 50},
+            ],
+        }
+        fixed = _ensure_family_field_schemas(messy, "aqiqa")
+        keys = [r["key"] for r in fixed["required"]]
+        self.assertEqual(keys[:3], ["family_signature", "child_gender", "child_name"])
+        self.assertFalse(any(r["key"] == "child_name" for r in fixed["optional"]))
+
+
 class SeedPreservesCustomTemplatesTests(TestCase):
     def test_seed_does_not_delete_or_deactivate_admin_uploads(self):
         call_command("seed_data")

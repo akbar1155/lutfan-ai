@@ -166,17 +166,17 @@ def clear_safe_text_area(
     img: Image.Image, safe: SafeRegion, *, corner_guard: bool = False
 ) -> Image.Image:
     """
-    Wash only décor that has invaded the type column back to paper color.
+    Wash décor that has invaded the type column back to paper color.
 
-    Center cream/paper texture is left untouched so this does not read as a
-    floating white card. Florals, gold filigree, and leaves under the copy
-    are blended toward the sampled paper.
+    Center cream/paper texture is mostly preserved; florals, gold filigree,
+    and frame lines under the copy are blended toward sampled paper, then a
+    soft paper veil is applied so thin ornaments cannot show through glyphs.
     """
     rgb = img.convert("RGB")
     paper = _sample_paper(rgb, safe)
     w, h = rgb.size
-    pad_x = int(safe.width * (0.08 if corner_guard else 0.03))
-    pad_y = int(safe.height * (0.07 if corner_guard else 0.02))
+    pad_x = int(safe.width * (0.10 if corner_guard else 0.06))
+    pad_y = int(safe.height * (0.08 if corner_guard else 0.05))
     x0 = max(0, safe.x0 - pad_x)
     y0 = max(0, safe.y0 - pad_y)
     x1 = min(w, safe.x1 + pad_x)
@@ -187,11 +187,11 @@ def clear_safe_text_area(
 
     paper_img = Image.new("RGB", region.size, paper)
     diff = ImageChops.difference(region, paper_img).convert("L")
-    # Lower floor so pale florals still wash; stronger blend under type.
+    # Catch pale gold rules / filigree as well as florals.
     lut = []
-    strength = 252 if corner_guard else 210
-    floor = 8 if corner_guard else 16
-    ramp_end = 36 if corner_guard else 52
+    strength = 255 if corner_guard else 252
+    floor = 3 if corner_guard else 4
+    ramp_end = 22 if corner_guard else 26
     for v in range(256):
         if v < floor:
             lut.append(0)
@@ -201,7 +201,7 @@ def clear_safe_text_area(
             lut.append(int(strength * (v - floor) / max(1, ramp_end - floor)))
     floral = diff.point(lut)
     floral = floral.filter(
-        ImageFilter.GaussianBlur(radius=min(10, max(4, min(region.size) // 140)))
+        ImageFilter.GaussianBlur(radius=min(12, max(5, min(region.size) // 120)))
     )
 
     # Soft mask at low-res so HD cards don't stall on a huge Gaussian radius.
@@ -222,6 +222,13 @@ def clear_safe_text_area(
     )
     mask = ImageChops.multiply(floral, feather)
     cleaned = Image.composite(paper_img, region, mask)
+
+    # Soft paper veil so leftover hairline ornaments cannot show through type.
+    veil_opacity = 198 if corner_guard else 185  # ~73–78% toward paper
+    veil = Image.new("L", region.size, veil_opacity)
+    veil = ImageChops.multiply(veil, feather)
+    cleaned = Image.composite(paper_img, cleaned, veil)
+
     rgb.paste(cleaned, (x0, y0))
     return rgb
 

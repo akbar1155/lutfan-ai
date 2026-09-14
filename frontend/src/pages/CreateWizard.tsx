@@ -581,9 +581,12 @@ export function DataPage() {
       ...((event.fields_schema.required || []) as FieldDef[]),
       ...((event.fields_schema.optional || []) as FieldDef[]),
     ].filter((f) => f.key !== "personal_message" && f.key !== "personalMessage");
-    // Nikoh: family signature used in ready-text closings / card footer.
+
+    const familyEvents = ["aqiqa", "sunnat", "birthday", "hudoyi"] as const;
+    // Nikoh keeps its existing first-field injection; other events get the same.
     if (
-      event.slug === "nikoh" &&
+      (event.slug === "nikoh" ||
+        (familyEvents as readonly string[]).includes(event.slug)) &&
       !all.some((f) => f.key === "family_signature")
     ) {
       all.unshift({
@@ -592,6 +595,45 @@ export function DataPage() {
         maxLength: 80,
       });
     }
+
+    if (event.slug === "aqiqa") {
+      const preferred = ["family_signature", "child_gender", "child_name"];
+      const byKey = new Map(all.map((f) => [String(f.key), f]));
+      const ordered: FieldDef[] = [];
+      for (const key of preferred) {
+        const row = byKey.get(key);
+        if (row) {
+          ordered.push(row);
+          byKey.delete(key);
+        } else if (key === "family_signature") {
+          ordered.push({ key: "family_signature", type: "string", maxLength: 80 });
+        } else if (key === "child_name") {
+          ordered.push({ key: "child_name", type: "string", maxLength: 50 });
+        }
+      }
+      for (const f of all) {
+        if (byKey.has(String(f.key))) ordered.push(f);
+      }
+      if (multiCeremony) {
+        return ordered.filter(
+          (f) => f.key !== "event_date" && f.key !== "event_time",
+        );
+      }
+      return ordered;
+    }
+
+    if ((familyEvents as readonly string[]).includes(event.slug)) {
+      const fam = all.find((f) => f.key === "family_signature");
+      const rest = all.filter((f) => f.key !== "family_signature");
+      const ordered = fam ? [fam, ...rest] : rest;
+      if (multiCeremony) {
+        return ordered.filter(
+          (f) => f.key !== "event_date" && f.key !== "event_time",
+        );
+      }
+      return ordered;
+    }
+
     if (multiCeremony) {
       return all.filter(
         (f) => f.key !== "event_date" && f.key !== "event_time",
@@ -605,8 +647,15 @@ export function DataPage() {
     const keys = ((event.fields_schema.required || []) as FieldDef[])
       .map((f) => String(f.key))
       .filter((k) => !(multiCeremony && (k === "event_date" || k === "event_time")));
-    if (event.slug === "nikoh" && !keys.includes("family_signature")) {
+    const familyEvents = ["aqiqa", "sunnat", "birthday", "hudoyi"];
+    if (
+      (event.slug === "nikoh" || familyEvents.includes(event.slug)) &&
+      !keys.includes("family_signature")
+    ) {
       keys.push("family_signature");
+    }
+    if (event.slug === "aqiqa" && !keys.includes("child_name")) {
+      keys.push("child_name");
     }
     return new Set(keys);
   }, [event, multiCeremony]);
@@ -1182,7 +1231,12 @@ export function TextPage() {
         body = ensurePersonalMessageInBody(body, ctx.personalMessage);
         body = normalizeUzbekSpelling(body, inv.language);
         const header = normalizeUzbekSpelling(next.header, inv.language);
-        const footer = normalizeUzbekSpelling(next.footer || "", inv.language);
+        const footer = normalizeUzbekSpelling(
+          (next.footer || "").trim()
+            ? next.footer
+            : formatFamilyFooter(ctx.fields.family_signature || "", inv.language),
+          inv.language,
+        );
         if (ctx.dateTimeFromSchedule.includes("\n")) {
           setBlocks({
             ...next,
@@ -1308,7 +1362,12 @@ export function TextPage() {
                           invitation.language,
                         );
                         const footer = normalizeUzbekSpelling(
-                          next.footer || "",
+                          (next.footer || "").trim()
+                            ? next.footer
+                            : formatFamilyFooter(
+                                vars.family_signature || "",
+                                invitation.language,
+                              ),
                           invitation.language,
                         );
                         // Multi-ceremony: keep the full ready-text body; only replace date block.
