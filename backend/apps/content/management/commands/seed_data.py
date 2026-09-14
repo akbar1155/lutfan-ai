@@ -1259,22 +1259,21 @@ class Command(BaseCommand):
             if existing_mood is None:
                 MoodTag.objects.create(slug=slug, **mood_defaults)
             else:
-                # Always refresh labels / category / prompt; keep admin is_active.
+                # Always refresh picker labels/order; keep admin prompt + is_active
+                # unless --force.
                 existing_mood.category = category
                 existing_mood.name_translations = names
-                existing_mood.prompt_snippet = snippet
                 existing_mood.sort_order = i
+                update_fields = [
+                    "category",
+                    "name_translations",
+                    "sort_order",
+                ]
                 if force:
+                    existing_mood.prompt_snippet = snippet
                     existing_mood.is_active = True
-                existing_mood.save(
-                    update_fields=[
-                        "category",
-                        "name_translations",
-                        "prompt_snippet",
-                        "sort_order",
-                        "is_active",
-                    ]
-                )
+                    update_fields.extend(["prompt_snippet", "is_active"])
+                existing_mood.save(update_fields=update_fields)
 
         # Hide retired catalog tags so they no longer appear in the AI picker.
         keep_slugs = {slug for slug, *_ in MOOD_TAGS}
