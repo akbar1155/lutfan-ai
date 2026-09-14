@@ -42,7 +42,7 @@ import {
   getSubtypeMode,
   hayitOccasionName,
 } from "../utils/eventSubtypes";
-import { looksLikeDateTimeLine, splitTemplateBlocks, ensureChildNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
+import { looksLikeDateTimeLine, splitTemplateBlocks, ensureEventNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
 import { formatFamilyFooter } from "../utils/familySignature";
 import { invitationContinuePath } from "../utils/wizardResume";
@@ -1115,12 +1115,12 @@ export function TextPage() {
             body = defaultBody;
           }
           if (!body.trim()) body = defaultBody;
-          if (
-            (inv.event_slug === "aqiqa" || inv.event_slug === "sunnat") &&
-            fields.child_name
-          ) {
-            body = ensureChildNameInBody(body, fields.child_name, inv.language);
-          }
+          body = ensureEventNameInBody(
+            body,
+            fields,
+            inv.event_slug,
+            inv.language,
+          );
           if (inv.event_slug === "hayit") {
             body = applyHayitOccasion(body, occasion);
           }
@@ -1142,16 +1142,18 @@ export function TextPage() {
             body: ensurePersonalMessageInBody(
               inv.event_slug === "hayit"
                 ? applyHayitOccasion(
-                    ensureChildNameInBody(
+                    ensureEventNameInBody(
                       defaultBody,
-                      fields.child_name,
+                      fields,
+                      inv.event_slug,
                       inv.language,
                     ),
                     occasion,
                   )
-                : ensureChildNameInBody(
+                : ensureEventNameInBody(
                     defaultBody,
-                    fields.child_name,
+                    fields,
+                    inv.event_slug,
                     inv.language,
                   ),
               personalMessage,

@@ -93,6 +93,30 @@ class OverlaySafeRegionTests(SimpleTestCase):
         dist_to_gold = sum(abs(a - b) for a, b in zip(sample, gold))
         self.assertLess(dist_to_paper, dist_to_gold)
 
+    def test_template_wash_is_ten_percent_smaller_than_padded_safe(self):
+        """Wash inset 10% so corner florals stay; center type column still clears."""
+        paper = (250, 244, 232)
+        floral = (40, 90, 55)
+        img = Image.new("RGB", (2400, 3000), paper)
+        draw = ImageDraw.Draw(img)
+        safe = analyze_safe_region(img, corner_guard=False)
+        pad_x = int(safe.width * 0.06)
+        pad_y = int(safe.height * 0.05)
+        old_x0 = max(0, safe.x0 - pad_x)
+        old_y0 = max(0, safe.y0 - pad_y)
+        old_x1 = min(2400, safe.x1 + pad_x)
+        old_y1 = min(3000, safe.y1 + pad_y)
+        rw, rh = old_x1 - old_x0, old_y1 - old_y0
+        new_x0 = old_x0 + int(rw * 0.05)
+        # Floral blob sitting in the 10% strip that used to be washed.
+        edge_x = old_x0 + 8
+        edge_y = (old_y0 + old_y1) // 2
+        draw.ellipse((edge_x - 20, edge_y - 20, edge_x + 20, edge_y + 20), fill=floral)
+        out = clear_safe_text_area(img, safe, corner_guard=False)
+        self.assertEqual(out.getpixel((edge_x, edge_y))[:3], floral)
+        self.assertGreater(new_x0, old_x0)
+        self.assertEqual(out.getpixel((1200, 1500))[:3], paper)
+
     def test_russian_orphan_last_word_is_merged(self):
         img = Image.new("RGB", (2400, 3000), (250, 244, 232))
         draw = ImageDraw.Draw(img)
@@ -159,8 +183,57 @@ class ChildNameOverlayTests(SimpleTestCase):
     def test_injects_into_generic_aqiqa_body(self):
         body = "Farzandimizning aqiqa marosimi munosabati bilan taklif etamiz."
         out = _inject_child_name(body, "Sardor", "uz-latn")
-        self.assertIn("Sardor", out)
+        self.assertIn("Farzandimiz Sardorning", out)
+        self.assertTrue(out.startswith("Farzandimiz Sardorning"))
         self.assertNotEqual(out, body)
+
+    def test_rewrites_dangling_child_name_into_the_sentence(self):
+        body = (
+            "Sizni farzandimizning Aqiqa marosimiga chorlaymiz. "
+            "Qutlug‘ davramizda yonimizda bo‘ling! Sardor"
+        )
+        out = _inject_child_name(body, "Sardor", "uz-latn")
+        self.assertIn("farzandimiz Sardorning", out)
+        self.assertFalse(out.rstrip(".!").endswith("Sardor"))
+
+    def test_injects_into_farzandimiz_without_ning(self):
+        body = "Farzandimiz aqiqa marosimi munosabati bilan sizni mehmon bo‘lishga taklif etamiz."
+        out = _inject_child_name(body, "Sardor", "uz-latn")
+        self.assertIn("Farzandimiz Sardorning aqiqa", out)
+
+    def test_injects_person_name_into_birthday_body(self):
+        from apps.ai_engine.prompts import _inject_person_name
+
+        body = "Tug‘ilgan kunni nishonlashga sizni samimiy taklif etamiz."
+        out = _inject_person_name(body, "Dilnoza", "uz-latn")
+        self.assertTrue(out.startswith("Dilnozaning tug‘ilgan kunini"))
+        self.assertNotIn("Dilnoza.", out)
+
+    def test_build_text_blocks_weaves_birthday_name(self):
+        class Event:
+            slug = "birthday"
+            subtypes = []
+
+        class Inv:
+            language = "uz-latn"
+            event = Event()
+            event_id = "birthday"
+            subtype_slug = None
+            subtype_slugs = []
+            event_data = {
+                "final_text_blocks": {
+                    "header": "Aziz mehmonlar!",
+                    "body": "Tug‘ilgan kun bayramimizga taklif etamiz.",
+                    "date_time": "",
+                    "address": "Toshkent",
+                    "footer": "",
+                },
+                "structured_fields": {"person_name": "Dilnoza"},
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertIn("Dilnozaning", blocks["body"])
+        self.assertNotEqual(blocks["footer"].lower(), "dilnoza")
 
     def test_build_text_blocks_does_not_use_child_as_footer(self):
         class Event:

@@ -181,6 +181,12 @@ def clear_safe_text_area(
     y0 = max(0, safe.y0 - pad_y)
     x1 = min(w, safe.x1 + pad_x)
     y1 = min(h, safe.y1 + pad_y)
+    # Keep type layout, only shrink the paper wash (10% narrower and shorter).
+    rw, rh = x1 - x0, y1 - y0
+    x0 += int(rw * 0.05)
+    y0 += int(rh * 0.05)
+    x1 -= int(rw * 0.05)
+    y1 -= int(rh * 0.05)
     region = rgb.crop((x0, y0, x1, y1))
     if region.size[0] < 8 or region.size[1] < 8:
         return rgb

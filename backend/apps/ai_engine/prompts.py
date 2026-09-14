@@ -127,32 +127,164 @@ def _inject_hayit_occasion(body: str, occasion: str) -> str:
     return text
 
 
-def _inject_child_name(body: str, child: str, lang: str) -> str:
-    """Put the child's name in the body instead of using it as a footer."""
-    child = (child or "").strip()
+_APOS = r"[ʻʼ''`‘’]"
+
+
+def _bare_personal_name(name: str) -> str:
+    n = (name or "").strip()
+    return re.sub(r"(?:ning|нинг)$", "", n, flags=re.I).strip()
+
+
+def _uz_genitive(name: str, cyrillic: bool) -> str:
+    if re.search(r"(ning|нинг)$", name, re.I):
+        return name
+    return f"{name}{'нинг' if cyrillic else 'ning'}"
+
+
+def _strip_dangling_name(body: str, name: str) -> str:
+    """Drop a name stuck at the end as its own word/sentence."""
+    if not body or not name:
+        return body or ""
+    stripped = re.sub(
+        rf"(?:(?<=[.!?…])\s*|\s+){re.escape(name)}(?:\s*[.])?\s*$",
+        "",
+        body.strip(),
+        flags=re.I,
+    )
+    return stripped.strip()
+
+
+def _stem_plus_gen(gen: str):
+    def repl(match: re.Match) -> str:
+        word = match.group(0)
+        low = word.lower()
+        for suf in ("ning", "нинг"):
+            if low.endswith(suf):
+                return f"{word[: len(word) - len(suf)]} {gen}"
+        return f"{word} {gen}"
+
+    return repl
+
+
+def _plus_gen(gen: str):
+    def repl(match: re.Match) -> str:
+        return f"{match.group(0)} {gen}"
+
+    return repl
+
+
+def _plus_name(name: str):
+    def repl(match: re.Match) -> str:
+        return f"{match.group(0)} {name}"
+
+    return repl
+
+
+def _dative_with_name(name: str, cyrillic: bool):
+    def repl(match: re.Match) -> str:
+        stem = match.group(0)[:-2]
+        return f"{stem} {name}{'га' if cyrillic else 'ga'}"
+
+    return repl
+
+
+def _weave_name_into_body(
+    body: str, name: str, lang: str, role: str = "child"
+) -> str:
+    """Fit a personal name into the invitation body so the sentence still makes sense."""
+    name = _bare_personal_name(name)
     body = (body or "").strip()
-    if not child:
+    if not name:
         return body
-    if child.lower() in body.lower():
+    stripped = _strip_dangling_name(body, name)
+    if stripped:
+        body = stripped
+    if name.lower() in body.lower():
         return body
-    patterns = [
-        (r"(?i)farzandimizning", f"farzandimiz {child}ning"),
-        (r"(?i)фарзандимизнинг", f"фарзандимиз {child}нинг"),
-        (r"(?i)o[ʻʼ''`]?g[ʻʼ''`]?limizning", f"oʻgʻlimiz {child}ning"),
-        (r"(?i)ўғлимизнинг", f"ўғлимиз {child}нинг"),
-        (r"(?i)нашего ребёнка", f"нашего ребёнка {child}"),
-        (r"(?i)нашего сына", f"нашего сына {child}"),
-        (r"(?i)our (?:child|son)", f"our child {child}"),
-    ]
+    lang = (lang or "").lower()
+    cyr = lang == "uz-cyrl" or bool(
+        re.search(r"[А-Яа-яЁёЎўҚқҒғҲҳ]", body)
+    )
+    gen = _uz_genitive(name, cyr)
+    ru = lang.startswith("ru")
+    rest = body[0].lower() + body[1:] if len(body) > 1 else body
+
+    if role == "person":
+        patterns = [
+            (rf"(?i)tug{_APOS}?ilgan\s+kunni", f"{gen} tug‘ilgan kunini"),
+            (rf"(?i)туғилган\s+кунни", f"{gen} туғилган кунини"),
+            (rf"(?i)tug{_APOS}?ilgan\s+kun\s+bayramimizga", f"{gen} tug‘ilgan kun bayramiga"),
+            (rf"(?i)туғилган\s+кун\s+байрамимизга", f"{gen} туғилган кун байрамига"),
+            (rf"(?i)tug{_APOS}?ilgan\s+kun\s+bayramimiz", f"{gen} tug‘ilgan kun bayrami"),
+            (rf"(?i)туғилган\s+кун\s+байрамимиз", f"{gen} туғилган кун байрами"),
+            (rf"(?i)tavallud\s+ayyomimizni", f"{gen} tavallud ayyomini"),
+            (rf"(?i)таваллуд\s+айёмимизни", f"{gen} таваллуд айёмини"),
+            (rf"(?i)tavallud\s+ayyomi", f"{gen} tavallud ayyomi"),
+            (rf"(?i)таваллуд\s+айёми", f"{gen} таваллуд айёми"),
+            (rf"(?i)tug{_APOS}?ilgan\s+kuni", f"{gen} tug‘ilgan kuni"),
+            (rf"(?i)туғилган\s+куни", f"{gen} туғилган куни"),
+            (rf"(?i)tug{_APOS}?ilgan\s+kun", f"{gen} tug‘ilgan kun"),
+            (rf"(?i)туғилган\s+кун", f"{gen} туғилган кун"),
+            (r"(?i)дня рождения", f"дня рождения {name}"),
+            (r"(?i)день рождения", f"день рождения {name}"),
+        ]
+    else:
+        patterns = [
+            (rf"(?i)jajji\s+dilbandimizning", _stem_plus_gen(gen)),
+            (rf"(?i)жажжи\s+дилбандимизнинг", _stem_plus_gen(gen)),
+            (rf"(?i)jajji\s+farzandimiz(?!ning|нинг)", _plus_name(name)),
+            (rf"(?i)жажжи\s+фарзандимиз(?!нинг|ning)", _plus_name(name)),
+            (r"(?i)farzandimizning", _stem_plus_gen(gen)),
+            (r"(?i)фарзандимизнинг", _stem_plus_gen(gen)),
+            (r"(?i)dilbandimizning", _stem_plus_gen(gen)),
+            (r"(?i)дилбандимизнинг", _stem_plus_gen(gen)),
+            (r"(?i)qahramonimizning", _stem_plus_gen(gen)),
+            (r"(?i)қаҳрамонимизнинг", _stem_plus_gen(gen)),
+            (rf"(?i)o{_APOS}?g{_APOS}?limizning", _stem_plus_gen(gen)),
+            (r"(?i)ўғлимизнинг", _stem_plus_gen(gen)),
+            (r"(?i)qizimizning", _stem_plus_gen(gen)),
+            (r"(?i)қизимизнинг", _stem_plus_gen(gen)),
+            (r"(?i)farzandimizga", _dative_with_name(name, False)),
+            (r"(?i)фарзандимизга", _dative_with_name(name, True)),
+            (rf"(?i)farzandimiz(?=\s+(?:aqiqa|sunnat))", _plus_gen(gen)),
+            (rf"(?i)фарзандимиз(?=\s+(?:ақиқа|суннат))", _plus_gen(gen)),
+            (r"(?i)нашего ребёнка", _plus_name(name)),
+            (r"(?i)нашего сына", _plus_name(name)),
+            (r"(?i)our (?:child|son)", _plus_name(name)),
+            (rf"(?i)((?:aqiqa|ақиқа)\s+(?:marosimi|маросими|to{_APOS}?yi|тўйи|dasturxoniga|дастурхонига))", f"{gen} \\1"),
+            (rf"(?i)((?:sunnat|суннат)\s+to{_APOS}?yi)", f"{gen} \\1"),
+            (r"(?i)обряд акика", _plus_name(name)),
+            (r"(?i)суннат той", _plus_name(name)),
+        ]
+
     for pat, repl in patterns:
         updated, n = re.subn(pat, repl, body, count=1)
         if n:
             return updated
     if not body:
-        return child
-    if lang.startswith("ru"):
-        return f"{body.rstrip('.')} {child}."
-    return f"{body.rstrip('.')} {child}."
+        return name
+    if ru:
+        honor = "именинника" if role == "person" else "ребёнка"
+        return f"{body.rstrip('.')} в честь {honor} {name}."
+    if role == "person":
+        lead = f"{gen} тантанаси муносабати билан " if cyr else f"{gen} tantanasi munosabati bilan "
+        return lead + rest
+    lead = (
+        f"Фарзандимиз {gen} тантанаси муносабати билан "
+        if cyr
+        else f"Farzandimiz {gen} tantanasi munosabati bilan "
+    )
+    return lead + rest
+
+
+def _inject_child_name(body: str, child: str, lang: str) -> str:
+    """Put the child's name in the body instead of using it as a footer."""
+    return _weave_name_into_body(body, child, lang, role="child")
+
+
+def _inject_person_name(body: str, person: str, lang: str) -> str:
+    """Weave the birthday honoree's name into the body."""
+    return _weave_name_into_body(body, person, lang, role="person")
 
 
 def build_text_blocks(invitation: Invitation) -> dict[str, str]:
@@ -310,11 +442,17 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
             address = venue
 
     child = sanitize_overlay_field(structured.get("child_name", ""))
+    person = sanitize_overlay_field(structured.get("person_name", ""))
     event_slug = _event_slug(invitation)
     if child and event_slug in ("aqiqa", "sunnat"):
         if body or not user_locked_body:
             body = _inject_child_name(body, child, lang)
         if footer and footer.lower() == child.lower():
+            footer = ""
+    if person and event_slug == "birthday":
+        if body or not user_locked_body:
+            body = _inject_person_name(body, person, lang)
+        if footer and footer.lower() == person.lower():
             footer = ""
 
     # Hayit: no calendar date/time on the card; name Ramazon vs Qurbon in the body
