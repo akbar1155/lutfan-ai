@@ -8,12 +8,20 @@ import { formatFamilySignature } from "./familySignature";
 import { FOOTER_MARK } from "./readyTexts";
 
 const DATETIME_LINE_RE =
-  /(?:\d{1,2}\s*[-./]\s*[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+|\d{1,2}\.\d{1,2}\.\d{4}).*\d{1,2}\s*:\s*\d{2}|soat\s+\d{1,2}\s*:\s*\d{2}|соат\s+\d{1,2}\s*:\s*\d{2}/i;
+  /(?:\d{1,2}(?:\s*[-./]\s*|\s+)[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+|\d{1,2}\.\d{1,2}\.\d{4}).*\d{1,2}\s*:\s*\d{2}|soat\s+\d{1,2}\s*:\s*\d{2}|соат\s+\d{1,2}\s*:\s*\d{2}|\bв\s+\d{1,2}\s*:\s*\d{2}/i;
+
+const TRAILING_DATETIME_RE =
+  /\s+(?:\d{1,2}(?:\s*[-./]\s*|\s+)[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+(?:\s+\d{4})?|\d{1,2}\.\d{1,2}\.\d{4})(?:\s*,\s*(?:soat|соат|в)\s*)?\s*\d{1,2}:\d{2}(?:\s*(?:da|да))?\s*$/i;
 
 export function looksLikeDateTimeLine(text: string): boolean {
   const t = (text || "").trim();
   if (!t || t.includes("\n") || t.length > 90) return false;
   return DATETIME_LINE_RE.test(t);
+}
+
+/** Keep date/time in its own block — never leave "24 сентября, в 10:30" inside body. */
+export function stripTrailingDateTime(text: string): string {
+  return (text || "").replace(TRAILING_DATETIME_RE, "").trim();
 }
 
 const NAME_KEYS = ["child_name", "childName", "person_name", "personName"] as const;
@@ -121,7 +129,9 @@ export function splitTemplateBlocks(
     bodyLines.push(line);
   }
 
-  const body = bodyLines.join(" ").replace(/\s{2,}/g, " ").trim();
+  const body = stripTrailingDateTime(
+    bodyLines.join(" ").replace(/\s{2,}/g, " ").trim(),
+  );
   return {
     header,
     body: ensurePersonNameInBody(

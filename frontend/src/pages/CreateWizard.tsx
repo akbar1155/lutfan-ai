@@ -42,7 +42,13 @@ import {
   getSubtypeMode,
   hayitOccasionName,
 } from "../utils/eventSubtypes";
-import { looksLikeDateTimeLine, splitTemplateBlocks, ensureEventNameInBody, ensurePersonalMessageInBody } from "../utils/textBlocks";
+import {
+  looksLikeDateTimeLine,
+  splitTemplateBlocks,
+  ensureEventNameInBody,
+  ensurePersonalMessageInBody,
+  stripTrailingDateTime,
+} from "../utils/textBlocks";
 import { cleanFieldValue, isJunkFieldValue } from "../utils/fieldQuality";
 import { formatFamilyFooter } from "../utils/familySignature";
 import { invitationContinuePath } from "../utils/wizardResume";
@@ -177,6 +183,65 @@ function fieldLabelKey(key: string) {
 
 function optionLabelKey(value: string) {
   return `opt_${value}`;
+}
+
+function tInLang(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  key: string,
+  language: string,
+  options?: Record<string, unknown>,
+) {
+  return t(key, { ...options, lng: normalizeUiLang(language) });
+}
+
+function invitationCopyFromTemplate(opts: {
+  preview: string;
+  fields: Record<string, string>;
+  language: string;
+  eventSlug: string;
+  occasion: string;
+  personalMessage: string;
+  dateTimeFromSchedule: string;
+  defaultBody: string;
+}) {
+  const next = splitTemplateBlocks(
+    opts.preview,
+    {
+      ...opts.fields,
+      hayit_occasion: opts.occasion,
+      child_name: opts.fields.child_name || opts.fields.childName || "",
+      person_name: opts.fields.person_name || opts.fields.personName || "",
+      family_signature: opts.fields.family_signature || "",
+    },
+    opts.language,
+    {
+      skipDate: opts.eventSlug === "hayit",
+      fallbackBody: opts.defaultBody,
+    },
+  );
+  let body =
+    opts.eventSlug === "hayit"
+      ? applyHayitOccasion(next.body, opts.occasion)
+      : next.body;
+  body = ensurePersonalMessageInBody(body, opts.personalMessage);
+  body = normalizeUzbekSpelling(body, opts.language);
+  const header = normalizeUzbekSpelling(next.header, opts.language);
+  const footer = normalizeUzbekSpelling(
+    (next.footer || "").trim()
+      ? next.footer
+      : formatFamilyFooter(opts.fields.family_signature || "", opts.language),
+    opts.language,
+  );
+  if (opts.dateTimeFromSchedule.includes("\n")) {
+    return {
+      ...next,
+      header,
+      body,
+      footer,
+      date_time: opts.dateTimeFromSchedule,
+    };
+  }
+  return { ...next, header, body, footer };
 }
 
 function normalizeUzbekSpelling(text: string, language?: string): string {
@@ -842,7 +907,7 @@ export function DataPage() {
                   <legend>{label}</legend>
                   <div className="ceremony-slot-row">
                     <DateField
-                      label={t(fieldLabelKey("event_date"))}
+                      label={tInLang(t, fieldLabelKey("event_date"), invitation.language)}
                       required
                       minToday
                       error={fieldErrors[`sched:${slug}:date`]}
@@ -860,7 +925,7 @@ export function DataPage() {
                       }}
                     />
                     <TimeField
-                      label={t(fieldLabelKey("event_time"))}
+                      label={tInLang(t, fieldLabelKey("event_time"), invitation.language)}
                       required
                       error={fieldErrors[`sched:${slug}:time`]}
                       value={slot.time}
@@ -886,7 +951,9 @@ export function DataPage() {
         {fields.map((field) => {
           const key = String(field.key);
           const type = String(field.type || "string");
-          const label = t(fieldLabelKey(key), { defaultValue: key });
+          const label = tInLang(t, fieldLabelKey(key), invitation.language, {
+            defaultValue: key,
+          });
           const required = requiredKeys.has(key);
           const fieldError = fieldErrors[key];
           const clearError = () =>
@@ -987,7 +1054,7 @@ export function DataPage() {
                 value={form[key] || ""}
                 placeholder={
                   key === "family_signature"
-                    ? t("field_family_signature_ph", {
+                    ? tInLang(t, "field_family_signature_ph", invitation.language, {
                         defaultValue: "masalan: Tohirov",
                       })
                     : undefined
@@ -1081,14 +1148,14 @@ export function TextPage() {
         const defaultBody =
           inv.event_slug === "hayit"
             ? applyHayitOccasion(
-                t("defaultBody_hayit", {
+                tInLang(t, "defaultBody_hayit", inv.language, {
                   occasion,
-                  defaultValue: t("defaultBody"),
+                  defaultValue: tInLang(t, "defaultBody", inv.language),
                 }),
                 occasion,
               )
-            : t(`defaultBody_${inv.event_slug}`, {
-                defaultValue: t("defaultBody"),
+            : tInLang(t, `defaultBody_${inv.event_slug}`, inv.language, {
+                defaultValue: tInLang(t, "defaultBody", inv.language),
               });
         const venueLine = cleanFieldValue(
           [fields.venue_name, fields.venue_address]
@@ -1097,7 +1164,9 @@ export function TextPage() {
             .join(", "),
         );
         if (existing) {
-          let body = formatDatesInText(existing.body || "", inv.language);
+          let body = stripTrailingDateTime(
+            formatDatesInText(existing.body || "", inv.language),
+          );
           let dateTime =
             inv.event_slug === "hayit"
               ? ""
@@ -1138,7 +1207,7 @@ export function TextPage() {
           });
         } else {
           setBlocks({
-            header: t("defaultGreeting"),
+            header: tInLang(t, "defaultGreeting", inv.language),
             body: ensurePersonalMessageInBody(
               inv.event_slug === "hayit"
                 ? applyHayitOccasion(
@@ -1184,6 +1253,9 @@ export function TextPage() {
             savedTemplateId: String(
               inv.event_data?.ready_text_template_id || "",
             ).trim(),
+            savedTextLanguage: String(
+              inv.event_data?.ready_text_language || "",
+            ).trim(),
           }),
         ]);
       })
@@ -1204,55 +1276,24 @@ export function TextPage() {
         const saved =
           ctx.savedTemplateId &&
           merged.find((tpl) => tpl.id === ctx.savedTemplateId);
-        // Keep previous pill highlight when returning to this step; never leave none selected.
-        if (saved) {
-          setSelectedTemplateId(saved.id);
-          return;
-        }
-        setSelectedTemplateId(first.id);
-        if (ctx.hasSavedText) return;
+        const tpl = saved || first;
+        setSelectedTemplateId(tpl.id);
+        const langChanged =
+          (ctx.savedTextLanguage || "uz-latn") !== inv.language;
+        if (ctx.hasSavedText && !langChanged) return;
 
-        // First visit: apply the default ready-text style.
-        const vars = {
-          ...ctx.fields,
-          hayit_occasion: ctx.occasion,
-          child_name: ctx.fields.child_name || ctx.fields.childName || "",
-          person_name: ctx.fields.person_name || ctx.fields.personName || "",
-          family_signature: ctx.fields.family_signature || "",
-        };
-        const next = splitTemplateBlocks(
-          first.preview_text,
-          vars,
-          inv.language,
-          {
-            skipDate: inv.event_slug === "hayit",
-            fallbackBody: ctx.defaultBody,
-          },
+        setBlocks(
+          invitationCopyFromTemplate({
+            preview: tpl.preview_text,
+            fields: ctx.fields,
+            language: inv.language,
+            eventSlug: inv.event_slug,
+            occasion: ctx.occasion,
+            personalMessage: ctx.personalMessage,
+            dateTimeFromSchedule: ctx.dateTimeFromSchedule,
+            defaultBody: ctx.defaultBody,
+          }),
         );
-        let body =
-          inv.event_slug === "hayit"
-            ? applyHayitOccasion(next.body, ctx.occasion)
-            : next.body;
-        body = ensurePersonalMessageInBody(body, ctx.personalMessage);
-        body = normalizeUzbekSpelling(body, inv.language);
-        const header = normalizeUzbekSpelling(next.header, inv.language);
-        const footer = normalizeUzbekSpelling(
-          (next.footer || "").trim()
-            ? next.footer
-            : formatFamilyFooter(ctx.fields.family_signature || "", inv.language),
-          inv.language,
-        );
-        if (ctx.dateTimeFromSchedule.includes("\n")) {
-          setBlocks({
-            ...next,
-            header,
-            body,
-            footer,
-            date_time: ctx.dateTimeFromSchedule,
-          });
-        } else {
-          setBlocks({ ...next, header, body, footer });
-        }
       })
       .catch((err: Error) => setError(err.message));
   }, [id, t, authLoading]);
@@ -1316,29 +1357,28 @@ export function TextPage() {
                       const fallbackBody =
                         invitation.event_slug === "hayit"
                           ? applyHayitOccasion(
-                              t("defaultBody_hayit", {
+                              tInLang(t, "defaultBody_hayit", invitation.language, {
                                 occasion,
-                                defaultValue: t("defaultBody"),
+                                defaultValue: tInLang(
+                                  t,
+                                  "defaultBody",
+                                  invitation.language,
+                                ),
                               }),
                               occasion,
                             )
-                          : t(`defaultBody_${invitation.event_slug}`, {
-                              defaultValue: t("defaultBody"),
-                            });
-                      const vars = {
-                        ...structuredFields,
-                        hayit_occasion: occasion,
-                        child_name:
-                          structuredFields.child_name ||
-                          structuredFields.childName ||
-                          "",
-                        person_name:
-                          structuredFields.person_name ||
-                          structuredFields.personName ||
-                          "",
-                        family_signature:
-                          structuredFields.family_signature || "",
-                      };
+                          : tInLang(
+                              t,
+                              `defaultBody_${invitation.event_slug}`,
+                              invitation.language,
+                              {
+                                defaultValue: tInLang(
+                                  t,
+                                  "defaultBody",
+                                  invitation.language,
+                                ),
+                              },
+                            );
                       const personalMessage = cleanFieldValue(
                         String(
                           structuredFields.personal_message ||
@@ -1346,47 +1386,18 @@ export function TextPage() {
                             "",
                         ),
                       );
-                      setBlocks(() => {
-                        const next = splitTemplateBlocks(
-                          tpl.preview_text,
-                          vars,
-                          invitation.language,
-                          {
-                            skipDate: invitation.event_slug === "hayit",
-                            fallbackBody,
-                          },
-                        );
-                        let body =
-                          invitation.event_slug === "hayit"
-                            ? applyHayitOccasion(next.body, occasion)
-                            : next.body;
-                        body = ensurePersonalMessageInBody(body, personalMessage);
-                        body = normalizeUzbekSpelling(body, invitation.language);
-                        const header = normalizeUzbekSpelling(
-                          next.header,
-                          invitation.language,
-                        );
-                        const footer = normalizeUzbekSpelling(
-                          (next.footer || "").trim()
-                            ? next.footer
-                            : formatFamilyFooter(
-                                vars.family_signature || "",
-                                invitation.language,
-                              ),
-                          invitation.language,
-                        );
-                        // Multi-ceremony: keep the full ready-text body; only replace date block.
-                        if (scheduleDateTime.includes("\n")) {
-                          return {
-                            ...next,
-                            header,
-                            body,
-                            footer,
-                            date_time: scheduleDateTime,
-                          };
-                        }
-                        return { ...next, header, body, footer };
-                      });
+                      setBlocks(
+                        invitationCopyFromTemplate({
+                          preview: tpl.preview_text,
+                          fields: structuredFields,
+                          language: invitation.language,
+                          eventSlug: invitation.event_slug,
+                          occasion,
+                          personalMessage,
+                          dateTimeFromSchedule: scheduleDateTime,
+                          defaultBody: fallbackBody,
+                        }),
+                      );
                     }}
                   >
                     {label}
@@ -1405,7 +1416,7 @@ export function TextPage() {
                 : (["header", "body", "date_time", "footer"] as const)
             ).map((key) => (
               <label key={key} className={`text-block text-block-${key}`}>
-                <span>{t(`block_${key}`)}</span>
+                <span>{tInLang(t, `block_${key}`, invitation.language)}</span>
                 <textarea
                   rows={key === "body" ? 4 : 2}
                   value={blocks[key]}
@@ -1439,6 +1450,7 @@ export function TextPage() {
                       invitation.event_data?.ready_text_template_id ||
                       templates[0]?.id ||
                       null,
+                    ready_text_language: invitation.language,
                     final_text_blocks: {
                       header: normalizeUzbekSpelling(blocks.header, invitation.language),
                       body: normalizeUzbekSpelling(blocks.body, invitation.language),
@@ -1994,7 +2006,9 @@ export function ResultPage() {
           (inv.event_data?.final_text_blocks as typeof blocks) || {};
         setBlocks({
           header: formatDatesInText(existing.header || "", inv.language),
-          body: formatDatesInText(existing.body || "", inv.language),
+          body: stripTrailingDateTime(
+            formatDatesInText(existing.body || "", inv.language),
+          ),
           date_time:
             inv.event_slug === "hayit"
               ? ""
@@ -2177,7 +2191,7 @@ export function ResultPage() {
                     : (["header", "body", "date_time", "address", "footer"] as const)
                 ).map((key) => (
                   <label key={key} className={`text-block text-block-${key}`}>
-                    <span>{t(`block_${key}`)}</span>
+                    <span>{tInLang(t, `block_${key}`, invitation.language)}</span>
                     <textarea
                       rows={key === "body" ? 4 : 2}
                       value={blocks[key]}

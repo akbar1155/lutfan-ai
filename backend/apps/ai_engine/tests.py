@@ -455,6 +455,44 @@ class MultiCeremonyBodyTests(SimpleTestCase):
         self.assertIn("Maslahat oshi", blocks["date_time"])
         self.assertIn("Nikoh oqshomi", blocks["date_time"])
 
+    def test_build_text_blocks_strips_trailing_russian_datetime_from_body(self):
+        """Date lives in Sana va vaqt — Russian body must not keep '24 сентября, в 10:30'."""
+
+        class Event:
+            slug = "nikoh"
+            subtypes = []
+
+        class Inv:
+            language = "ru"
+            event = Event()
+            event_id = "nikoh"
+            subtype_slug = None
+            subtype_slugs = []
+            event_data = {
+                "final_text_blocks": {
+                    "header": "Дорогие гости!",
+                    "body": (
+                        "Приглашаем Вас и Вашу семью за наш торжественный дастархан "
+                        "по случаю священного никаха наших детей. Для нас высокая честь, "
+                        "что в эти радостные и ответственные минуты Вы будете рядом и "
+                        "пожелаете молодым счастливого будущего. 24 сентября, в 10:30"
+                    ),
+                    "date_time": "24 сентября, в 10:30",
+                    "address": "Ташкент",
+                    "footer": "С уважением, семья Каримовых",
+                },
+                "structured_fields": {
+                    "event_date": "2026-09-24",
+                    "event_time": "10:30",
+                },
+            }
+
+        blocks = build_text_blocks(Inv())
+        self.assertNotIn("сентября", blocks["body"])
+        self.assertNotIn("10:30", blocks["body"])
+        self.assertIn("дастархан", blocks["body"])
+        self.assertIn("10:30", blocks["date_time"])
+
 
 class HayitOccasionOverlayTests(SimpleTestCase):
     def test_generic_hayit_body_becomes_ramazon(self):

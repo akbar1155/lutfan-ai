@@ -14,11 +14,12 @@ from .spelling import (
 
 _DATETIME_LINE_RE = re.compile(
     r"("
-    r"\d{1,2}\s*[-./]\s*[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+"
+    r"\d{1,2}(?:\s*[-./]\s*|\s+)[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+"
     r"|\d{1,2}\.\d{1,2}\.\d{4}"
     r").*\d{1,2}:\d{2}"
     r"|soat\s+\d{1,2}:\d{2}"
-    r"|соат\s+\d{1,2}:\d{2}",
+    r"|соат\s+\d{1,2}:\d{2}"
+    r"|в\s+\d{1,2}:\d{2}",
     re.IGNORECASE,
 )
 
@@ -28,6 +29,18 @@ def _looks_like_datetime_line(text: str) -> bool:
     if not t or "\n" in t or len(t) > 90:
         return False
     return bool(_DATETIME_LINE_RE.search(t))
+
+
+_TRAILING_DATETIME_RE = re.compile(
+    r"\s+(?:\d{1,2}(?:\s*[-./]\s*|\s+)[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ‘']+(?:\s+\d{4})?"
+    r"|\d{1,2}\.\d{1,2}\.\d{4})"
+    r"(?:\s*,\s*(?:soat|соат|в)\s*)?\s*\d{1,2}:\d{2}(?:\s*(?:da|да))?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _strip_trailing_datetime(text: str) -> str:
+    return _TRAILING_DATETIME_RE.sub("", text or "").strip()
 
 
 def format_family_signature(raw: str | None, language: str | None = None) -> str:
@@ -326,7 +339,7 @@ def build_text_blocks(invitation: Invitation) -> dict[str, str]:
     schedule = data.get("ceremony_schedule") or {}
 
     header = sanitize_overlay_field(header)
-    body = scrub_junk_lines(body)
+    body = _strip_trailing_datetime(scrub_junk_lines(body))
     date_time = scrub_junk_lines(date_time)
     address = sanitize_overlay_field(address)
     footer = sanitize_overlay_field(footer)
