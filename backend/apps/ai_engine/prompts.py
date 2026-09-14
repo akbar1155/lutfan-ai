@@ -511,6 +511,19 @@ COLOR_PALETTES = {
     "blush_pearl": (
         "Palette BLUSH_PEARL: soft blush wash, pearl cream, rose-gold fine lines."
     ),
+    "soft_navy": (
+        "Palette SOFT_NAVY: warm cream paper, soft navy #1E3A5F and sky accents, "
+        "muted silver-gold frame — never neon blue."
+    ),
+    "silver_pearl": (
+        "Palette SILVER_PEARL: soft white cream paper, cool silver metallic frame and accents."
+    ),
+    "warm_bronze": (
+        "Palette WARM_BRONZE: cream paper, warm bronze and copper metallic accents, soft brown leaves."
+    ),
+    "warm_beige": (
+        "Palette WARM_BEIGE: sand-beige wash, warm cream paper, soft champagne accents."
+    ),
 }
 
 
@@ -618,6 +631,12 @@ MOOD_PRESET_HINTS: dict[str, dict[str, str]] = {
     "rose_gold": {"palette": "dusty_rose", "decoration": "rose"},
     "emerald": {"palette": "emerald_gold", "decoration": "botanical"},
     "ivory": {"palette": "champagne_olive", "decoration": "minimal_luxury"},
+    "pink": {"palette": "blush_pearl", "decoration": "floral"},
+    "burgundy": {"palette": "burgundy_gold", "decoration": "luxury_wedding"},
+    "blue": {"palette": "soft_navy", "decoration": "minimal_luxury"},
+    "beige": {"palette": "warm_beige", "decoration": "minimal_luxury"},
+    "silver": {"palette": "silver_pearl", "decoration": "gold_ornamental"},
+    "bronze": {"palette": "warm_bronze", "decoration": "uzbek_ornament"},
     "peonies": {"palette": "dusty_rose", "decoration": "floral"},
     "fine_line": {"palette": "sage_antique", "decoration": "minimal_luxury"},
     "ornament": {"palette": "emerald_gold", "decoration": "uzbek_ornament"},
@@ -629,7 +648,6 @@ MOOD_PRESET_HINTS: dict[str, dict[str, str]] = {
     "marble": {"palette": "sage_antique", "decoration": "gold_ornamental"},
     "linen": {"palette": "champagne_olive", "decoration": "minimal_luxury"},
     "pearlescent": {"palette": "blush_pearl", "decoration": "gold_ornamental"},
-    "handmade": {"palette": "sage_antique", "decoration": "botanical"},
 }
 
 
@@ -862,7 +880,7 @@ def build_prompt(
         custom_note = sanitize_user_text(invitation.custom_style_note, 200)
         mood_snippets.append(custom_note)
 
-    rose_allowed = any(s in ("rose_gold", "peonies") for s in mood_slugs)
+    rose_allowed = any(s in ("rose_gold", "peonies", "pink") for s in mood_slugs)
     if mood_slugs and not rose_allowed:
         mood_snippets.append(
             "CRITICAL: Do NOT draw roses, rose bouquets, or rose-gold florals. "

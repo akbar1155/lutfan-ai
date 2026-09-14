@@ -209,43 +209,77 @@ MOOD_TAGS = [
         "rose_gold",
         "color",
         "soft rose-gold metallic double frame and warm blush highlights like premium pink stationery",
-        {"uz-cyrl": "Атиргул олтин", "uz-latn": "Atirgul oltin", "ru": "Розовое золото"},
+        {"uz-cyrl": "Олтин", "uz-latn": "Oltin", "ru": "Золотой"},
     ),
     (
         "emerald",
         "color",
         "deep forest-green typography on cream paper with gold accents — no mixed icon badge rows",
-        {"uz-cyrl": "Зумрад", "uz-latn": "Zumrad", "ru": "Изумруд"},
+        {"uz-cyrl": "Яшил", "uz-latn": "Yashil", "ru": "Зелёный"},
     ),
     (
         "ivory",
         "color",
         "warm cream ivory textured paper ground with soft parchment feel",
-        {"uz-cyrl": "Филсуяк", "uz-latn": "Filsuyak", "ru": "Слоновая кость"},
+        {"uz-cyrl": "Оқ", "uz-latn": "Oq", "ru": "Белый"},
+    ),
+    (
+        "pink",
+        "color",
+        "soft dusty pink and blush accents on warm cream paper with delicate metallic highlights",
+        {"uz-cyrl": "Пушти", "uz-latn": "Pushti", "ru": "Розовый"},
+    ),
+    (
+        "burgundy",
+        "color",
+        "deep burgundy accents with antique gold on warm cream invitation paper",
+        {"uz-cyrl": "Бордо", "uz-latn": "Bordo", "ru": "Бордовый"},
+    ),
+    (
+        "blue",
+        "color",
+        "soft navy and sky-blue accents on cream paper with muted silver-gold highlights",
+        {"uz-cyrl": "Кўк", "uz-latn": "Ko‘k", "ru": "Синий"},
+    ),
+    (
+        "beige",
+        "color",
+        "warm beige and sand tones with soft champagne accents on cream paper",
+        {"uz-cyrl": "Беж", "uz-latn": "Bej", "ru": "Бежевый"},
+    ),
+    (
+        "silver",
+        "color",
+        "cool silver metallic frame and accents on soft white cream paper",
+        {"uz-cyrl": "Кумуш", "uz-latn": "Kumush", "ru": "Серебряный"},
+    ),
+    (
+        "bronze",
+        "color",
+        "warm bronze and copper metallic accents on cream paper",
+        {"uz-cyrl": "Бронза", "uz-latn": "Bronza", "ru": "Бронзовый"},
     ),
     (
         "peonies",
         "flowers",
         "detailed cream and blush peonies with soft green-gold leaves framing the four corners without covering text",
-        {"uz-cyrl": "Пионлар", "uz-latn": "Pionlar", "ru": "Пионы"},
+        {"uz-cyrl": "Катта гуллар", "uz-latn": "Katta gullar", "ru": "Крупные цветы"},
     ),
     (
         "fine_line",
         "flowers",
         "delicate fine-line botanical and foliage illustrations overlapping a thin metallic frame — no roses",
-        {"uz-cyrl": "Ингичка чизиқ", "uz-latn": "Ingichka chiziq", "ru": "Тонкая графика"},
+        {
+            "uz-cyrl": "Чизиқли барглар",
+            "uz-latn": "Chiziqli barglar",
+            "ru": "Листья линиями",
+        },
     ),
     (
         "ornament",
         "style",
         "thin gold rectangular frame with small gold flourishes and heart dividers between sections",
-        {"uz-cyrl": "Нақш", "uz-latn": "Naqsh", "ru": "Орнамент"},
-    ),
-    (
-        "event_rows",
-        "style",
-        "stacked horizontal ceremony rows with subtle matching dividers — not mixed sticker icons",
-        {"uz-cyrl": "Тадбир қаторлари", "uz-latn": "Tadbir qatorlari", "ru": "Ряды событий"},
+        {"uz-cyrl": "Рамка ва нақш", "uz-latn": "Ramka va naqsh", "ru": "Рамка и узор"},
     ),
     (
         "minimalist",
@@ -257,43 +291,41 @@ MOOD_TAGS = [
         "velvet",
         "texture",
         "soft matte paper depth with subtle grain, premium print stationery feel",
-        {"uz-cyrl": "Бархат", "uz-latn": "Barxat", "ru": "Бархат"},
+        {"uz-cyrl": "Юмшоқ қоғоз", "uz-latn": "Yumshoq qog‘oz", "ru": "Мягкая бумага"},
     ),
     (
         "silk",
         "texture",
         "silk texture, smooth elegant fabric folds, premium finish",
-        {"uz-cyrl": "Ипак", "uz-latn": "Ipak", "ru": "Шелк"},
+        {"uz-cyrl": "Силлиқ сирт", "uz-latn": "Silliq sirt", "ru": "Гладкая поверхность"},
     ),
     (
         "marble",
         "texture",
         "soft marble texture, subtle veins, refined luxury mood",
-        {"uz-cyrl": "Мармар", "uz-latn": "Marmar", "ru": "Мрамор"},
+        {"uz-cyrl": "Тош нақшли", "uz-latn": "Tosh naqshli", "ru": "Каменный узор"},
     ),
     (
         "watercolor",
         "texture",
         "watercolor paper texture, airy brush gradients, delicate romantic style",
-        {"uz-cyrl": "Акварел қоғоз", "uz-latn": "Akvarel qog‘oz", "ru": "Акварельная бумага"},
+        {"uz-cyrl": "Бўёқли қоғоз", "uz-latn": "Bo‘yoqli qog‘oz", "ru": "Акварельная бумага"},
     ),
     (
         "linen",
         "texture",
         "fine linen texture, natural weave, warm and minimal aesthetic",
-        {"uz-cyrl": "Зиғир мато", "uz-latn": "Zig‘ir mato", "ru": "Лен"},
+        {"uz-cyrl": "Матоли сирт", "uz-latn": "Matoli sirt", "ru": "Тканевая текстура"},
     ),
     (
         "pearlescent",
         "texture",
         "pearlescent shimmer texture, soft glow, festive premium invitation look",
-        {"uz-cyrl": "Марварид жилоси", "uz-latn": "Marvarid jilosi", "ru": "Перламутр"},
-    ),
-    (
-        "handmade",
-        "texture",
-        "handmade paper grain texture, artisan look, subtle vintage elegance",
-        {"uz-cyrl": "Ҳандмейд қоғоз", "uz-latn": "Handmade qog‘oz", "ru": "Ручная бумага"},
+        {
+            "uz-cyrl": "Ялтироқ сирт",
+            "uz-latn": "Yaltiroq sirt",
+            "ru": "Блестящая поверхность",
+        },
     ),
 ]
 
@@ -1226,12 +1258,29 @@ class Command(BaseCommand):
             existing_mood = MoodTag.objects.filter(slug=slug).first()
             if existing_mood is None:
                 MoodTag.objects.create(slug=slug, **mood_defaults)
-            elif force:
-                # Preserve admin enable/disable even under --force.
-                mood_defaults.pop("is_active", None)
-                for key, value in mood_defaults.items():
-                    setattr(existing_mood, key, value)
-                existing_mood.save()
+            else:
+                # Always refresh labels / category / prompt; keep admin is_active.
+                existing_mood.category = category
+                existing_mood.name_translations = names
+                existing_mood.prompt_snippet = snippet
+                existing_mood.sort_order = i
+                if force:
+                    existing_mood.is_active = True
+                existing_mood.save(
+                    update_fields=[
+                        "category",
+                        "name_translations",
+                        "prompt_snippet",
+                        "sort_order",
+                        "is_active",
+                    ]
+                )
+
+        # Hide retired catalog tags so they no longer appear in the AI picker.
+        keep_slugs = {slug for slug, *_ in MOOD_TAGS}
+        MoodTag.objects.exclude(slug__in=keep_slugs).filter(is_active=True).update(
+            is_active=False
+        )
 
         deleted = 0
         if purge_junk:

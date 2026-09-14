@@ -250,7 +250,20 @@ def _ink_colors(style_tags: Sequence[str] | None) -> dict[str, tuple[int, int, i
     tags = {str(t).lower() for t in (style_tags or [])}
     if "emerald" in tags or "formal" in tags:
         accent = (18, 52, 48)
-    elif "blush" in tags or "romance" in tags or "rose_gold" in tags:
+    elif "burgundy" in tags or "velvet" in tags:
+        accent = (72, 28, 36)
+    elif "blue" in tags:
+        accent = (30, 48, 78)
+    elif "bronze" in tags or "beige" in tags:
+        accent = (78, 48, 28)
+    elif "silver" in tags:
+        accent = (48, 52, 58)
+    elif (
+        "blush" in tags
+        or "romance" in tags
+        or "rose_gold" in tags
+        or "pink" in tags
+    ):
         accent = (78, 42, 50)
     elif "champagne" in tags or "warm" in tags or "ivory" in tags:
         accent = (72, 44, 28)
