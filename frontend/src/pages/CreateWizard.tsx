@@ -1118,9 +1118,12 @@ export function TextPage() {
     footer: "",
   });
   const [scheduleDateTime, setScheduleDateTime] = useState("");
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     if (!id || authLoading) return;
+    const translate = tRef.current;
     void api
       .getInvitation(id)
       .then(async (inv) => {
@@ -1158,14 +1161,14 @@ export function TextPage() {
         const defaultBody =
           inv.event_slug === "hayit"
             ? applyHayitOccasion(
-                tInLang(t, "defaultBody_hayit", inv.language, {
+                tInLang(translate, "defaultBody_hayit", inv.language, {
                   occasion,
-                  defaultValue: tInLang(t, "defaultBody", inv.language),
+                  defaultValue: tInLang(translate, "defaultBody", inv.language),
                 }),
                 occasion,
               )
-            : tInLang(t, `defaultBody_${inv.event_slug}`, inv.language, {
-                defaultValue: tInLang(t, "defaultBody", inv.language),
+            : tInLang(translate, `defaultBody_${inv.event_slug}`, inv.language, {
+                defaultValue: tInLang(translate, "defaultBody", inv.language),
               });
         const venueLine = cleanFieldValue(
           [fields.venue_name, fields.venue_address]
@@ -1217,7 +1220,7 @@ export function TextPage() {
           });
         } else {
           setBlocks({
-            header: tInLang(t, "defaultGreeting", inv.language),
+            header: tInLang(translate, "defaultGreeting", inv.language),
             body: ensurePersonalMessageInBody(
               inv.event_slug === "hayit"
                 ? applyHayitOccasion(
@@ -1273,7 +1276,7 @@ export function TextPage() {
         const merged = mergeReadyTextTemplates(
           serverTemplates,
           buildLocalReadyTemplates(
-            t,
+            translate,
             inv.event_slug,
             inv.language,
             getSelectedSubtypeSlugs(inv),
@@ -1306,7 +1309,7 @@ export function TextPage() {
         );
       })
       .catch((err: Error) => setError(err.message));
-  }, [id, t, authLoading]);
+  }, [id, authLoading]);
 
   if (!invitation) {
     return (
@@ -1327,15 +1330,14 @@ export function TextPage() {
               <h2>{t("readyTexts")}</h2>
             </div>
             <div className="choice-row" role="listbox" aria-label={t("readyTexts")}>
-              {templates.map((tpl) => {
-                const style = styleTitles.find((item) => item.id === tpl.styleId);
-                const label = style
-                  ? pickTranslation(style.title, uiLang)
-                  : tpl.title;
+              {styleTitles.map((style) => {
+                const tpl = templates.find((item) => item.styleId === style.id);
+                if (!tpl) return null;
+                const label = pickTranslation(style.title, uiLang);
                 const active = selectedTemplateId === tpl.id;
                 return (
                   <button
-                    key={tpl.id}
+                    key={style.id}
                     type="button"
                     role="option"
                     aria-selected={active}

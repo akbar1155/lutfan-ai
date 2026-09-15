@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { DateField, TimeField } from "../components/DateTimePickers";
 import UiSelect from "../components/UiSelect";
@@ -27,7 +26,8 @@ type Props = {
 
 export default function EventDetailsForm({ page, patch }: Props) {
   const { t, i18n } = useTranslation();
-  const lang = normalizeUiLang(i18n.language);
+  const uiLang = normalizeUiLang(i18n.language);
+  const contentLang = normalizeUiLang(page.displayLang || uiLang);
   const eventSlug = (page.eventSlug || "nikoh") as PageEventSlug;
   const keys = fieldsForEvent(eventSlug);
   const subtypes = page.subtypeSlugs || [];
@@ -40,7 +40,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
     nextStyle = styleId,
   ) => ({
     eventSlug: nextEvent,
-    language: lang,
+    language: contentLang,
     subtypeSlugs: nextSubtypes,
     styleId: nextStyle,
   });
@@ -63,20 +63,10 @@ export default function EventDetailsForm({ page, patch }: Props) {
     if (isCatalogTitle(page.title, eventSlug, t)) {
       out.title =
         pageBuilderHeader(catalogOpts(nextEvent, nextSubtypes, nextStyle)) ||
-        t("defaultGreeting");
+        t("defaultGreeting", { lng: contentLang });
     }
     return out;
   };
-
-  useEffect(() => {
-    const next = catalogPatch();
-    const titleChanged = next.title != null && next.title !== page.title;
-    const bodyChanged = next.mainText != null && next.mainText !== page.mainText;
-    if (!titleChanged && !bodyChanged) return;
-    patch({ ...next, displayLang: lang, readyTextId: styleId });
-    // Refresh catalog copy when the site language changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
 
   const setEvent = (next: PageEventSlug) => {
     const nextSubtypes = next === "nikoh" ? (subtypes.length ? subtypes : ["nikoh_oqshomi"]) : [];
@@ -104,7 +94,6 @@ export default function EventDetailsForm({ page, patch }: Props) {
       date: nextDate,
       time: nextTime,
       readyTextId: styleId,
-      displayLang: lang,
       ...catalogPatch(next, nextSubtypes, styleId),
     });
   };
@@ -125,7 +114,6 @@ export default function EventDetailsForm({ page, patch }: Props) {
       date: nextSchedule[next[0]]?.date || page.date,
       time: nextSchedule[next[0]]?.time || page.time,
       readyTextId: styleId,
-      displayLang: lang,
       ...catalogPatch(eventSlug, next, styleId),
     });
   };
@@ -138,7 +126,6 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ceremonySchedule: nextSchedule,
       date: primary?.date || page.date,
       time: primary?.time || page.time,
-      displayLang: lang,
     });
   };
 
@@ -154,7 +141,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
               className={`pb-chip${eventSlug === slug ? " is-on" : ""}`}
               onClick={() => setEvent(slug)}
             >
-              {eventLabel(slug, lang)}
+              {eventLabel(slug, uiLang)}
             </button>
           ))}
         </div>
@@ -177,7 +164,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
                   className={`pb-chip${on ? " is-on" : ""}`}
                   onClick={() => toggleSubtype(item.slug)}
                 >
-                  {subtypeLabel(item.slug, lang)}
+                  {subtypeLabel(item.slug, uiLang)}
                 </button>
               );
             })}
@@ -192,7 +179,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
             value={page.familySignature || ""}
             maxLength={80}
             placeholder={t("field_family_signature_ph")}
-            onChange={(e) => patch({ familySignature: e.target.value, displayLang: lang })}
+            onChange={(e) => patch({ familySignature: e.target.value })}
           />
         </label>
       ) : null}
@@ -201,7 +188,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
         <UiSelect
           label={`${t("field_child_gender")} *`}
           value={page.childGender || ""}
-          onChange={(e) => patch({ childGender: e.target.value, displayLang: lang })}
+          onChange={(e) => patch({ childGender: e.target.value })}
         >
           <option value="">—</option>
           <option value="boy">{t("opt_boy")}</option>
@@ -215,7 +202,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
           <input
             value={page.childName || ""}
             maxLength={50}
-            onChange={(e) => patch({ childName: e.target.value, displayLang: lang })}
+            onChange={(e) => patch({ childName: e.target.value })}
           />
         </label>
       ) : null}
@@ -227,7 +214,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
             value={page.personName || ""}
             maxLength={80}
             placeholder={t("field_person_name")}
-            onChange={(e) => patch({ personName: e.target.value, displayLang: lang })}
+            onChange={(e) => patch({ personName: e.target.value })}
           />
         </label>
       ) : null}
@@ -237,20 +224,20 @@ export default function EventDetailsForm({ page, patch }: Props) {
             const slot = schedule[slug] || { date: "", time: "" };
             return (
               <div key={slug} className="pb-ceremony">
-                <strong>{subtypeLabel(slug, lang)}</strong>
+                <strong>{subtypeLabel(slug, uiLang)}</strong>
                 <div className="pb-grid">
                   <DateField
                     label={t("field_event_date")}
                     required
                     minToday
-                    language={lang}
+                    language={uiLang}
                     value={slot.date}
                     onChange={(value) => setSlot(slug, "date", value)}
                   />
                   <TimeField
                     label={t("field_event_time")}
                     required
-                    language={lang}
+                    language={uiLang}
                     value={slot.time}
                     onChange={(value) => setSlot(slug, "time", value)}
                   />
@@ -266,16 +253,16 @@ export default function EventDetailsForm({ page, patch }: Props) {
             label={t("field_event_date")}
             required
             minToday
-            language={lang}
+            language={uiLang}
             value={page.date}
-            onChange={(value) => patch({ date: value, displayLang: lang })}
+            onChange={(value) => patch({ date: value })}
           />
           <TimeField
             label={t("field_event_time")}
             required
-            language={lang}
+            language={uiLang}
             value={page.time}
-            onChange={(value) => patch({ time: value, displayLang: lang })}
+            onChange={(value) => patch({ time: value })}
           />
         </div>
       ) : null}
@@ -286,7 +273,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
           <input
             value={page.venueName || ""}
             maxLength={100}
-            onChange={(e) => patch({ venueName: e.target.value, displayLang: lang })}
+            onChange={(e) => patch({ venueName: e.target.value })}
           />
         </label>
       ) : null}
@@ -297,7 +284,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
           <input
             value={page.address}
             maxLength={240}
-            onChange={(e) => patch({ address: e.target.value, displayLang: lang })}
+            onChange={(e) => patch({ address: e.target.value })}
           />
         </label>
       ) : null}
@@ -318,26 +305,25 @@ export default function EventDetailsForm({ page, patch }: Props) {
                     readyTextId: item.id,
                     mainText: pageBuilderBody({
                       eventSlug,
-                      language: lang,
+                      language: contentLang,
                       subtypeSlugs: subtypes,
                       styleId: item.id,
                     }),
-                    displayLang: lang,
                     ...(isCatalogTitle(page.title, eventSlug, t)
                       ? {
                           title:
                             pageBuilderHeader({
                               eventSlug,
-                              language: lang,
+                              language: contentLang,
                               subtypeSlugs: subtypes,
                               styleId: item.id,
-                            }) || t("defaultGreeting"),
+                            }) || t("defaultGreeting", { lng: contentLang }),
                         }
                       : {}),
                   })
                 }
               >
-                {pickTranslation(item.title, lang)}
+                {pickTranslation(item.title, uiLang)}
               </button>
             );
           })}
@@ -352,7 +338,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
           value={page.title}
           maxLength={120}
           placeholder={catalogHeader() || t("defaultGreeting")}
-          onChange={(e) => patch({ title: e.target.value, displayLang: lang })}
+          onChange={(e) => patch({ title: e.target.value })}
         />
       </label>
 
@@ -362,7 +348,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
           value={page.mainText}
           maxLength={2000}
           placeholder={catalogBody()}
-          onChange={(e) => patch({ mainText: e.target.value, displayLang: lang })}
+          onChange={(e) => patch({ mainText: e.target.value })}
         />
       </label>
     </>

@@ -216,20 +216,31 @@ function normTitle(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function styleIdFromTitle(title: string): string | undefined {
+  const n = normTitle(title);
+  return data.catalog.find((item) =>
+    Object.values(item.title).some((label) => normTitle(label) === n),
+  )?.id;
+}
+
 export function mergeReadyTextTemplates(
   serverTemplates: TextTemplate[],
   localTemplates: TextTemplate[],
 ): TextTemplate[] {
   if (!localTemplates.length) return serverTemplates;
   const unused = [...(serverTemplates || [])];
-  const merged = localTemplates.map((localTpl) => {
-    const idx = unused.findIndex(
-      (item) => normTitle(item.title) === normTitle(localTpl.title),
-    );
-    if (idx < 0) return localTpl;
-    const [serverTpl] = unused.splice(idx, 1);
-    const preview = String(serverTpl.preview_text || "").trim();
-    if (!preview) return localTpl;
+  const take = (match: (item: TextTemplate) => boolean) => {
+    const idx = unused.findIndex(match);
+    if (idx < 0) return null;
+    return unused.splice(idx, 1)[0];
+  };
+  return localTemplates.map((localTpl) => {
+    const serverTpl =
+      take((item) => Boolean(item.styleId) && item.styleId === localTpl.styleId) ||
+      take((item) => styleIdFromTitle(item.title) === localTpl.styleId) ||
+      take((item) => normTitle(item.title) === normTitle(localTpl.title));
+    const preview = String(serverTpl?.preview_text || "").trim();
+    if (!serverTpl || !preview) return localTpl;
     return {
       ...localTpl,
       id: serverTpl.id,
@@ -237,6 +248,4 @@ export function mergeReadyTextTemplates(
       tone: serverTpl.tone || localTpl.tone,
     };
   });
-  const extras = unused.filter((item) => String(item.preview_text || "").trim());
-  return extras.length ? [...merged, ...extras] : merged;
 }
