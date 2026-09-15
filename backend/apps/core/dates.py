@@ -34,18 +34,18 @@ _MONTHS = {
         "dekabr",
     ],
     "uz-cyrl": [
-        "январ",
-        "феврал",
+        "январь",
+        "февраль",
         "март",
-        "апрел",
+        "апрель",
         "май",
-        "июн",
-        "июл",
+        "июнь",
+        "июль",
         "август",
-        "сентабр",
-        "октабр",
-        "ноябр",
-        "декабр",
+        "сентябрь",
+        "октябрь",
+        "ноябрь",
+        "декабрь",
     ],
     "ru": [
         "января",
@@ -62,6 +62,26 @@ _MONTHS = {
         "декабря",
     ],
 }
+
+# Uzbek Cyrillic months follow the standard spellings (сентябрь, not сентабр).
+_CYRILLIC_MONTH_SPELLING = (
+    (r"\bсентабр\b", "сентябрь"),
+    (r"\bоктабр\b", "октябрь"),
+    (r"\bноябр\b", "ноябрь"),
+    (r"\bдекабр\b", "декабрь"),
+    (r"\bянвар\b", "январь"),
+    (r"\bфеврал\b", "февраль"),
+    (r"\bапрел\b", "апрель"),
+    (r"\bиюн\b", "июнь"),
+    (r"\bиюл\b", "июль"),
+)
+
+
+def fix_cyrillic_month_spelling(text: str) -> str:
+    out = text or ""
+    for pattern, repl in _CYRILLIC_MONTH_SPELLING:
+        out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
+    return out
 
 
 def _normalize_lang(lang: str | None = None) -> str:
@@ -261,4 +281,6 @@ def format_dates_in_text(text: str, language: str | None = None) -> str:
     out = _DOTTED_DATE_IN_TEXT.sub(_date_repl, out)
     out = _SPACED_TIME.sub(lambda m: f"{int(m.group(1)):02d}:{m.group(2)}", out)
     out = _TIME_12.sub(_time_repl, out)
+    if lang == "uz-cyrl":
+        out = fix_cyrillic_month_spelling(out)
     return ensure_time_da_suffix(out, lang)

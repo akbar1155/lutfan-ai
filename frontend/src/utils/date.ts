@@ -26,18 +26,18 @@ const MONTHS: Record<UiLang, string[]> = {
     "dekabr",
   ],
   "uz-cyrl": [
-    "январ",
-    "феврал",
+    "январь",
+    "февраль",
     "март",
-    "апрел",
+    "апрель",
     "май",
-    "июн",
-    "июл",
+    "июнь",
+    "июль",
     "август",
-    "сентабр",
-    "октабр",
-    "ноябр",
-    "декабр",
+    "сентябрь",
+    "октябрь",
+    "ноябрь",
+    "декабрь",
   ],
   ru: [
     "января",
@@ -54,6 +54,27 @@ const MONTHS: Record<UiLang, string[]> = {
     "декабря",
   ],
 };
+
+const CYRILLIC_MONTH_SPELLING: [RegExp, string][] = [
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])сентабр(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1сентябрь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])октабр(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1октябрь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])ноябр(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1ноябрь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])декабр(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1декабрь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])январ(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1январь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])феврал(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1февраль"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])апрел(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1апрель"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])июн(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1июнь"],
+  [/(^|[^А-Яа-яЁёЎўҚқҒғҲҳ])июл(?![А-Яа-яЁёЎўҚқҒғҲҳ])/gi, "$1июль"],
+];
+
+function fixCyrillicMonthSpelling(text: string): string {
+  let out = text || "";
+  for (const [pattern, repl] of CYRILLIC_MONTH_SPELLING) {
+    pattern.lastIndex = 0;
+    out = out.replace(pattern, repl);
+  }
+  return out;
+}
 
 function normalizeLang(lang?: string | null): UiLang {
   if (lang === "uz-cyrl" || lang === "ru") return lang;
@@ -225,6 +246,10 @@ export function formatDatesInText(
   out = out.replace(TIME_12_IN_TEXT, (match) =>
     formatDisplayTime(match, /:\d{2}:\d{2}/.test(match)),
   );
+
+  if (lang === "uz-cyrl") {
+    out = fixCyrillicMonthSpelling(out);
+  }
 
   return ensureTimeDaSuffix(out, lang);
 }

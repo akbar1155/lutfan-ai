@@ -15,8 +15,90 @@ import { normalizeUiLang, type UiLang } from "../i18n/lang";
 
 dayjs.extend(customParseFormat);
 
+dayjs.locale(
+  {
+    name: "uz-cyrl",
+    weekStart: 1,
+    weekdays: "Якшанба_Душанба_Сешанба_Чоршанба_Пайшанба_Жума_Шанба".split("_"),
+    weekdaysShort: "Якш_Душ_Сеш_Чор_Пай_Жум_Шан".split("_"),
+    weekdaysMin: "Як_Ду_Се_Чо_Па_Жу_Ша".split("_"),
+    months:
+      "Январь_Февраль_Март_Апрель_Май_Июнь_Июль_Август_Сентябрь_Октябрь_Ноябрь_Декабрь".split(
+        "_",
+      ),
+    monthsShort: "Янв_Фев_Мар_Апр_Май_Июн_Июл_Авг_Сен_Окт_Ноя_Дек".split("_"),
+    ordinal: (n: number) => n,
+    formats: {
+      LT: "HH:mm",
+      LTS: "HH:mm:ss",
+      L: "DD.MM.YYYY",
+      LL: "D MMMM YYYY",
+      LLL: "D MMMM YYYY HH:mm",
+      LLLL: "dddd, D MMMM YYYY HH:mm",
+    },
+  } as Parameters<typeof dayjs.locale>[0],
+  undefined,
+  true,
+);
+
+const CALENDAR: Record<
+  UiLang,
+  { shortWeekDays: string[]; shortMonths: string[] }
+> = {
+  "uz-latn": {
+    shortWeekDays: ["Ya", "Du", "Se", "Cho", "Pa", "Ju", "Sha"],
+    shortMonths: [
+      "Yan",
+      "Fev",
+      "Mar",
+      "Apr",
+      "May",
+      "Iyun",
+      "Iyul",
+      "Avg",
+      "Sen",
+      "Okt",
+      "Noy",
+      "Dek",
+    ],
+  },
+  "uz-cyrl": {
+    shortWeekDays: ["Як", "Ду", "Се", "Чо", "Па", "Жу", "Ша"],
+    shortMonths: [
+      "Янв",
+      "Фев",
+      "Мар",
+      "Апр",
+      "Май",
+      "Июн",
+      "Июл",
+      "Авг",
+      "Сен",
+      "Окт",
+      "Ноя",
+      "Дек",
+    ],
+  },
+  ru: {
+    shortWeekDays: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    shortMonths: [
+      "Янв",
+      "Фев",
+      "Мар",
+      "Апр",
+      "Май",
+      "Июн",
+      "Июл",
+      "Авг",
+      "Сен",
+      "Окт",
+      "Ноя",
+      "Дек",
+    ],
+  },
+};
+
 const DATE_FMT = "DD.MM.YYYY";
-const TIME_FMT = "HH:mm";
 const ISO_DATE = "YYYY-MM-DD";
 const HOUR_MIN = 5;
 const HOUR_MAX = 21;
@@ -56,24 +138,44 @@ function snapAllowedTime(value?: string): string {
 
 function dayjsLocale(lang: UiLang): string {
   if (lang === "ru") return "ru";
+  if (lang === "uz-cyrl") return "uz-cyrl";
   return "uz-latn";
 }
 
+type PickerChrome = {
+  now: string;
+  today: string;
+  ok: string;
+  clear: string;
+  month: string;
+  year: string;
+  week: string;
+};
+
 function buildLocales(
   lang: UiLang,
-  labels: { now: string; today: string },
+  labels: PickerChrome,
 ): { configLocale: Locale; pickerLocale: PickerLocale } {
   // Vite ESM may wrap locale modules; unwrap `.default` when present.
   const raw = (lang === "ru" ? ruRU : enGB) as Locale & { default?: Locale };
   const base = (raw?.default ?? raw) as Locale;
   const datePicker = (base.DatePicker || {}) as PickerLocale;
   const langPack = (datePicker.lang || {}) as PickerLocale["lang"];
+  const calendar = CALENDAR[lang];
   const pickerLocale: PickerLocale = {
     ...datePicker,
     lang: {
       ...langPack,
       now: labels.now,
       today: labels.today,
+      backToToday: labels.today,
+      ok: labels.ok,
+      clear: labels.clear,
+      month: labels.month,
+      year: labels.year,
+      week: labels.week,
+      shortWeekDays: calendar.shortWeekDays,
+      shortMonths: calendar.shortMonths,
     },
   };
   return {
@@ -106,43 +208,55 @@ const appTheme = {
   },
 };
 
-function useLocalizedPicker() {
+function useLocalizedPicker(language?: string | null) {
   const { i18n, t } = useTranslation();
-  const lang = normalizeUiLang(i18n.language);
+  const lang = normalizeUiLang(language || i18n.language);
   return useMemo(() => {
     dayjs.locale(dayjsLocale(lang));
+    const tLang = (key: string, fallback: string) =>
+      t(key, { lng: lang, defaultValue: fallback });
     const labels = {
-      now: t("pickerNow", {
-        defaultValue:
-          lang === "ru" ? "Сейчас" : lang === "uz-cyrl" ? "Ҳозир" : "Hozir",
-      }),
-      today: t("pickerToday", {
-        defaultValue:
-          lang === "ru" ? "Сегодня" : lang === "uz-cyrl" ? "Бугун" : "Bugun",
-      }),
-      hour: t("pickerHour", {
-        defaultValue: lang === "ru" ? "Час" : lang === "uz-cyrl" ? "Соат" : "Soat",
-      }),
-      minute: t("pickerMinute", {
-        defaultValue:
-          lang === "ru" ? "Минута" : lang === "uz-cyrl" ? "Дақиқа" : "Daqiqa",
-      }),
-      clear: t("pickerClear", {
-        defaultValue:
-          lang === "ru" ? "Очистить" : lang === "uz-cyrl" ? "Тозалаш" : "Tozalash",
-      }),
-      done: t("pickerDone", {
-        defaultValue:
-          lang === "ru" ? "Готово" : lang === "uz-cyrl" ? "Тайёр" : "Tayyor",
-      }),
+      now: tLang("pickerNow", lang === "ru" ? "Сейчас" : lang === "uz-cyrl" ? "Ҳозир" : "Hozir"),
+      today: tLang(
+        "pickerToday",
+        lang === "ru" ? "Сегодня" : lang === "uz-cyrl" ? "Бугун" : "Bugun",
+      ),
+      hour: tLang("pickerHour", lang === "ru" ? "Час" : lang === "uz-cyrl" ? "Соат" : "Soat"),
+      minute: tLang(
+        "pickerMinute",
+        lang === "ru" ? "Минута" : lang === "uz-cyrl" ? "Дақиқа" : "Daqiqa",
+      ),
+      clear: tLang(
+        "pickerClear",
+        lang === "ru" ? "Очистить" : lang === "uz-cyrl" ? "Тозалаш" : "Tozalash",
+      ),
+      done: tLang("pickerDone", lang === "ru" ? "Готово" : lang === "uz-cyrl" ? "Тайёр" : "Tayyor"),
+      ok: tLang("pickerOk", lang === "ru" ? "ОК" : "OK"),
+      month: tLang("pickerMonth", lang === "ru" ? "Месяц" : lang === "uz-cyrl" ? "Ой" : "Oy"),
+      year: tLang("pickerYear", lang === "ru" ? "Год" : lang === "uz-cyrl" ? "Йил" : "Yil"),
+      week: tLang("pickerWeek", lang === "ru" ? "Неделя" : lang === "uz-cyrl" ? "Ҳафта" : "Hafta"),
+      datePlaceholder: tLang(
+        "pickerDatePlaceholder",
+        lang === "ru" ? "дд.мм.гггг" : lang === "uz-cyrl" ? "кк.оо.йййй" : "kk.oo.yyyy",
+      ),
+      timePlaceholder: tLang(
+        "pickerTimePlaceholder",
+        lang === "ru" ? "ЧЧ:мм" : lang === "uz-cyrl" ? "сс:дд" : "ss:dd",
+      ),
     };
     const { configLocale, pickerLocale } = buildLocales(lang, labels);
     return { lang, labels, configLocale, pickerLocale };
   }, [lang, t, i18n.language]);
 }
 
-function PickerShell({ children }: { children: ReactNode }) {
-  const { lang, configLocale } = useLocalizedPicker();
+function PickerShell({
+  children,
+  language,
+}: {
+  children: ReactNode;
+  language?: string | null;
+}) {
+  const { lang, configLocale } = useLocalizedPicker(language);
   return (
     <ConfigProvider key={lang} locale={configLocale} theme={appTheme}>
       {children}
@@ -159,6 +273,7 @@ type FieldProps = {
   disabled?: boolean;
   invalid?: boolean;
   error?: string;
+  language?: string | null;
 };
 
 function scrollFieldIntoView(el: HTMLElement | null) {
@@ -181,9 +296,10 @@ export function DateField({
   disabled,
   invalid,
   error,
+  language,
 }: FieldProps) {
   const wrapRef = useRef<HTMLLabelElement>(null);
-  const { pickerLocale, labels } = useLocalizedPicker();
+  const { pickerLocale, labels } = useLocalizedPicker(language);
   const showInvalid = invalid || Boolean(error);
   const parsed =
     value && dayjs(value, ISO_DATE, true).isValid()
@@ -199,7 +315,7 @@ export function DateField({
         {label}
         {required ? " *" : ""}
       </span>
-      <PickerShell>
+      <PickerShell language={language}>
         <DatePicker
           className="app-datepicker"
           popupClassName="app-picker-dropdown"
@@ -210,7 +326,7 @@ export function DateField({
           disabled={disabled}
           status={showInvalid ? "error" : undefined}
           inputReadOnly
-          placeholder={DATE_FMT.toLowerCase()}
+          placeholder={labels.datePlaceholder}
           placement="bottomLeft"
           getPopupContainer={() => document.body}
           showNow
@@ -412,10 +528,11 @@ export function TimeField({
   disabled,
   invalid,
   error,
+  language,
 }: FieldProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const { labels } = useLocalizedPicker();
+  const { labels } = useLocalizedPicker(language);
   const listId = useId();
   const showInvalid = invalid || Boolean(error);
   const [open, setOpen] = useState(false);
@@ -488,7 +605,7 @@ export function TimeField({
         }}
       >
         <span className={display ? "time-wheel-value" : "time-wheel-placeholder"}>
-          {display || TIME_FMT}
+          {display || labels.timePlaceholder}
         </span>
         <span className="time-wheel-icon" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

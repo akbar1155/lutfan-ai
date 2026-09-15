@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from apps.core.dates import ensure_time_da_suffix
+from apps.core.dates import ensure_time_da_suffix, fix_cyrillic_month_spelling
 
 
 def normalize_invitation_spelling(text: str, language: str | None = None) -> str:
@@ -22,6 +22,7 @@ def normalize_invitation_spelling(text: str, language: str | None = None) -> str
     out = re.sub(r"[ \t]{2,}", " ", out)
 
     if language == "uz-cyrl":
+        out = fix_cyrillic_month_spelling(out)
         fixes = [
             (r"\bкутамис\b", "кутамиз"),
             (r"\bбўбслин\b", "бўлсин"),

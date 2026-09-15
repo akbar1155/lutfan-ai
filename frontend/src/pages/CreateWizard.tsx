@@ -527,7 +527,7 @@ export function DetailsPage() {
                         : toggleSubtype(s.slug)
                     }
                   />
-                  <span>{pickTranslation(s.names, uiLang) || s.slug}</span>
+                  <span>{pickTranslation(s.names, language) || s.slug}</span>
                 </label>
               );
             })}
@@ -605,10 +605,9 @@ export function DetailsPage() {
 
 export function DataPage() {
   const { id } = useParams();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { authLoading } = useWaitForAuth();
-  const uiLang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [event, setEvent] = useState<EventConfig | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -802,36 +801,50 @@ export function DataPage() {
       if (!form[key]?.trim()) {
         const type = fieldTypeByKey.get(key) || "string";
         nextErrors[key] =
-          type === "enum" ? t("selectRequired") : t("fieldRequired");
+          type === "enum"
+            ? tInLang(t, "selectRequired", invitation.language)
+            : tInLang(t, "fieldRequired", invitation.language);
         continue;
       }
       if (!skipJunkKeys.has(key) && isJunkFieldValue(form[key])) {
-        nextErrors[key] = t("placeholderFieldError");
+        nextErrors[key] = tInLang(t, "placeholderFieldError", invitation.language);
       }
     }
     for (const [key, value] of Object.entries(form)) {
       if (!value?.trim() || requiredKeys.has(key) || skipJunkKeys.has(key)) continue;
       if (isJunkFieldValue(value) && !nextErrors[key]) {
-        nextErrors[key] = t("placeholderFieldError");
+        nextErrors[key] = tInLang(t, "placeholderFieldError", invitation.language);
       }
     }
     if (multiCeremony) {
       for (const slug of subtypeSlugs) {
         const slot = schedule[slug] || { date: "", time: "" };
         if (!isIsoDate(slot.date)) {
-          nextErrors[`sched:${slug}:date`] = t("dateFormatError");
+          nextErrors[`sched:${slug}:date`] = tInLang(
+            t,
+            "dateFormatError",
+            invitation.language,
+          );
         } else if (isPastIsoDate(slot.date)) {
-          nextErrors[`sched:${slug}:date`] = t("dateMinToday");
+          nextErrors[`sched:${slug}:date`] = tInLang(
+            t,
+            "dateMinToday",
+            invitation.language,
+          );
         }
         if (!slot.time?.trim()) {
-          nextErrors[`sched:${slug}:time`] = t("fieldRequired");
+          nextErrors[`sched:${slug}:time`] = tInLang(
+            t,
+            "fieldRequired",
+            invitation.language,
+          );
         }
       }
     } else {
       if (form.event_date && !isIsoDate(form.event_date)) {
-        nextErrors.event_date = t("dateFormatError");
+        nextErrors.event_date = tInLang(t, "dateFormatError", invitation.language);
       } else if (form.event_date && isPastIsoDate(form.event_date)) {
-        nextErrors.event_date = t("dateMinToday");
+        nextErrors.event_date = tInLang(t, "dateMinToday", invitation.language);
       }
     }
 
@@ -899,7 +912,7 @@ export function DataPage() {
               const label =
                 pickTranslation(
                   event.subtypes?.find((s) => s.slug === slug)?.names || {},
-                  uiLang,
+                  invitation.language,
                 ) || slug;
               const slot = schedule[slug] || { date: "", time: "" };
               return (
@@ -910,6 +923,7 @@ export function DataPage() {
                       label={tInLang(t, fieldLabelKey("event_date"), invitation.language)}
                       required
                       minToday
+                      language={invitation.language}
                       error={fieldErrors[`sched:${slug}:date`]}
                       value={slot.date}
                       onChange={(next) => {
@@ -927,6 +941,7 @@ export function DataPage() {
                     <TimeField
                       label={tInLang(t, fieldLabelKey("event_time"), invitation.language)}
                       required
+                      language={invitation.language}
                       error={fieldErrors[`sched:${slug}:time`]}
                       value={slot.time}
                       onChange={(next) => {
@@ -980,7 +995,9 @@ export function DataPage() {
                 <option value="">—</option>
                 {field.options.map((opt) => (
                   <option key={opt} value={opt}>
-                    {t(optionLabelKey(opt), { defaultValue: opt })}
+                    {tInLang(t, optionLabelKey(opt), invitation.language, {
+                      defaultValue: opt,
+                    })}
                   </option>
                 ))}
               </UiSelect>
@@ -994,6 +1011,7 @@ export function DataPage() {
                 label={label}
                 required={required}
                 minToday={field.min === "today"}
+                language={invitation.language}
                 error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {
@@ -1010,6 +1028,7 @@ export function DataPage() {
                 key={key}
                 label={label}
                 required={required}
+                language={invitation.language}
                 error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {

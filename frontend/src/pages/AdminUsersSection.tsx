@@ -662,8 +662,8 @@ const AdminUsersSection = forwardRef<AdminUsersSectionHandle, Props>(function Ad
             className={roleFilter ? "is-active" : undefined}
           >
             <option value="">{t("adminFilterAllRoles")}</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
+            <option value="admin">{t("adminRoleBadge")}</option>
+            <option value="user">{t("adminRoleUser")}</option>
           </UiSelect>
           <UiSelect
             size="sm"

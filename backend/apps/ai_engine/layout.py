@@ -46,6 +46,15 @@ _MONTH_INDEX = {
     "октабр": 10,
     "ноябр": 11,
     "декабр": 12,
+    "январь": 1,
+    "февраль": 2,
+    "апрель": 4,
+    "июнь": 6,
+    "июль": 7,
+    "сентябрь": 9,
+    "октябрь": 10,
+    "ноябрь": 11,
+    "декабрь": 12,
     "января": 1,
     "февраля": 2,
     "марта": 3,
@@ -181,11 +190,13 @@ def clear_safe_text_area(
     y0 = max(0, safe.y0 - pad_y)
     x1 = min(w, safe.x1 + pad_x)
     y1 = min(h, safe.y1 + pad_y)
-    # Keep type layout, only shrink the paper wash (10% narrower and shorter).
+    # Keep type layout; wash is inset 5% on top/sides and 10% on the bottom.
     rw, rh = x1 - x0, y1 - y0
     x0 += int(rw * 0.05)
     y0 += int(rh * 0.05)
     x1 -= int(rw * 0.05)
+    y1 -= int(rh * 0.05)
+    # Shrink only the bottom of the wash another 5%; leave top and sides as-is.
     y1 -= int(rh * 0.05)
     region = rgb.crop((x0, y0, x1, y1))
     if region.size[0] < 8 or region.size[1] < 8:

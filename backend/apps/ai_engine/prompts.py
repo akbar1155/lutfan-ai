@@ -43,32 +43,216 @@ def _strip_trailing_datetime(text: str) -> str:
     return _TRAILING_DATETIME_RE.sub("", text or "").strip()
 
 
-def format_family_signature(raw: str | None, language: str | None = None) -> str:
-    """Tohirov → Tohirovlar oilasi (idempotent)."""
+_CYR_RE = re.compile(r"[А-Яа-яЁёЎўҚқҒғҲҳ]")
+_LATN_TO_CYRL = (
+    ("shch", "щ"),
+    ("yo", "ё"),
+    ("yu", "ю"),
+    ("ya", "я"),
+    ("ye", "е"),
+    ("ch", "ч"),
+    ("sh", "ш"),
+    ("ts", "ц"),
+    ("o'", "ў"),
+    ("o‘", "ў"),
+    ("g'", "ғ"),
+    ("g‘", "ғ"),
+)
+_LATN_LETTERS = {
+    "a": "а",
+    "b": "б",
+    "d": "д",
+    "e": "е",
+    "f": "ф",
+    "g": "г",
+    "h": "ҳ",
+    "i": "и",
+    "j": "ж",
+    "k": "к",
+    "l": "л",
+    "m": "м",
+    "n": "н",
+    "o": "о",
+    "p": "п",
+    "q": "қ",
+    "r": "р",
+    "s": "с",
+    "t": "т",
+    "u": "у",
+    "v": "в",
+    "w": "в",
+    "x": "х",
+    "y": "й",
+    "z": "з",
+}
+_CYRL_TO_LATN = (
+    ("щ", "shch"),
+    ("ё", "yo"),
+    ("ю", "yu"),
+    ("я", "ya"),
+    ("ч", "ch"),
+    ("ш", "sh"),
+    ("ц", "ts"),
+    ("ў", "o‘"),
+    ("ғ", "g‘"),
+    ("қ", "q"),
+    ("ҳ", "h"),
+    ("й", "y"),
+    ("ж", "j"),
+    ("х", "x"),
+    ("а", "a"),
+    ("б", "b"),
+    ("д", "d"),
+    ("е", "e"),
+    ("ф", "f"),
+    ("г", "g"),
+    ("и", "i"),
+    ("к", "k"),
+    ("л", "l"),
+    ("м", "m"),
+    ("н", "n"),
+    ("о", "o"),
+    ("п", "p"),
+    ("р", "r"),
+    ("с", "s"),
+    ("т", "t"),
+    ("у", "u"),
+    ("в", "v"),
+    ("з", "z"),
+    ("ы", "y"),
+    ("э", "e"),
+    ("ъ", ""),
+    ("ь", ""),
+)
+
+
+def _is_cyrillic(text: str) -> bool:
+    return bool(_CYR_RE.search(text or ""))
+
+
+def _preserve_case(src: str, dest: str) -> str:
+    if not dest:
+        return dest
+    if src.isupper():
+        return dest.upper()
+    if src[:1].isupper():
+        return dest[:1].upper() + dest[1:]
+    return dest
+
+
+def _latn_to_cyrl(text: str) -> str:
+    raw = text or ""
+    lower = raw.lower()
+    out: list[str] = []
+    i = 0
+    while i < len(lower):
+        matched = False
+        for src, dst in _LATN_TO_CYRL:
+            if lower.startswith(src, i):
+                out.append(dst)
+                i += len(src)
+                matched = True
+                break
+        if matched:
+            continue
+        out.append(_LATN_LETTERS.get(lower[i], lower[i]))
+        i += 1
+    return _preserve_case(raw, "".join(out))
+
+
+def _cyrl_to_latn(text: str) -> str:
+    raw = text or ""
+    lower = raw.lower()
+    out: list[str] = []
+    i = 0
+    while i < len(lower):
+        matched = False
+        for src, dst in _CYRL_TO_LATN:
+            if lower.startswith(src, i):
+                out.append(dst)
+                i += len(src)
+                matched = True
+                break
+        if matched:
+            continue
+        out.append(lower[i])
+        i += 1
+    return _preserve_case(raw, "".join(out))
+
+
+def _script_for_lang(name: str, lang: str, cyrillic: bool) -> str:
+    if lang.startswith("ru") or lang == "uz-cyrl" or (not lang and cyrillic):
+        return _latn_to_cyrl(name) if not _is_cyrillic(name) else name
+    return _cyrl_to_latn(name) if _is_cyrillic(name) else name
+
+
+def _bare_family_stem(raw: str) -> str:
     name = (raw or "").strip()
-    if not name:
-        return ""
-    lang = (language or "").lower()
     name = re.sub(r"\s+oilasi\.?$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\s+оиласи\.?$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"^семья\s+", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\s+семьи\.?$", "", name, flags=re.IGNORECASE)
-    name = name.strip()
-    if not name:
+    name = re.sub(r"(лар|лер|lar|ler)$", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"(ов|ев|ёв)ых$", r"\1", name, flags=re.IGNORECASE)
+    name = re.sub(r"(ин|ын)ых$", r"\1", name, flags=re.IGNORECASE)
+    name = re.sub(r"ских$", "ский", name, flags=re.IGNORECASE)
+    name = re.sub(r"цких$", "цкий", name, flags=re.IGNORECASE)
+    return name.strip()
+
+
+def _ensure_ov_surname(stem: str) -> str:
+    if not stem:
+        return ""
+    cyr = _is_cyrillic(stem)
+    if cyr:
+        if re.search(r"(ов|ев|ёв|ин|ын|ский|цкий)$", stem, re.IGNORECASE):
+            return stem
+        if re.search(r"(ова|ева|ёва)$", stem, re.IGNORECASE):
+            return stem[:-1]
+        if re.search(r"[аяе]$", stem, re.IGNORECASE):
+            stem = stem[:-1]
+        return f"{stem}ов"
+    if re.search(r"(ov|ev|yev|in|yn|skiy|sky)$", stem, re.IGNORECASE):
+        return stem
+    if re.search(r"(ova|eva|yeva)$", stem, re.IGNORECASE):
+        return stem[:-1]
+    if re.search(r"[ae]$", stem, re.IGNORECASE):
+        stem = stem[:-1]
+    suffix = "OV" if stem.isupper() else "ov"
+    return f"{stem}{suffix}"
+
+
+def _russian_family_genitive(surname: str) -> str:
+    if re.search(r"ский$", surname, re.IGNORECASE):
+        return surname[:-2] + "ких"
+    if re.search(r"цкий$", surname, re.IGNORECASE):
+        return surname[:-2] + "ких"
+    if re.search(r"(ов|ев|ёв)$", surname, re.IGNORECASE):
+        return surname + "ых"
+    if re.search(r"(ин|ын)$", surname, re.IGNORECASE):
+        return surname + "ых"
+    return surname
+
+
+def format_family_signature(raw: str | None, language: str | None = None) -> str:
+    """Саша → Sashovlar oilasi / Сашовлар оиласи / Семья Сашовых."""
+    stem = _bare_family_stem(raw or "")
+    if not stem:
+        return ""
+    lang = (language or "").lower()
+    cyr_hint = lang == "uz-cyrl" or lang.startswith("ru") or _is_cyrillic(stem)
+    stem = _script_for_lang(stem, lang, cyr_hint)
+    surname = _ensure_ov_surname(stem)
+    if not surname:
         return ""
     if lang.startswith("ru"):
-        return f"семья {name}"
-    is_cyrl = lang == "uz-cyrl" or bool(
-        re.search(r"[А-Яа-яЁёЎўҚқҒғҲҳ]", name)
-    )
-    has_plural = bool(
-        re.search(r"(лар|лер)$", name, re.IGNORECASE)
-        if is_cyrl
-        else re.search(r"(lar|ler)$", name, re.IGNORECASE)
-    )
-    if not has_plural:
-        name = f"{name}{'лар' if is_cyrl else 'lar'}"
-    return f"{name} {'оиласи' if is_cyrl else 'oilasi'}"
+        return f"Семья {_russian_family_genitive(surname)}"
+    cyr = lang == "uz-cyrl" or _is_cyrillic(surname)
+    plural = "лар" if cyr else "lar"
+    family = "оиласи" if cyr else "oilasi"
+    if not re.search(rf"{plural}$", surname, re.IGNORECASE):
+        surname = f"{surname}{plural}"
+    return f"{surname} {family}"
 
 
 def sanitize_user_text(value: str, max_len: int = 400) -> str:

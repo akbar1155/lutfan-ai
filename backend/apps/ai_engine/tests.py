@@ -10,7 +10,12 @@ from apps.ai_engine.layout import (
     _base_sizes,
     _clamp_sizes,
 )
-from apps.ai_engine.prompts import _inject_child_name, _inject_hayit_occasion, build_text_blocks
+from apps.ai_engine.prompts import (
+    _inject_child_name,
+    _inject_hayit_occasion,
+    build_text_blocks,
+    format_family_signature,
+)
 from apps.ai_engine.spelling import is_junk_field_value, scrub_junk_lines
 
 
@@ -71,8 +76,10 @@ class OverlaySafeRegionTests(SimpleTestCase):
         out = clear_safe_text_area(img, safe, corner_guard=True)
         cx, cy = 1200, 1500
         self.assertEqual(out.getpixel((cx, cy))[:3], paper)
-        # Footer-zone floral that sat inside the type column must be washed toward paper.
-        sample = out.getpixel((safe.x0 + 120, safe.y1 - 80))[:3]
+        # Footer-zone floral inside the type column must be washed toward paper.
+        sample = out.getpixel(
+            (safe.x0 + 120, safe.y1 - int(safe.height * 0.22))
+        )[:3]
         self.assertGreater(sum(sample), sum(floral) + 120)
 
     def test_safe_area_washes_pale_gold_filigree_under_type(self):
@@ -115,6 +122,31 @@ class OverlaySafeRegionTests(SimpleTestCase):
         out = clear_safe_text_area(img, safe, corner_guard=False)
         self.assertEqual(out.getpixel((edge_x, edge_y))[:3], floral)
         self.assertGreater(new_x0, old_x0)
+        self.assertEqual(out.getpixel((1200, 1500))[:3], paper)
+
+    def test_template_wash_bottom_is_five_percent_shorter(self):
+        """Extra 5% off the bottom wash only; top/sides and center unchanged."""
+        paper = (250, 244, 232)
+        floral = (40, 90, 55)
+        img = Image.new("RGB", (2400, 3000), paper)
+        draw = ImageDraw.Draw(img)
+        safe = analyze_safe_region(img, corner_guard=False)
+        pad_x = int(safe.width * 0.06)
+        pad_y = int(safe.height * 0.05)
+        old_x0 = max(0, safe.x0 - pad_x)
+        old_y0 = max(0, safe.y0 - pad_y)
+        old_x1 = min(2400, safe.x1 + pad_x)
+        old_y1 = min(3000, safe.y1 + pad_y)
+        rw, rh = old_x1 - old_x0, old_y1 - old_y0
+        wash_y1 = old_y1 - int(rh * 0.05) - int(rh * 0.05)
+        bottom_x = (old_x0 + old_x1) // 2
+        bottom_y = min(2990, wash_y1 + 24)
+        draw.ellipse(
+            (bottom_x - 20, bottom_y - 20, bottom_x + 20, bottom_y + 20),
+            fill=floral,
+        )
+        out = clear_safe_text_area(img, safe, corner_guard=False)
+        self.assertEqual(out.getpixel((bottom_x, bottom_y))[:3], floral)
         self.assertEqual(out.getpixel((1200, 1500))[:3], paper)
 
     def test_russian_orphan_last_word_is_merged(self):
@@ -531,6 +563,41 @@ class HayitOccasionOverlayTests(SimpleTestCase):
         blocks = build_text_blocks(Inv())
         self.assertEqual(blocks["date_time"], "")
         self.assertIn("Qurbon hayiti", blocks["body"])
+
+
+class FamilySignatureTests(SimpleTestCase):
+    def test_sasha_becomes_sashov_family(self):
+        self.assertEqual(format_family_signature("Саша", "ru"), "Семья Сашовых")
+        self.assertEqual(
+            format_family_signature("Саша", "uz-cyrl"), "Сашовлар оиласи"
+        )
+        self.assertEqual(
+            format_family_signature("Sasha", "uz-latn"), "Sashovlar oilasi"
+        )
+        self.assertEqual(
+            format_family_signature("sasha", "uz-latn"), "sashovlar oilasi"
+        )
+
+    def test_sashov_forms_are_idempotent(self):
+        self.assertEqual(
+            format_family_signature("Семья Сашовых", "ru"), "Семья Сашовых"
+        )
+        self.assertEqual(
+            format_family_signature("Сашовлар оиласи", "uz-cyrl"),
+            "Сашовлар оиласи",
+        )
+        self.assertEqual(
+            format_family_signature("Sashovlar oilasi", "uz-latn"),
+            "Sashovlar oilasi",
+        )
+
+    def test_existing_ov_surname_stays(self):
+        self.assertEqual(
+            format_family_signature("Tohirov", "uz-latn"), "Tohirovlar oilasi"
+        )
+        self.assertEqual(
+            format_family_signature("Тохиров", "ru"), "Семья Тохировых"
+        )
 
 
 class GuestRequestPromptTests(SimpleTestCase):

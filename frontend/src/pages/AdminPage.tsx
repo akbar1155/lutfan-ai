@@ -21,6 +21,7 @@ import {
 import { EmptyState } from "../components/UiStates";
 import UiSelect from "../components/UiSelect";
 import { formatDisplayDateTimeStamp, isIsoDateTime } from "../utils/date";
+import { eventDisplayName, normalizeUiLang, pickTranslation } from "../i18n/lang";
 import {
   composeTextTemplatePreview,
   parseTextTemplatePreview,
@@ -396,14 +397,14 @@ export default function AdminPage() {
   );
 
   const eventLabels = useMemo(() => {
-    const lang = (i18n.language || "uz-latn") as string;
+    const lang = normalizeUiLang(i18n.language);
     const map: Record<string, string> = {};
     for (const e of events) {
       const slug = String(e.slug || "");
       if (!slug) continue;
       const names = (e.name_translations || {}) as Record<string, string>;
       map[slug] =
-        names[lang] || names["uz-latn"] || names["uz-cyrl"] || names.ru || slug;
+        pickTranslation(names, lang) || eventDisplayName(slug, lang);
     }
     return map;
   }, [events, i18n.language]);
@@ -647,10 +648,10 @@ export default function AdminPage() {
                   onChange={(e) => setInvStatus(e.target.value)}
                 >
                   <option value="">{t("adminColStatus")}</option>
-                  <option value="draft">draft</option>
-                  <option value="generating">generating</option>
-                  <option value="ready">ready</option>
-                  <option value="failed">failed</option>
+                  <option value="draft">{t("status_draft")}</option>
+                  <option value="generating">{t("status_generating")}</option>
+                  <option value="ready">{t("status_ready")}</option>
+                  <option value="failed">{t("status_failed")}</option>
                 </UiSelect>
                 <button type="button" className="admin-btn" onClick={() => void load()}>
                   {t("adminSearch")}
@@ -745,7 +746,7 @@ export default function AdminPage() {
                   return (
                     <tr key={String(e.id)}>
                       <td className="mono">{String(e.slug)}</td>
-                      <td>{names["uz-latn"] || names["uz-cyrl"] || names.ru || "—"}</td>
+                      <td>{pickTranslation(names, i18n.language) || "—"}</td>
                       <td>
                         <StatusBadge tone={e.is_active ? "ok" : "muted"}>
                           {e.is_active ? t("adminActive") : t("adminInactive")}
@@ -1419,9 +1420,9 @@ export default function AdminPage() {
                   onChange={(e) => setGenStatus(e.target.value)}
                 >
                   <option value="">{t("adminColStatus")}</option>
-                  <option value="success">success</option>
-                  <option value="failed">failed</option>
-                  <option value="processing">processing</option>
+                  <option value="success">{t("status_success")}</option>
+                  <option value="failed">{t("status_failed")}</option>
+                  <option value="processing">{t("status_processing")}</option>
                 </UiSelect>
                 <button type="button" className="admin-btn" onClick={() => void load()}>
                   {t("adminSearch")}
@@ -1714,7 +1715,7 @@ function TextForm({
   onCancel: () => void;
   busy: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState(initial);
   const [blocks, setBlocks] = useState(() =>
     parseTextTemplatePreview(String(initial.preview_text || "")),
@@ -1858,12 +1859,11 @@ function TextForm({
                   <option value="">{t("adminSubtypeAny")}</option>
                   {subtypes.map((sub) => {
                     const slug = String(sub.slug || "");
-                    const names = (sub.name_translations || {}) as Record<
+                    const names = (sub.names || sub.name_translations || {}) as Record<
                       string,
                       string
                     >;
-                    const label =
-                      names["uz-latn"] || names["uz-cyrl"] || names.ru || slug;
+                    const label = pickTranslation(names, i18n.language) || slug;
                     return (
                       <option key={slug} value={slug}>
                         {label}
@@ -2348,10 +2348,10 @@ function MoodForm({
             value={String(form.category || "style")}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           >
-            <option value="color">color</option>
-            <option value="flowers">flowers</option>
-            <option value="style">style</option>
-            <option value="texture">texture</option>
+            <option value="color">{t("mood_color")}</option>
+            <option value="flowers">{t("mood_flowers")}</option>
+            <option value="style">{t("mood_style")}</option>
+            <option value="texture">{t("mood_texture")}</option>
           </UiSelect>
         </Field>
         <Field label="UZ Latn">
@@ -2419,7 +2419,7 @@ function PresetForm({
   onCancel: () => void;
   busy: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState(initial);
   useEffect(() => setForm(initial), [initial]);
 
@@ -2463,7 +2463,7 @@ function PresetForm({
             <option value="">—</option>
             {eventOptions.map((slug) => (
               <option key={slug} value={slug}>
-                {slug}
+                {eventDisplayName(slug, i18n.language)}
               </option>
             ))}
           </UiSelect>
