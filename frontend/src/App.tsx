@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Layout from "./components/Layout";
@@ -25,11 +26,38 @@ import {
 } from "./pages/StaticPages";
 import "./App.css";
 
+const PageBuilderPage = lazy(() => import("./page-builder/PageBuilderPage"));
+const PublicInteractivePage = lazy(() => import("./page-builder/PublicPage"));
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route
+            path="/page-builder"
+            element={
+              <Suspense fallback={<div />}>
+                <PageBuilderPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/page-builder/:id"
+            element={
+              <Suspense fallback={<div />}>
+                <PageBuilderPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/p/:slug"
+            element={
+              <Suspense fallback={<div />}>
+                <PublicInteractivePage />
+              </Suspense>
+            }
+          />
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/gallery" element={<GalleryPage />} />

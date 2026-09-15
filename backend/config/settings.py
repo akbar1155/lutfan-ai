@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.invitations",
     "apps.ai_engine",
     "apps.backup",
+    "apps.page_builder",
 ]
 
 MIDDLEWARE = [

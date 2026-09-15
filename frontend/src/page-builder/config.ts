@@ -1,0 +1,94 @@
+import type { CatalogItem } from "./types";
+
+export const COLORS: CatalogItem[] = [
+  { id: "ivory", name: "Fil suyagi", description: "Iliq ochiq qog‘oz", swatch: "#f6f0e2", accent: "#c4a265" },
+  { id: "beige", name: "Bej", description: "Yumshoq qum tusi", swatch: "#eadfcb", accent: "#b08955" },
+  { id: "gold", name: "Oltin", description: "Iliq metall nur", swatch: "#f0e0b6", accent: "#c9a227" },
+  { id: "burgundy", name: "Bordo", description: "Chuqqur qizil hashamat", swatch: "#5a1d28", accent: "#d4a056" },
+  { id: "emerald", name: "Zumrad", description: "Tungi yashil", swatch: "#143026", accent: "#c9b37a" },
+  { id: "navy", name: "Tungi ko‘k", description: "Saroyona kecha", swatch: "#161d33", accent: "#c8b27a" },
+  { id: "rose", name: "Pushti", description: "Nozik atirgul", swatch: "#f3dde2", accent: "#b76e79" },
+  { id: "black", name: "Qora", description: "Oltin bilan qora", swatch: "#141414", accent: "#d4af37" },
+  { id: "white", name: "Oq", description: "Sovuq toza varaq", swatch: "#fafaf6", accent: "#8a7a5a" },
+];
+
+export const PATTERNS: CatalogItem[] = [
+  { id: "oriental", name: "Sharqona", description: "Islimiy naqsh" },
+  { id: "uzbek-national", name: "O‘zbek milliy", description: "Adras / atlas ruhida" },
+  { id: "floral", name: "Gulli", description: "Yumshoq gul naqshi" },
+  { id: "arabesque", name: "Arabesk", description: "Chiroqli o‘simlik chiziq" },
+  { id: "geometric", name: "Geometrik", description: "Sokin yulduz to‘ri" },
+  { id: "minimal", name: "Minimal", description: "Juda nozik chiziq" },
+  { id: "royal", name: "Shohona", description: "Damask naqshi" },
+  { id: "elegant", name: "Nafis", description: "Ingichka ornament" },
+];
+
+export const FLOWERS: CatalogItem[] = [
+  { id: "rose", name: "Atirgul" },
+  { id: "tulip", name: "Lola" },
+  { id: "peony", name: "Pion" },
+  { id: "jasmine", name: "Yasemin" },
+  { id: "dried", name: "Quritilgan gullar" },
+  { id: "botanical", name: "Botanik" },
+  { id: "none", name: "Gulsiz" },
+];
+
+export const TEXTURES: CatalogItem[] = [
+  { id: "handmade-paper", name: "Qo‘lda yasalgan" },
+  { id: "premium-paper", name: "Premium qog‘oz" },
+  { id: "silk", name: "Ipak" },
+  { id: "parchment", name: "Pergament" },
+  { id: "marble", name: "Marmar" },
+  { id: "textured", name: "Relyef" },
+  { id: "clean", name: "Tekis" },
+];
+
+export const FRAMES: CatalogItem[] = [
+  { id: "gold-ornamental", name: "Oltin ornament" },
+  { id: "floral", name: "Gulli ramka" },
+  { id: "thin-elegant", name: "Ingichka nafis" },
+  { id: "double", name: "Ikki qator" },
+  { id: "royal", name: "Shohona" },
+  { id: "minimal", name: "Minimal" },
+  { id: "none", name: "Ramkasiz" },
+];
+
+export const FONTS: CatalogItem[] = [
+  { id: "elegant", name: "Nafis", description: "Cormorant" },
+  { id: "classic", name: "Klassik", description: "Source Serif" },
+  { id: "modern", name: "Zamonaviy", description: "Outfit" },
+  { id: "oriental", name: "Sharqona", description: "Cinzel + serif" },
+  { id: "luxury", name: "Hashamatli", description: "Playfair" },
+  { id: "minimal", name: "Minimal", description: "Inter" },
+];
+
+export const ANIMATIONS: CatalogItem[] = [
+  { id: "gentle", name: "Yumshoq" },
+  { id: "elegant-reveal", name: "Nafis ochilish" },
+  { id: "floating-flowers", name: "Suzuvchi gullar" },
+  { id: "golden-particles", name: "Oltin zarralar" },
+  { id: "ornament-reveal", name: "Naqsh ochilishi" },
+  { id: "soft-fade", name: "Sokin so‘nish" },
+  { id: "none", name: "Animatsiyasiz" },
+];
+
+export const DENSITIES: CatalogItem[] = [
+  { id: "minimal", name: "Minimal", description: "Toza, nafis" },
+  { id: "balanced", name: "Muvozanat", description: "O‘rtacha bezak" },
+  { id: "rich", name: "Boy", description: "To‘la hashamat" },
+];
+
+export const MUSIC_PRESETS: CatalogItem[] = [
+  { id: "elegant", name: "Nafis", description: "Instrumental" },
+  { id: "romantic", name: "Romantik", description: "Iliq ohang" },
+  { id: "traditional", name: "An’anaviy", description: "Milliy ruh" },
+  { id: "oriental", name: "Sharqona", description: "Maqom kayfiyati" },
+  { id: "calm", name: "Sokin", description: "Yengil fon" },
+  { id: "celebration", name: "Bayramona", description: "Quvnoq" },
+  { id: "piano", name: "Pianino", description: "Yakka cholg‘u" },
+  { id: "instrumental", name: "Instrumental", description: "Yumshoq simlar" },
+];
+
+export function presetMusicUrl(id: string): string {
+  return `/page-builder/music/${id}.wav`;
+}
