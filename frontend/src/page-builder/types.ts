@@ -18,11 +18,21 @@ export type MusicConfig = {
 export type InvitationPagePayload = {
   id: string;
   slug: string;
+  eventSlug: string;
+  subtypeSlugs: string[];
   title: string;
   mainText: string;
   date: string;
   time: string;
+  familySignature: string;
+  personName: string;
+  childName: string;
+  childGender: string;
+  venueName: string;
   address: string;
+  ceremonySchedule: Record<string, { date: string; time: string }>;
+  displayLang: string;
+  readyTextId: string;
   designConfig: DesignConfig;
   musicConfig: MusicConfig;
   designPrompt?: string;
@@ -62,10 +72,20 @@ export const EMPTY_PAGE: Omit<
   "id" | "slug" | "publicUrl" | "createdAt" | "updatedAt"
 > = {
   title: "",
+  eventSlug: "nikoh",
+  subtypeSlugs: ["nikoh_oqshomi"],
   mainText: "",
   date: "",
   time: "",
+  familySignature: "",
+  personName: "",
+  childName: "",
+  childGender: "",
+  venueName: "",
   address: "",
+  ceremonySchedule: {},
+  displayLang: "uz-latn",
+  readyTextId: "classic1",
   designConfig: DEFAULT_DESIGN,
   musicConfig: DEFAULT_MUSIC,
   designPrompt: "",

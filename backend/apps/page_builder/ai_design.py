@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 _KEYWORD_MAP: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("primaryColor", "burgundy", ("bordo", "burgundy", "wine", "qizil", "wine-red")),
     ("primaryColor", "emerald", ("zumrad", "emerald", "yashil", "green")),
-    ("primaryColor", "navy", ("navy", "ko‘k", "kok", "blue", "tungi")),
+    ("primaryColor", "navy", ("navy", "ko‘k", "kok", "blue", "tungi", "to‘q ko‘k", "toq kok")),
     ("primaryColor", "gold", ("oltin", "gold", "golden", "zarhal")),
     ("primaryColor", "rose", ("pushti", "rose", "pink", "blush")),
     ("primaryColor", "black", ("qora", "black")),
@@ -50,7 +50,7 @@ _KEYWORD_MAP: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("flower", "tulip", ("lola", "tulip")),
     ("flower", "peony", ("pion", "peony")),
     ("flower", "jasmine", ("yasemin", "jasmine")),
-    ("flower", "dried", ("quritilgan", "dried")),
+    ("flower", "lotus", ("nilufar", "lotus", "quritilgan", "dried")),
     ("flower", "botanical", ("botanik", "botanical", "yaproq")),
     ("flower", "rose", ("atirgul", "rose", "gul")),
     ("texture", "silk", ("ipak", "silk")),
@@ -110,11 +110,13 @@ def _fold(text: str) -> str:
     )
 
 
-def heuristic_design_from_prompt(prompt: str) -> dict[str, str]:
+def heuristic_design_from_prompt(
+    prompt: str, current: dict | None = None
+) -> dict[str, str]:
     text = _fold(prompt)
+    out = dict(sanitize_design_config(current) if current else DEFAULT_DESIGN)
     if not text:
-        return dict(DEFAULT_DESIGN)
-    out = dict(DEFAULT_DESIGN)
+        return out
     for field, value, needles in _KEYWORD_MAP:
         if any(_fold(n) in text for n in needles):
             out[field] = value
@@ -125,7 +127,24 @@ def heuristic_design_from_prompt(prompt: str) -> dict[str, str]:
         out["frame"] = "gold-ornamental"
         if "ochiq" not in text:
             out["primaryColor"] = "gold"
+    if not _prompt_mentions_font(text):
+        base = sanitize_design_config(current) if current else DEFAULT_DESIGN
+        out["font"] = base["font"]
     return sanitize_design_config(out)
+
+
+def _prompt_mentions_font(text: str) -> bool:
+    folded = _fold(text)
+    if "shrift" in folded or re.search(r"\bfont\b", folded):
+        return True
+    explicit = (
+        "cormorant",
+        "playfair",
+        "cinzel",
+        "outfit",
+        "source serif",
+    )
+    return any(n in folded for n in explicit)
 
 
 def _gemini_design(prompt: str) -> dict[str, str] | None:
@@ -169,13 +188,17 @@ def _gemini_design(prompt: str) -> dict[str, str] | None:
         return None
 
 
-def interpret_design_prompt(prompt: str) -> dict[str, str]:
-    heuristic = heuristic_design_from_prompt(prompt)
+def interpret_design_prompt(prompt: str, current: dict | None = None) -> dict[str, str]:
+    base = sanitize_design_config(current)
+    heuristic = heuristic_design_from_prompt(prompt, base)
     from_model = _gemini_design(prompt) if (prompt or "").strip() else None
     if not from_model:
         return heuristic
-    # Model wins for recognized fields; heuristic already sanitized defaults.
-    return sanitize_design_config(from_model)
+    # Model wins for recognized fields; keep the user's font unless they asked.
+    merged = sanitize_design_config({**base, **from_model})
+    if not _prompt_mentions_font(prompt):
+        merged["font"] = base["font"]
+    return merged
 
 
 def pick_curated_combo(exclude: dict | None = None) -> dict[str, str]:
@@ -183,4 +206,6 @@ def pick_curated_combo(exclude: dict | None = None) -> dict[str, str]:
 
     current = sanitize_design_config(exclude)
     choices = [c for c in CURATED_COMBOS if c != current] or list(CURATED_COMBOS)
-    return dict(random.choice(choices))
+    combo = dict(random.choice(choices))
+    combo["font"] = current["font"]
+    return sanitize_design_config(combo)

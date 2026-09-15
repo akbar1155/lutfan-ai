@@ -28,6 +28,7 @@ import {
 } from "../utils/date";
 import {
   buildLocalReadyTemplates,
+  listReadyTextStyles,
   mergeReadyTextTemplates,
 } from "../utils/readyTexts";
 import {
@@ -527,7 +528,7 @@ export function DetailsPage() {
                         : toggleSubtype(s.slug)
                     }
                   />
-                  <span>{pickTranslation(s.names, language) || s.slug}</span>
+                  <span>{pickTranslation(s.names, uiLang) || s.slug}</span>
                 </label>
               );
             })}
@@ -605,9 +606,10 @@ export function DetailsPage() {
 
 export function DataPage() {
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { authLoading } = useWaitForAuth();
+  const uiLang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [event, setEvent] = useState<EventConfig | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -802,49 +804,37 @@ export function DataPage() {
         const type = fieldTypeByKey.get(key) || "string";
         nextErrors[key] =
           type === "enum"
-            ? tInLang(t, "selectRequired", invitation.language)
-            : tInLang(t, "fieldRequired", invitation.language);
+            ? t("selectRequired")
+            : t("fieldRequired");
         continue;
       }
       if (!skipJunkKeys.has(key) && isJunkFieldValue(form[key])) {
-        nextErrors[key] = tInLang(t, "placeholderFieldError", invitation.language);
+        nextErrors[key] = t("placeholderFieldError");
       }
     }
     for (const [key, value] of Object.entries(form)) {
       if (!value?.trim() || requiredKeys.has(key) || skipJunkKeys.has(key)) continue;
       if (isJunkFieldValue(value) && !nextErrors[key]) {
-        nextErrors[key] = tInLang(t, "placeholderFieldError", invitation.language);
+        nextErrors[key] = t("placeholderFieldError");
       }
     }
     if (multiCeremony) {
       for (const slug of subtypeSlugs) {
         const slot = schedule[slug] || { date: "", time: "" };
         if (!isIsoDate(slot.date)) {
-          nextErrors[`sched:${slug}:date`] = tInLang(
-            t,
-            "dateFormatError",
-            invitation.language,
-          );
+          nextErrors[`sched:${slug}:date`] = t("dateFormatError");
         } else if (isPastIsoDate(slot.date)) {
-          nextErrors[`sched:${slug}:date`] = tInLang(
-            t,
-            "dateMinToday",
-            invitation.language,
-          );
+          nextErrors[`sched:${slug}:date`] = t("dateMinToday");
         }
         if (!slot.time?.trim()) {
-          nextErrors[`sched:${slug}:time`] = tInLang(
-            t,
-            "fieldRequired",
-            invitation.language,
-          );
+          nextErrors[`sched:${slug}:time`] = t("fieldRequired");
         }
       }
     } else {
       if (form.event_date && !isIsoDate(form.event_date)) {
-        nextErrors.event_date = tInLang(t, "dateFormatError", invitation.language);
+        nextErrors.event_date = t("dateFormatError");
       } else if (form.event_date && isPastIsoDate(form.event_date)) {
-        nextErrors.event_date = tInLang(t, "dateMinToday", invitation.language);
+        nextErrors.event_date = t("dateMinToday");
       }
     }
 
@@ -912,7 +902,7 @@ export function DataPage() {
               const label =
                 pickTranslation(
                   event.subtypes?.find((s) => s.slug === slug)?.names || {},
-                  invitation.language,
+                  uiLang,
                 ) || slug;
               const slot = schedule[slug] || { date: "", time: "" };
               return (
@@ -920,10 +910,10 @@ export function DataPage() {
                   <legend>{label}</legend>
                   <div className="ceremony-slot-row">
                     <DateField
-                      label={tInLang(t, fieldLabelKey("event_date"), invitation.language)}
+                      label={t(fieldLabelKey("event_date"))}
                       required
                       minToday
-                      language={invitation.language}
+                      language={uiLang}
                       error={fieldErrors[`sched:${slug}:date`]}
                       value={slot.date}
                       onChange={(next) => {
@@ -939,9 +929,9 @@ export function DataPage() {
                       }}
                     />
                     <TimeField
-                      label={tInLang(t, fieldLabelKey("event_time"), invitation.language)}
+                      label={t(fieldLabelKey("event_time"))}
                       required
-                      language={invitation.language}
+                      language={uiLang}
                       error={fieldErrors[`sched:${slug}:time`]}
                       value={slot.time}
                       onChange={(next) => {
@@ -966,7 +956,7 @@ export function DataPage() {
         {fields.map((field) => {
           const key = String(field.key);
           const type = String(field.type || "string");
-          const label = tInLang(t, fieldLabelKey(key), invitation.language, {
+          const label = t(fieldLabelKey(key), {
             defaultValue: key,
           });
           const required = requiredKeys.has(key);
@@ -995,7 +985,7 @@ export function DataPage() {
                 <option value="">—</option>
                 {field.options.map((opt) => (
                   <option key={opt} value={opt}>
-                    {tInLang(t, optionLabelKey(opt), invitation.language, {
+                    {t(optionLabelKey(opt), {
                       defaultValue: opt,
                     })}
                   </option>
@@ -1011,7 +1001,7 @@ export function DataPage() {
                 label={label}
                 required={required}
                 minToday={field.min === "today"}
-                language={invitation.language}
+                language={uiLang}
                 error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {
@@ -1028,7 +1018,7 @@ export function DataPage() {
                 key={key}
                 label={label}
                 required={required}
-                language={invitation.language}
+                language={uiLang}
                 error={fieldError}
                 value={form[key] || ""}
                 onChange={(next) => {
@@ -1073,7 +1063,7 @@ export function DataPage() {
                 value={form[key] || ""}
                 placeholder={
                   key === "family_signature"
-                    ? tInLang(t, "field_family_signature_ph", invitation.language, {
+                    ? t("field_family_signature_ph", {
                         defaultValue: "masalan: Tohirov",
                       })
                     : undefined
@@ -1108,9 +1098,10 @@ export function DataPage() {
 
 export function TextPage() {
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { authLoading } = useWaitForAuth();
+  const uiLang = normalizeUiLang(i18n.language);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [templates, setTemplates] = useState<TextTemplate[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -1325,10 +1316,7 @@ export function TextPage() {
     );
   }
 
-  const classicCount = templates.filter((tpl) =>
-    /classic|klassik|классик/i.test(tpl.title),
-  ).length;
-  let classicIndex = 0;
+  const styleTitles = listReadyTextStyles();
 
   return (
     <WizardChrome step={4} title={t("text")} hint={t("textHint")} error={error}>
@@ -1340,12 +1328,9 @@ export function TextPage() {
             </div>
             <div className="choice-row" role="listbox" aria-label={t("readyTexts")}>
               {templates.map((tpl) => {
-                const isClassic = /classic|klassik|классик/i.test(tpl.title);
-                if (isClassic) classicIndex += 1;
-                const label = isClassic
-                  ? classicCount > 1
-                    ? `${t("templateClassic")} ${classicIndex}`
-                    : t("templateClassic")
+                const style = styleTitles.find((item) => item.id === tpl.styleId);
+                const label = style
+                  ? pickTranslation(style.title, uiLang)
                   : tpl.title;
                 const active = selectedTemplateId === tpl.id;
                 return (
@@ -1435,7 +1420,7 @@ export function TextPage() {
                 : (["header", "body", "date_time", "footer"] as const)
             ).map((key) => (
               <label key={key} className={`text-block text-block-${key}`}>
-                <span>{tInLang(t, `block_${key}`, invitation.language)}</span>
+                <span>{t(`block_${key}`)}</span>
                 <textarea
                   rows={key === "body" ? 4 : 2}
                   value={blocks[key]}
@@ -2210,7 +2195,7 @@ export function ResultPage() {
                     : (["header", "body", "date_time", "address", "footer"] as const)
                 ).map((key) => (
                   <label key={key} className={`text-block text-block-${key}`}>
-                    <span>{tInLang(t, `block_${key}`, invitation.language)}</span>
+                    <span>{t(`block_${key}`)}</span>
                     <textarea
                       rows={key === "body" ? 4 : 2}
                       value={blocks[key]}

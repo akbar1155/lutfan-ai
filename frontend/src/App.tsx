@@ -35,22 +35,6 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route
-            path="/page-builder"
-            element={
-              <Suspense fallback={<div />}>
-                <PageBuilderPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/page-builder/:id"
-            element={
-              <Suspense fallback={<div />}>
-                <PageBuilderPage />
-              </Suspense>
-            }
-          />
-          <Route
             path="/p/:slug"
             element={
               <Suspense fallback={<div />}>
@@ -59,6 +43,22 @@ export default function App() {
             }
           />
           <Route element={<Layout />}>
+            <Route
+              path="/page-builder"
+              element={
+                <Suspense fallback={<div />}>
+                  <PageBuilderPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/page-builder/:id"
+              element={
+                <Suspense fallback={<div />}>
+                  <PageBuilderPage />
+                </Suspense>
+              }
+            />
             <Route path="/" element={<HomePage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />

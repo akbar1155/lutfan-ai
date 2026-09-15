@@ -6,14 +6,14 @@ export const COLORS: CatalogItem[] = [
   { id: "gold", name: "Oltin", description: "Iliq metall nur", swatch: "#f0e0b6", accent: "#c9a227" },
   { id: "burgundy", name: "Bordo", description: "Chuqqur qizil hashamat", swatch: "#5a1d28", accent: "#d4a056" },
   { id: "emerald", name: "Zumrad", description: "Tungi yashil", swatch: "#143026", accent: "#c9b37a" },
-  { id: "navy", name: "Tungi ko‘k", description: "Saroyona kecha", swatch: "#161d33", accent: "#c8b27a" },
+  { id: "navy", name: "To‘q ko‘k", description: "Saroyona kecha", swatch: "#161d33", accent: "#c8b27a" },
   { id: "rose", name: "Pushti", description: "Nozik atirgul", swatch: "#f3dde2", accent: "#b76e79" },
   { id: "black", name: "Qora", description: "Oltin bilan qora", swatch: "#141414", accent: "#d4af37" },
   { id: "white", name: "Oq", description: "Sovuq toza varaq", swatch: "#fafaf6", accent: "#8a7a5a" },
 ];
 
 export const PATTERNS: CatalogItem[] = [
-  { id: "oriental", name: "Sharqona", description: "Islimiy naqsh" },
+  { id: "oriental", name: "Sharqona", description: "O‘simliksimon naqsh" },
   { id: "uzbek-national", name: "O‘zbek milliy", description: "Adras / atlas ruhida" },
   { id: "floral", name: "Gulli", description: "Yumshoq gul naqshi" },
   { id: "arabesque", name: "Arabesk", description: "Chiroqli o‘simlik chiziq" },
@@ -28,7 +28,7 @@ export const FLOWERS: CatalogItem[] = [
   { id: "tulip", name: "Lola" },
   { id: "peony", name: "Pion" },
   { id: "jasmine", name: "Yasemin" },
-  { id: "dried", name: "Quritilgan gullar" },
+  { id: "lotus", name: "Nilufar" },
   { id: "botanical", name: "Botanik" },
   { id: "none", name: "Gulsiz" },
 ];
@@ -62,6 +62,76 @@ export const FONTS: CatalogItem[] = [
   { id: "minimal", name: "Minimal", description: "Inter" },
 ];
 
+export type SiteLayout =
+  | "ceremony"
+  | "editorial"
+  | "stack"
+  | "ornate"
+  | "luxe"
+  | "air";
+
+export function siteLayoutFromFont(font?: string): SiteLayout {
+  switch (font) {
+    case "classic":
+      return "editorial";
+    case "modern":
+      return "stack";
+    case "oriental":
+      return "ornate";
+    case "luxury":
+      return "luxe";
+    case "minimal":
+      return "air";
+    default:
+      return "ceremony";
+  }
+}
+
+export const SITE_COPY: Record<
+  string,
+  {
+    venue: string;
+    when: string;
+    host: string;
+    open: string;
+    kicker: string;
+    bodyPlaceholder: string;
+    pause: string;
+    play: string;
+  }
+> = {
+  "uz-latn": {
+    venue: "Marosim joyi",
+    when: "Sana va vaqt",
+    host: "Hurmat bilan",
+    open: "Taklifnomani ochish",
+    kicker: "Taklifnoma",
+    bodyPlaceholder: "Asosiy matn shu yerda ko‘rinadi.",
+    pause: "Pauza",
+    play: "Ijro",
+  },
+  "uz-cyrl": {
+    venue: "Маросим жойи",
+    when: "Сана ва вақт",
+    host: "Ҳурмат билан",
+    open: "Таклифномани очиш",
+    kicker: "Таклифнома",
+    bodyPlaceholder: "Асосий матн шу ерда кўринади.",
+    pause: "Пауза",
+    play: "Ижро",
+  },
+  ru: {
+    venue: "Место",
+    when: "Дата и время",
+    host: "С уважением",
+    open: "Открыть приглашение",
+    kicker: "Приглашение",
+    bodyPlaceholder: "Основной текст появится здесь.",
+    pause: "Пауза",
+    play: "Играть",
+  },
+};
+
 export const ANIMATIONS: CatalogItem[] = [
   { id: "gentle", name: "Yumshoq" },
   { id: "elegant-reveal", name: "Nafis ochilish" },
@@ -90,5 +160,5 @@ export const MUSIC_PRESETS: CatalogItem[] = [
 ];
 
 export function presetMusicUrl(id: string): string {
-  return `/page-builder/music/${id}.wav`;
+  return `/page-builder/music/${id}.wav?v=2`;
 }

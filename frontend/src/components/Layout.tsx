@@ -24,6 +24,7 @@ export default function Layout() {
   const isAdmin = isAdminRoute;
   const isWizard = location.pathname.startsWith("/create");
   const isHome = location.pathname === "/";
+  const isBuilder = location.pathname.startsWith("/page-builder");
   const [menuOpen, setMenuOpen] = useState(false);
   const leavingWizard = useRef(false);
 
@@ -62,6 +63,7 @@ export default function Layout() {
         isAdminRoute && !isAdminAuthed ? "shell-admin-gate" : "",
         isHome ? "shell-home" : "",
         isWizard ? "shell-wizard" : "",
+        isBuilder ? "shell-builder" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -162,7 +164,7 @@ export default function Layout() {
         </div>
       </header>
       <Outlet />
-      {!isAdminRoute && (
+      {!isAdminRoute && !isBuilder && (
         <footer className="footer">
           <span className="brand footer-brand">{t("brand")}</span>
           <Link to="/privacy-policy">{t("privacy")}</Link>

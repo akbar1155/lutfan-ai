@@ -237,6 +237,7 @@ export type TextTemplate = {
   preview_text: string;
   language: string;
   tone?: string;
+  styleId?: string;
 };
 
 export type JpgTemplate = {

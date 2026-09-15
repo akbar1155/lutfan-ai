@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { pageBuilderApi } from "./api";
-import { presetMusicUrl } from "./config";
+import { SITE_COPY, presetMusicUrl, siteLayoutFromFont } from "./config";
+import { inviteHeading } from "./eventFields";
 import InvitationRenderer from "./InvitationRenderer";
 import "./page-builder.css";
 import { DEFAULT_DESIGN, type InvitationPagePayload } from "./types";
 
 export default function PublicInteractivePage() {
   const { slug } = useParams();
+  const { t } = useTranslation();
   const [page, setPage] = useState<InvitationPagePayload | null>(null);
   const [missing, setMissing] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -69,48 +72,89 @@ export default function PublicInteractivePage() {
     return (
       <div className="ip-missing">
         <div>
-          <h1>Taklifnoma topilmadi</h1>
-          <p>Havola noto‘g‘ri yoki sahifa nashr qilinmagan.</p>
+          <h1>{t("publicInviteMissing")}</h1>
         </div>
       </div>
     );
   }
 
   if (!page) {
-    return <div className="ip-missing">Yuklanmoqda…</div>;
+    return <div className="ip-missing">{t("loading")}</div>;
   }
 
+  const design = page.designConfig || DEFAULT_DESIGN;
+  const layout = siteLayoutFromFont(design.font);
+  const lang = page.displayLang || "uz-latn";
+  const copy = SITE_COPY[lang] || SITE_COPY["uz-latn"];
+  const coverTitle =
+    inviteHeading({
+      title: page.title,
+      personName: page.personName,
+      childName: page.childName,
+      familySignature: page.familySignature,
+      eventSlug: page.eventSlug,
+      lang,
+    }) ||
+    page.title ||
+    copy.kicker;
+
   return (
-    <div className="ip-public">
-      {!opened ? (
-        <div className="ip-open-layer">
-          <div className="ip-open-card">
-            <p>{page.title || "Taklifnoma"}</p>
-            <button type="button" onClick={() => void openInvite()}>
-              Taklifnomani ochish
-            </button>
-          </div>
+    <div
+      className={`ip-public${opened ? " is-opened" : ""}`}
+      data-font={design.font}
+      data-color={design.primaryColor}
+      data-layout={layout}
+    >
+      <div className="ip-open-layer" aria-hidden={opened}>
+        <div className="ip-open-frame" aria-hidden />
+        <div className="ip-open-cover">
+          <p className="ip-open-kicker">{copy.kicker}</p>
+          <span className="ip-ornament" aria-hidden>
+            <i />
+          </span>
+          <h1>{coverTitle}</h1>
+          <button type="button" className="ip-open-btn" onClick={() => void openInvite()}>
+            {copy.open}
+          </button>
         </div>
-      ) : null}
+      </div>
       <InvitationRenderer
+        key={`${page.designConfig?.animation || "gentle"}-${opened ? "open" : "shut"}`}
         content={{
           title: page.title,
           mainText: page.mainText,
           date: page.date,
           time: page.time,
+          venueName: page.venueName,
           address: page.address,
+          familySignature: page.familySignature,
+          eventSlug: page.eventSlug,
+          childName: page.childName,
+          personName: page.personName,
+          schedule: page.ceremonySchedule,
+          subtypeSlugs: page.subtypeSlugs,
+          language: page.displayLang || "uz-latn",
         }}
-        design={page.designConfig || DEFAULT_DESIGN}
+        design={design}
         opened={opened}
       />
       {opened ? (
         <button
           type="button"
-          className="ip-music-ctl"
+          className={`ip-music-ctl${playing ? " is-on" : ""}`}
           onClick={() => void toggleMusic()}
-          aria-label={playing ? "Pauza" : "Ijro"}
+          aria-label={playing ? copy.pause : copy.play}
         >
-          {playing ? "❚❚" : "▶"}
+          {playing ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M8 5.5v13l11-6.5L8 5.5z" />
+            </svg>
+          )}
         </button>
       ) : null}
     </div>

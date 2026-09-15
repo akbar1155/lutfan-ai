@@ -45,6 +45,25 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
 }
 
+.shell-builder {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.shell-builder .top {
+  flex: 0 0 auto;
+}
+
+html:has(.shell-builder) #root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 .page {
   width: min(var(--content), 100% - var(--container-gutter));
   margin: 0 auto;

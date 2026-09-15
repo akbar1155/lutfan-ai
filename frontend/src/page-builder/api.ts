@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { getAccessToken, getApiBase, getRefreshToken, setAuthTokens } from "../api/envTarget";
 import type { DesignConfig, InvitationPagePayload, MusicConfig } from "./types";
 
@@ -5,15 +6,36 @@ type ApiError = {
   error?: { message?: string; details?: Record<string, unknown> };
 };
 
+const SERVER_ERROR_KEYS: Record<string, string> = {
+  "Asosiy matn kerak": "pbNeedBody",
+  "Joy nomi kerak": "pbNeedVenue",
+  "Manzil kerak": "pbNeedAddress",
+  "Oila familiyasi kerak": "pbNeedFamily",
+  "Har bir marosim uchun sana va vaqt kerak": "pbNeedSchedule",
+  "Sana va vaqt kerak": "pbNeedDateTime",
+  "Bola jinsini tanlang": "pbNeedChildGender",
+  "Bola ismi kerak": "pbNeedChildName",
+  "Ism kerak": "pbNeedPersonName",
+  "Musiqa fayli kerak": "pbNeedMusicFile",
+  "Musiqa 8 MB dan oshmasin": "pbMusicTooBig",
+  "Faqat MP3, M4A yoki WAV": "pbMusicType",
+  "Fayl bo‘sh": "pbFileEmpty",
+};
+
+function translateServerMessage(message: string, fallback: string): string {
+  const key = SERVER_ERROR_KEYS[message];
+  return key ? i18n.t(key) : message || fallback;
+}
+
 function formatError(body: ApiError, fallback: string): string {
   const details = body.error?.details;
   if (details && typeof details === "object") {
     for (const value of Object.values(details)) {
-      if (Array.isArray(value) && value.length) return String(value[0]);
-      if (typeof value === "string" && value) return value;
+      if (Array.isArray(value) && value.length) return translateServerMessage(String(value[0]), fallback);
+      if (typeof value === "string" && value) return translateServerMessage(value, fallback);
     }
   }
-  return body.error?.message || fallback;
+  return translateServerMessage(body.error?.message || "", fallback);
 }
 
 async function refreshAccess(): Promise<boolean> {
@@ -53,7 +75,7 @@ async function request<T>(path: string, init?: RequestInit, retried = false): Pr
     if (ok) return request<T>(path, init, true);
   }
   if (!res.ok) {
-    let message = `Xatolik: ${res.status}`;
+    let message = i18n.t("pbHttpError", { status: res.status });
     try {
       message = formatError((await res.json()) as ApiError, message);
     } catch {
@@ -70,7 +92,17 @@ export type PageWrite = {
   mainText?: string;
   date?: string | null;
   time?: string | null;
+  familySignature?: string;
+  personName?: string;
+  childName?: string;
+  childGender?: string;
+  venueName?: string;
   address?: string;
+  eventSlug?: string;
+  subtypeSlugs?: string[];
+  ceremonySchedule?: Record<string, { date: string; time: string }>;
+  displayLang?: string;
+  readyTextId?: string;
   designConfig?: DesignConfig;
   musicConfig?: MusicConfig;
   designPrompt?: string;

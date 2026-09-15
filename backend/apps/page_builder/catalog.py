@@ -34,7 +34,7 @@ FLOWERS = (
     "tulip",
     "peony",
     "jasmine",
-    "dried",
+    "lotus",
     "botanical",
     "none",
 )
@@ -163,7 +163,7 @@ CURATED_COMBOS: tuple[dict[str, str], ...] = (
     {
         "primaryColor": "gold",
         "pattern": "elegant",
-        "flower": "dried",
+        "flower": "lotus",
         "texture": "premium-paper",
         "frame": "thin-elegant",
         "font": "luxury",
@@ -220,6 +220,8 @@ def sanitize_design_config(raw: object | None) -> dict[str, str]:
     out = dict(DEFAULT_DESIGN)
     for key, choices in _FIELD_CHOICES.items():
         value = str(data.get(key) or "").strip()
+        if key == "flower" and value == "dried":
+            value = "lotus"
         if value in choices:
             out[key] = value
     return out

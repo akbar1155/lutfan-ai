@@ -189,6 +189,7 @@ function pack(
     const body = bodyFor(eventSlug, item.id, lang, subtypeSlugs);
     return {
       id: `local-${eventSlug}-${subtypeKey}-${lang}-${item.id}`,
+      styleId: item.id,
       title: item.title[lang],
       language: lang,
       tone: "classic",
@@ -211,12 +212,31 @@ export function buildLocalReadyTemplates(
   return pack(eventSlug, language, subtypeSlugs);
 }
 
+function normTitle(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export function mergeReadyTextTemplates(
-  _serverTemplates: TextTemplate[],
+  serverTemplates: TextTemplate[],
   localTemplates: TextTemplate[],
 ): TextTemplate[] {
-  // Local catalog is the source of truth per event — never mix server/legacy
-  // templates (e.g. nikoh wording showing up under aqiqa).
-  if (localTemplates.length) return localTemplates;
-  return _serverTemplates;
+  if (!localTemplates.length) return serverTemplates;
+  const unused = [...(serverTemplates || [])];
+  const merged = localTemplates.map((localTpl) => {
+    const idx = unused.findIndex(
+      (item) => normTitle(item.title) === normTitle(localTpl.title),
+    );
+    if (idx < 0) return localTpl;
+    const [serverTpl] = unused.splice(idx, 1);
+    const preview = String(serverTpl.preview_text || "").trim();
+    if (!preview) return localTpl;
+    return {
+      ...localTpl,
+      id: serverTpl.id,
+      preview_text: serverTpl.preview_text,
+      tone: serverTpl.tone || localTpl.tone,
+    };
+  });
+  const extras = unused.filter((item) => String(item.preview_text || "").trim());
+  return extras.length ? [...merged, ...extras] : merged;
 }
