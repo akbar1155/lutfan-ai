@@ -160,5 +160,5 @@ export const MUSIC_PRESETS: CatalogItem[] = [
 ];
 
 export function presetMusicUrl(id: string): string {
-  return `/page-builder/music/${id}.wav?v=2`;
+  return `/pb-music/${id}.wav?v=3`;
 }
