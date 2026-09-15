@@ -1078,7 +1078,9 @@ html:has(.pb-root) #root {
   z-index: 1;
   isolation: isolate;
   flex: 1 1 auto;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   display: flex;
@@ -1092,6 +1094,7 @@ html:has(.pb-root) #root {
 
 .ip-public .ip-content {
   overflow: visible;
+  height: auto;
   min-height: 100dvh;
 }
 
@@ -1100,6 +1103,7 @@ html:has(.pb-root) #root {
 .ip-venue,
 .ip-when-block,
 .ip-host {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1111,7 +1115,7 @@ html:has(.pb-root) #root {
 
 .ip-hero {
   position: relative;
-  min-height: 0;
+  min-height: auto;
   gap: 0.4rem;
   padding: 1.85rem 2.35rem 1.1rem;
 }
@@ -1209,9 +1213,11 @@ html:has(.pb-root) #root {
 }
 
 .ip-details {
+  flex: 0 0 auto;
   display: grid;
   width: 100%;
-  gap: 0.35rem;
+  padding-top: 0.15rem;
+  gap: 0.55rem;
 }
 
 .ip-when-block {
@@ -1221,14 +1227,14 @@ html:has(.pb-root) #root {
 .ip-program {
   position: relative;
   display: grid;
-  gap: 0.2rem;
+  gap: 0.35rem;
   width: min(100%, 26rem);
 }
 
 .ip-slot {
   display: grid;
-  gap: 0.08rem;
-  padding: 0.5rem 0.2rem;
+  gap: 0.12rem;
+  padding: 0.7rem 0.2rem;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
@@ -1237,6 +1243,7 @@ html:has(.pb-root) #root {
 }
 
 .ip-program.is-many {
+  gap: 0.55rem;
   padding-left: 1.35rem;
 }
 
@@ -1482,8 +1489,14 @@ html:has(.pb-root) #root {
 }
 
 @container invite (max-width: 420px) {
-  .ip-hero { padding-top: 1.65rem; }
-  .ip-title { max-width: 16em; }
+  .ip-hero { padding-top: 1.55rem; }
+  .ip-title {
+    max-width: 16em;
+    font-size: clamp(1.55rem, 7cqw, 2.25rem);
+    line-height: 1.22;
+  }
+  .ip-letter { padding-top: 0.85rem; }
+  .ip-program.is-many { gap: 0.65rem; }
 }
 
 .ip-flower {
