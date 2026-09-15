@@ -56,7 +56,9 @@ export const DEFAULT_READY_STYLE = "classic1";
 
 export const READY_TEXT_STYLES = listReadyTextStyles();
 
-export function defaultMainText(eventSlug: string, t: (key: string, opts?: object) => string): string {
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+export function defaultMainText(eventSlug: string, t: Translate): string {
   return t(`defaultBody_${eventSlug}`, { defaultValue: t("defaultBody") });
 }
 
@@ -136,7 +138,7 @@ function catalogHeaderSet(): Set<string> {
 
 export function isCatalogMainText(
   text: string,
-  t?: (key: string, opts?: object) => string,
+  t?: Translate,
 ): boolean {
   const trimmed = (text || "").trim();
   if (!trimmed) return true;
@@ -148,7 +150,7 @@ export function isCatalogMainText(
 
 export function isDefaultMainText(
   text: string,
-  t: (key: string, opts?: object) => string,
+  t: Translate,
 ): boolean {
   return isCatalogMainText(text, t);
 }
@@ -156,7 +158,7 @@ export function isDefaultMainText(
 export function isCatalogTitle(
   title: string,
   eventSlug?: string,
-  t?: (key: string, opts?: object) => string,
+  t?: Translate,
 ): boolean {
   const trimmed = (title || "").trim();
   if (!trimmed) return true;
