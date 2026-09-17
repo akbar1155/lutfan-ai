@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
-import { showDevLogin } from "../auth/flags";
 import { normalizeUiLang, UI_LANGS } from "../i18n/lang";
 
 const localeLabels: Record<(typeof UI_LANGS)[number], string> = {
@@ -13,7 +12,7 @@ const localeLabels: Record<(typeof UI_LANGS)[number], string> = {
 
 export default function Layout() {
   const { t, i18n } = useTranslation();
-  const { user, loginDev, logout, loading } = useAuth();
+  const { user, logout, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const current = normalizeUiLang(i18n.language);
@@ -147,18 +146,7 @@ export default function Layout() {
               </button>
             ) : (
               !isWizard &&
-              !isAdminRoute &&
-              showDevLogin && (
-                <button
-                  type="button"
-                  className="top-login"
-                  onClick={() => {
-                    void loginDev(false).catch(() => undefined);
-                  }}
-                >
-                  {t("loginDevShort")}
-                </button>
-              )
+              !isAdminRoute
             )}
           </div>
         </div>
