@@ -119,6 +119,22 @@ function formatDate(value: unknown) {
   return formatDisplayDateTimeStamp(value);
 }
 
+const INVITES_PAGE_SIZE = 50;
+
+function invitePageNumbers(page: number, totalPages: number): Array<number | "…"> {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  const pages: Array<number | "…"> = [1];
+  if (page > 3) pages.push("…");
+  for (let p = Math.max(2, page - 1); p <= Math.min(totalPages - 1, page + 1); p += 1) {
+    pages.push(p);
+  }
+  if (page < totalPages - 2) pages.push("…");
+  pages.push(totalPages);
+  return pages;
+}
+
 function StatusBadge({
   children,
   tone,
@@ -257,6 +273,10 @@ export default function AdminPage() {
 
   const [invitations, setInvitations] = useState<Array<Record<string, unknown>>>([]);
   const [invStatus, setInvStatus] = useState("");
+  const [invKind, setInvKind] = useState("");
+  const [invPage, setInvPage] = useState(1);
+  const [invTotal, setInvTotal] = useState(0);
+  const [invLimit, setInvLimit] = useState(INVITES_PAGE_SIZE);
   const [events, setEvents] = useState<Array<Record<string, unknown>>>([]);
   const [texts, setTexts] = useState<Array<Record<string, unknown>>>([]);
   const [textsLang, setTextsLang] = useState<string>("uz-latn");
@@ -286,6 +306,8 @@ export default function AdminPage() {
     setApiTargetState(next);
     setDashboard(null);
     setInvitations([]);
+    setInvPage(1);
+    setInvTotal(0);
     setEvents([]);
     setTexts([]);
     setTemplates([]);
@@ -317,8 +339,17 @@ export default function AdminPage() {
     try {
       if (tab === "dashboard") setDashboard(await api.adminDashboard());
       if (tab === "invitations") {
-        setInvitations(
-          await api.adminInvitations({ status: invStatus || undefined }),
+        const data = await api.adminInvitations({
+          status: invStatus || undefined,
+          kind: invKind || undefined,
+          page: invPage,
+          limit: INVITES_PAGE_SIZE,
+        });
+        const results = Array.isArray(data) ? data : data.results || [];
+        setInvitations(results);
+        setInvTotal(Array.isArray(data) ? data.length : Number(data.count || 0));
+        setInvLimit(
+          Array.isArray(data) ? results.length || INVITES_PAGE_SIZE : Number(data.limit || INVITES_PAGE_SIZE),
         );
       }
       if (tab === "events") setEvents(await api.adminEvents());
@@ -348,7 +379,7 @@ export default function AdminPage() {
     } finally {
       setBusy(false);
     }
-  }, [tab, user, invStatus, genStatus, apiTarget]);
+  }, [tab, user, invStatus, invKind, invPage, genStatus, apiTarget]);
 
   useEffect(() => {
     void load();
@@ -643,14 +674,32 @@ export default function AdminPage() {
               <div className="admin-filters">
                 <UiSelect
                   size="sm"
+                  aria-label={t("adminColKind")}
+                  value={invKind}
+                  onChange={(e) => {
+                    setInvPage(1);
+                    setInvKind(e.target.value);
+                  }}
+                >
+                  <option value="">{t("adminColKind")}</option>
+                  <option value="jpg">{t("adminKindJpg")}</option>
+                  <option value="interactive">{t("adminKindInteractive")}</option>
+                </UiSelect>
+                <UiSelect
+                  size="sm"
                   aria-label={t("adminColStatus")}
                   value={invStatus}
-                  onChange={(e) => setInvStatus(e.target.value)}
+                  onChange={(e) => {
+                    setInvPage(1);
+                    setInvStatus(e.target.value);
+                  }}
                 >
                   <option value="">{t("adminColStatus")}</option>
                   <option value="draft">{t("status_draft")}</option>
                   <option value="generating">{t("status_generating")}</option>
                   <option value="ready">{t("status_ready")}</option>
+                  <option value="published">{t("status_published")}</option>
+                  <option value="unpublished">{t("status_unpublished")}</option>
                   <option value="failed">{t("status_failed")}</option>
                 </UiSelect>
                 <button type="button" className="admin-btn" onClick={() => void load()}>
@@ -659,8 +708,10 @@ export default function AdminPage() {
               </div>
               <SimpleTable
                 empty={t("adminEmpty")}
+                indexOffset={(invPage - 1) * invLimit}
                 rows={invitations}
                 columns={[
+                  ["kind", t("adminColKind")],
                   ["event_slug", t("adminColEvent")],
                   ["status", t("adminColStatus")],
                   ["user_name", t("adminColUser")],
@@ -682,11 +733,70 @@ export default function AdminPage() {
                     >
                       <IconExternal />
                     </IconBtn>
+                  ) : row.public_path ? (
+                    <IconBtn
+                      label={t("adminOpenPage")}
+                      onClick={() => window.open(String(row.public_path), "_blank", "noopener")}
+                    >
+                      <IconExternal />
+                    </IconBtn>
                   ) : (
                     "—"
                   )
                 }
               />
+              {invTotal > 0 && (
+                <footer className="admin-users-pagination">
+                  <span className="admin-users-page-info">
+                    {t("adminInvitesPageInfo", {
+                      start: (invPage - 1) * invLimit + 1,
+                      end: Math.min(invPage * invLimit, invTotal),
+                      total: invTotal,
+                    })}
+                  </span>
+                  {Math.ceil(invTotal / invLimit) > 1 && (
+                    <nav className="admin-users-page-nav" aria-label={t("adminPagination")}>
+                      <button
+                        type="button"
+                        className="admin-users-page-btn"
+                        disabled={invPage <= 1 || busy}
+                        onClick={() => setInvPage((p) => Math.max(1, p - 1))}
+                        aria-label={t("adminPrevPage")}
+                      >
+                        ‹
+                      </button>
+                      {invitePageNumbers(invPage, Math.ceil(invTotal / invLimit)).map((p, idx) =>
+                        p === "…" ? (
+                          <span key={`ellipsis-${idx}`} className="admin-users-ellipsis">
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            type="button"
+                            className={`admin-users-page-btn${p === invPage ? " is-current" : ""}`}
+                            disabled={busy}
+                            onClick={() => setInvPage(p)}
+                          >
+                            {p}
+                          </button>
+                        ),
+                      )}
+                      <button
+                        type="button"
+                        className="admin-users-page-btn"
+                        disabled={invPage >= Math.ceil(invTotal / invLimit) || busy}
+                        onClick={() =>
+                          setInvPage((p) => Math.min(Math.ceil(invTotal / invLimit), p + 1))
+                        }
+                        aria-label={t("adminNextPage")}
+                      >
+                        ›
+                      </button>
+                    </nav>
+                  )}
+                </footer>
+              )}
             </section>
           )}
 
@@ -1525,11 +1635,13 @@ function SimpleTable({
   columns,
   renderExtra,
   empty,
+  indexOffset = 0,
 }: {
   rows: Array<Record<string, unknown>>;
   columns: Array<[string, string]>;
   renderExtra?: (row: Record<string, unknown>) => ReactNode;
   empty: string;
+  indexOffset?: number;
 }) {
   const { t } = useTranslation();
   const colCount = columns.length + (renderExtra ? 1 : 0) + 1;
@@ -1547,18 +1659,21 @@ function SimpleTable({
         </thead>
         <tbody>
           {rows.map((row, idx) => (
-            <tr key={String(row.id || idx)}>
-              <td className="col-index">{idx + 1}</td>
+            <tr key={`${String(row.kind || "")}-${String(row.id || idx)}`}>
+              <td className="col-index">{indexOffset + idx + 1}</td>
               {columns.map(([key]) => (
                 <td key={key}>
                   {key === "created_at" || key === "updated_at" || key === "expires_at"
                     ? formatDate(row[key])
+                    : key === "kind"
+                      ? t(row[key] === "interactive" ? "adminKindInteractive" : "adminKindJpg")
                     : key === "status" || key === "is_active"
                       ? (
                           <StatusBadge
                             tone={
                               row[key] === true ||
                               row[key] === "ready" ||
+                              row[key] === "published" ||
                               row[key] === "success" ||
                               row[key] === "succeeded"
                                 ? "ok"
@@ -1567,7 +1682,9 @@ function SimpleTable({
                                   : "muted"
                             }
                           >
-                            {formatCell(row[key])}
+                            {typeof row[key] === "string"
+                              ? t(`status_${row[key]}`, { defaultValue: formatCell(row[key]) })
+                              : formatCell(row[key])}
                           </StatusBadge>
                         )
                       : formatCell(row[key])}

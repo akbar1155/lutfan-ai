@@ -30,6 +30,7 @@ from apps.invitations.models import (
     InvitationHistory,
     InvitationStatus,
 )
+from apps.page_builder.models import InvitationPage, InvitationPageStatus
 from apps.invitations.rate_limit import (
     get_generation_limits,
     invalidate_generation_limits_cache,
@@ -176,8 +177,17 @@ def _daily_metrics_series(days: int = 14) -> list[dict]:
                 "date": format_numeric_date(day),
                 "new_users": User.objects.filter(created_at__date=day).count(),
                 "dau": User.objects.filter(last_login_at__date=day).count(),
-                "invitations_created": Invitation.objects.filter(created_at__date=day).count(),
-                "invitations_completed": completed_qs.count(),
+                "invitations_created": (
+                    Invitation.objects.filter(created_at__date=day).count()
+                    + InvitationPage.objects.filter(created_at__date=day).count()
+                ),
+                "invitations_completed": (
+                    completed_qs.count()
+                    + InvitationPage.objects.filter(
+                        status=InvitationPageStatus.PUBLISHED,
+                        created_at__date=day,
+                    ).count()
+                ),
                 "ai_cost_usd": float(
                     ai_qs.aggregate(total=Sum("provider_cost_usd"))["total"] or 0
                 ),
@@ -197,11 +207,20 @@ class AdminDashboardView(APIView):
             {
                 "dau": User.objects.filter(last_login_at__date=today).count(),
                 "new_users_today": User.objects.filter(created_at__date=today).count(),
-                "invitations_today": Invitation.objects.filter(created_at__date=today).count(),
-                "invitations_ready_week": Invitation.objects.filter(
-                    status=InvitationStatus.READY,
-                    created_at__gte=timezone.now() - timedelta(days=7),
-                ).count(),
+                "invitations_today": (
+                    Invitation.objects.filter(created_at__date=today).count()
+                    + InvitationPage.objects.filter(created_at__date=today).count()
+                ),
+                "invitations_ready_week": (
+                    Invitation.objects.filter(
+                        status=InvitationStatus.READY,
+                        created_at__gte=timezone.now() - timedelta(days=7),
+                    ).count()
+                    + InvitationPage.objects.filter(
+                        status=InvitationPageStatus.PUBLISHED,
+                        created_at__gte=timezone.now() - timedelta(days=7),
+                    ).count()
+                ),
                 "ai_generations_today": AIGeneration.objects.filter(
                     created_at__date=today
                 ).count(),
@@ -217,19 +236,33 @@ class AdminDashboardView(APIView):
                     "text_templates": TextTemplate.objects.count(),
                     "templates": Template.objects.count(),
                     "mood_tags": MoodTag.objects.count(),
-                    "invitations": Invitation.objects.filter(deleted_at__isnull=True).count(),
+                    "invitations": (
+                        Invitation.objects.filter(deleted_at__isnull=True).count()
+                        + InvitationPage.objects.count()
+                    ),
                     "ai_presets": AIPromptPreset.objects.count(),
                 },
                 "charts": {
                     "daily_metrics": series,
                     "funnel": {
-                        "created_week": Invitation.objects.filter(
-                            created_at__gte=timezone.now() - timedelta(days=7)
-                        ).count(),
-                        "ready_week": Invitation.objects.filter(
-                            created_at__gte=timezone.now() - timedelta(days=7),
-                            status=InvitationStatus.READY,
-                        ).count(),
+                        "created_week": (
+                            Invitation.objects.filter(
+                                created_at__gte=timezone.now() - timedelta(days=7)
+                            ).count()
+                            + InvitationPage.objects.filter(
+                                created_at__gte=timezone.now() - timedelta(days=7)
+                            ).count()
+                        ),
+                        "ready_week": (
+                            Invitation.objects.filter(
+                                created_at__gte=timezone.now() - timedelta(days=7),
+                                status=InvitationStatus.READY,
+                            ).count()
+                            + InvitationPage.objects.filter(
+                                created_at__gte=timezone.now() - timedelta(days=7),
+                                status=InvitationPageStatus.PUBLISHED,
+                            ).count()
+                        ),
                     },
                 },
             }
@@ -1028,39 +1061,102 @@ class AdminAiPresetTestView(APIView):
         return Response({"ok": True, "result_url": url, "example_output_url": url})
 
 
+def _admin_jpg_invite_row(inv: Invitation) -> dict:
+    return {
+        "id": str(inv.id),
+        "kind": "jpg",
+        "status": inv.status,
+        "event_slug": inv.event_id,
+        "subtype_slugs": inv.subtype_slugs or ([inv.subtype_slug] if inv.subtype_slug else []),
+        "user_id": str(inv.user_id),
+        "user_name": inv.user.first_name,
+        "telegram_id": inv.user.telegram_id,
+        "language": inv.language,
+        "generation_path": inv.generation_path,
+        "custom_style_note": inv.custom_style_note or "",
+        "selected_mood_tags": inv.selected_mood_tags or [],
+        "final_image_url": resolve_media_url(inv.final_image_url),
+        "public_path": None,
+        "created_at": inv.created_at,
+    }
+
+
+def _admin_page_invite_row(page: InvitationPage) -> dict:
+    published = page.status == InvitationPageStatus.PUBLISHED and page.slug
+    return {
+        "id": str(page.id),
+        "kind": "interactive",
+        "status": page.status,
+        "event_slug": page.event_slug,
+        "subtype_slugs": page.subtype_slugs or [],
+        "user_id": str(page.user_id),
+        "user_name": page.user.first_name if page.user_id else "",
+        "telegram_id": page.user.telegram_id if page.user_id else None,
+        "language": page.display_lang,
+        "generation_path": "",
+        "custom_style_note": page.title or "",
+        "selected_mood_tags": [],
+        "final_image_url": None,
+        "public_path": f"/p/{page.slug}" if published else None,
+        "created_at": page.created_at,
+    }
+
+
 class AdminInvitationsView(APIView):
     permission_classes = [IsAdminRole]
 
     def get(self, request):
-        qs = Invitation.objects.filter(deleted_at__isnull=True).select_related(
-            "user", "event"
-        ).order_by("-created_at")
-        status_filter = request.query_params.get("status")
-        event_slug = request.query_params.get("event_slug")
-        if status_filter:
-            qs = qs.filter(status=status_filter)
-        if event_slug:
-            qs = qs.filter(event_id=event_slug)
-        limit = min(max(int(request.query_params.get("limit", 50)), 1), 200)
+        status_filter = (request.query_params.get("status") or "").strip()
+        event_slug = (request.query_params.get("event_slug") or "").strip()
+        kind = (request.query_params.get("kind") or "").strip()
+        try:
+            page_num = max(int(request.query_params.get("page", 1)), 1)
+        except (TypeError, ValueError):
+            page_num = 1
+        try:
+            limit = min(max(int(request.query_params.get("limit", 50)), 1), 200)
+        except (TypeError, ValueError):
+            limit = 50
+
+        rows: list[dict] = []
+        if kind != "interactive":
+            jpg_qs = Invitation.objects.filter(deleted_at__isnull=True).select_related(
+                "user", "event"
+            )
+            if status_filter == "published":
+                jpg_qs = jpg_qs.filter(status=InvitationStatus.READY)
+            elif status_filter == "unpublished":
+                jpg_qs = jpg_qs.none()
+            elif status_filter:
+                jpg_qs = jpg_qs.filter(status=status_filter)
+            if event_slug:
+                jpg_qs = jpg_qs.filter(event_id=event_slug)
+            rows.extend(_admin_jpg_invite_row(inv) for inv in jpg_qs)
+
+        if kind != "jpg":
+            page_qs = InvitationPage.objects.select_related("user")
+            if status_filter == "ready":
+                page_qs = page_qs.filter(status=InvitationPageStatus.PUBLISHED)
+            elif status_filter == "draft":
+                page_qs = page_qs.filter(
+                    status__in=(InvitationPageStatus.DRAFT, InvitationPageStatus.UNPUBLISHED)
+                )
+            elif status_filter:
+                page_qs = page_qs.filter(status=status_filter)
+            if event_slug:
+                page_qs = page_qs.filter(event_slug=event_slug)
+            rows.extend(_admin_page_invite_row(page) for page in page_qs)
+
+        rows.sort(key=lambda row: row["created_at"] or timezone.now(), reverse=True)
+        total = len(rows)
+        offset = (page_num - 1) * limit
         return Response(
-            [
-                {
-                    "id": str(inv.id),
-                    "status": inv.status,
-                    "event_slug": inv.event_id,
-                    "subtype_slugs": inv.subtype_slugs or ([inv.subtype_slug] if inv.subtype_slug else []),
-                    "user_id": str(inv.user_id),
-                    "user_name": inv.user.first_name,
-                    "telegram_id": inv.user.telegram_id,
-                    "language": inv.language,
-                    "generation_path": inv.generation_path,
-                    "custom_style_note": inv.custom_style_note or "",
-                    "selected_mood_tags": inv.selected_mood_tags or [],
-                    "final_image_url": resolve_media_url(inv.final_image_url),
-                    "created_at": inv.created_at,
-                }
-                for inv in qs[:limit]
-            ]
+            {
+                "count": total,
+                "page": page_num,
+                "limit": limit,
+                "results": rows[offset : offset + limit],
+            }
         )
 
 

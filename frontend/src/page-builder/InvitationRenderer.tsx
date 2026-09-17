@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { pickTranslation } from "../i18n/lang";
-import { formatDisplayDate, formatDisplayTime } from "../utils/date";
+import { formatDisplayDate, formatDisplayTime, remainingUntil, toLocalEventDate } from "../utils/date";
 import { formatFamilyFooter } from "../utils/familySignature";
 import {
   sortedCeremonySlugs,
@@ -10,6 +10,7 @@ import { ensureEventNameInBody } from "../utils/textBlocks";
 import { SITE_COPY, siteLayoutFromFont } from "./config";
 import { NIKOH_SUBTYPES, eventLabel, inviteHeading } from "./eventFields";
 import type { DesignConfig } from "./types";
+import { hasMapPoint, yandexWidgetSrc } from "./yandexMap";
 
 type Content = {
   title: string;
@@ -18,6 +19,8 @@ type Content = {
   time: string;
   venueName?: string;
   address: string;
+  mapLat?: number | null;
+  mapLng?: number | null;
   familySignature?: string;
   eventSlug?: string;
   childName?: string;
@@ -99,6 +102,60 @@ function buildProgram(
   const time = formatDisplayTime(fallbackTime);
   if (!date && !time) return [];
   return [{ label: "", date, time }];
+}
+
+function earliestEventMs(
+  schedule: CeremonySchedule,
+  fallbackDate?: string,
+  fallbackTime?: string,
+): number | null {
+  const times: number[] = [];
+  for (const slot of Object.values(schedule)) {
+    const at = toLocalEventDate(slot?.date, slot?.time);
+    if (at) times.push(at.getTime());
+  }
+  const fallback = toLocalEventDate(fallbackDate, fallbackTime);
+  if (fallback) times.push(fallback.getTime());
+  return times.length ? Math.min(...times) : null;
+}
+
+function EventCountdown({
+  atMs,
+  copy,
+}: {
+  atMs: number;
+  copy: (typeof SITE_COPY)[string];
+}) {
+  const [parts, setParts] = useState(() => remainingUntil(new Date(atMs)));
+
+  useEffect(() => {
+    const tick = () => setParts(remainingUntil(new Date(atMs)));
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [atMs]);
+
+  const cells = [
+    parts.months > 0 ? { key: "month", n: parts.months, label: copy.unitMonth } : null,
+    { key: "day", n: parts.days, label: copy.unitDay },
+    { key: "hour", n: parts.hours, label: copy.unitHour },
+    { key: "minute", n: parts.minutes, label: copy.unitMinute },
+    { key: "second", n: parts.seconds, label: copy.unitSecond },
+  ].filter((cell): cell is { key: string; n: number; label: string } => Boolean(cell));
+
+  return (
+    <section className="ip-countdown" aria-live="polite">
+      <p className="ip-label">{copy.until}</p>
+      <div className="ip-count">
+        {cells.map((cell) => (
+          <div className="ip-count-cell" key={cell.key}>
+            <b className="ip-count-num">{String(cell.n).padStart(2, "0")}</b>
+            <span className="ip-count-unit">{cell.label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function FlowerShape({ kind }: { kind: string }) {
@@ -316,9 +373,14 @@ export default function InvitationRenderer({
   );
   const schedule = content.schedule || {};
   const program = buildProgram(schedule, eventSlug, lang, content.date, content.time);
+  const eventAt = useMemo(
+    () => earliestEventMs(schedule, content.date, content.time),
+    [schedule, content.date, content.time],
+  );
   const venueName = (content.venueName || "").trim();
   const address = (content.address || "").trim();
   const placeQuery = [venueName, address].filter(Boolean).join(", ");
+  const hasMap = hasMapPoint(content.mapLat, content.mapLng);
   const host = formatFamilyFooter(content.familySignature, lang);
   const kicker = copy.kicker;
 
@@ -390,7 +452,7 @@ export default function InvitationRenderer({
           <section className="ip-letter">
             <p className="ip-body">{body || copy.bodyPlaceholder}</p>
           </section>
-          {program.length || placeQuery ? (
+          {program.length || placeQuery || eventAt != null || hasMap ? (
             <div className="ip-details">
               {program.length ? (
                 <section className="ip-when-block">
@@ -408,11 +470,22 @@ export default function InvitationRenderer({
                   </div>
                 </section>
               ) : null}
-              {placeQuery ? (
+              {eventAt != null ? <EventCountdown atMs={eventAt} copy={copy} /> : null}
+              {placeQuery || hasMap ? (
                 <section className="ip-venue">
                   <p className="ip-label">{copy.venue}</p>
                   {venueName ? <h2 className="ip-venue-name">{venueName}</h2> : null}
                   {address ? <p className="ip-address">{address}</p> : null}
+                  {hasMap ? (
+                    <div className="ip-map-wrap">
+                      <iframe
+                        title={copy.venue}
+                        src={yandexWidgetSrc(content.mapLat as number, content.mapLng as number, lang)}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+                  ) : null}
                 </section>
               ) : null}
             </div>

@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from apps.users.permissions import IsNotBanned
 
-from .ai_design import interpret_design_prompt, pick_curated_combo
+from .ai_design import interpret_design_prompt, pick_curated_combo, suggest_style_prompt
 from .catalog import DEFAULT_DESIGN, DEFAULT_MUSIC, MUSIC_PRESETS, sanitize_design_config
 from .event_fields import (
     iso_date,
@@ -22,6 +22,7 @@ from .event_fields import (
     publish_missing,
     sync_nikoh_schedule,
 )
+from .maps import clean_coord, geocode_query
 from .models import InvitationPage, InvitationPageStatus
 from .serializers import (
     InvitationPageWriteSerializer,
@@ -102,6 +103,14 @@ def _compose_write(page: InvitationPage, incoming: dict) -> dict:
         gender = ""
     venue = str(incoming.get("venueName", page.venue_name) or "").strip()
     address = str(incoming.get("address", page.address) or "").strip()
+    map_lat = clean_coord(
+        incoming["mapLat"] if "mapLat" in incoming else page.map_lat, -90, 90
+    )
+    map_lng = clean_coord(
+        incoming["mapLng"] if "mapLng" in incoming else page.map_lng, -180, 180
+    )
+    if map_lat is None or map_lng is None:
+        map_lat, map_lng = None, None
     main = str(incoming.get("mainText", page.main_text) or "").strip()
     ready = str(incoming.get("readyTextId", page.ready_text_id) or "classic1").strip().lower()
     lang = str(incoming.get("displayLang", page.display_lang) or "uz-latn").strip()
@@ -118,7 +127,9 @@ def _compose_write(page: InvitationPage, incoming: dict) -> dict:
         "child_name": child,
         "child_gender": gender,
         "venue_name": venue,
-        "address": address or venue,
+        "address": address,
+        "map_lat": map_lat,
+        "map_lng": map_lng,
         "ceremony_schedule": schedule,
         "display_lang": lang if lang in ("uz-latn", "uz-cyrl", "ru") else "uz-latn",
         "design_config": incoming.get("designConfig", page.design_config),
@@ -144,6 +155,8 @@ def _apply_write(page: InvitationPage, data: dict) -> InvitationPage:
         "child_gender": "child_gender",
         "venue_name": "venue_name",
         "address": "address",
+        "map_lat": "map_lat",
+        "map_lng": "map_lng",
         "event_slug": "event_slug",
         "subtype_slugs": "subtype_slugs",
         "ceremony_schedule": "ceremony_schedule",
@@ -215,6 +228,11 @@ class PageDetailView(APIView):
 
     def patch(self, request, pk):
         return self.put(request, pk)
+
+    def delete(self, request, pk):
+        page = _user_page(request, pk)
+        page.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PagePublishView(APIView):
@@ -323,12 +341,18 @@ class PageAiStyleView(APIView):
     parser_classes = [JSONParser]
 
     def post(self, request, pk=None):
-        prompt = str((request.data or {}).get("prompt") or "").strip()[:500]
-        current = sanitize_design_config((request.data or {}).get("current"))
+        data = request.data or {}
+        current = sanitize_design_config(data.get("current"))
+        if data.get("suggest"):
+            lang = str(data.get("lang") or "").strip() or "uz-latn"
+            exclude = str(data.get("prompt") or "").strip()[:500]
+            text = suggest_style_prompt(current, lang, exclude)
+            return Response({"designPrompt": text})
+        prompt = str(data.get("prompt") or "").strip()[:500]
         if prompt:
             design = interpret_design_prompt(prompt, current)
         else:
-            design = pick_curated_combo(current)
+            design = current
         if pk:
             page = _user_page(request, pk)
             page.design_config = design
@@ -368,6 +392,14 @@ class PublicPageView(APIView):
             status=InvitationPageStatus.PUBLISHED,
         )
         return Response(serialize_page(page, public=True))
+
+
+class PageGeocodeView(APIView):
+    permission_classes = [IsAuthenticated, IsNotBanned]
+
+    def get(self, request):
+        query = str(request.query_params.get("q") or "").strip()[:240]
+        return Response({"results": geocode_query(query)})
 
 
 class CatalogView(APIView):

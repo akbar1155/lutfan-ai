@@ -36,7 +36,7 @@ export default function HomePage() {
       <div className="home-wrap">
         <section className="home-hero">
           <div className="home-hero-copy">
-            <h1 className="home-brand">{t("brand")}</h1>
+            <h1 className="home-brand">{t("heroText")}</h1>
             <p className="home-tagline">{t("tagline")}</p>
             <button type="button" className="cta home-cta" onClick={() => navigate("/create")}>
               {t("cta")}

@@ -92,6 +92,12 @@ export const SITE_COPY: Record<
   {
     venue: string;
     when: string;
+    until: string;
+    unitMonth: string;
+    unitDay: string;
+    unitHour: string;
+    unitMinute: string;
+    unitSecond: string;
     host: string;
     open: string;
     kicker: string;
@@ -103,6 +109,12 @@ export const SITE_COPY: Record<
   "uz-latn": {
     venue: "Marosim joyi",
     when: "Sana va vaqt",
+    until: "Tadbirgacha",
+    unitMonth: "Oy",
+    unitDay: "Kun",
+    unitHour: "Soat",
+    unitMinute: "Minut",
+    unitSecond: "Sekund",
     host: "Hurmat bilan",
     open: "Taklifnomani ochish",
     kicker: "Taklifnoma",
@@ -113,6 +125,12 @@ export const SITE_COPY: Record<
   "uz-cyrl": {
     venue: "Маросим жойи",
     when: "Сана ва вақт",
+    until: "Тадбиргача",
+    unitMonth: "Ой",
+    unitDay: "Кун",
+    unitHour: "Соат",
+    unitMinute: "Минут",
+    unitSecond: "Секунд",
     host: "Ҳурмат билан",
     open: "Таклифномани очиш",
     kicker: "Таклифнома",
@@ -123,6 +141,12 @@ export const SITE_COPY: Record<
   ru: {
     venue: "Место",
     when: "Дата и время",
+    until: "До события",
+    unitMonth: "Мес",
+    unitDay: "Дн",
+    unitHour: "Час",
+    unitMinute: "Мин",
+    unitSecond: "Сек",
     host: "С уважением",
     open: "Открыть приглашение",
     kicker: "Приглашение",

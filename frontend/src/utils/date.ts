@@ -254,6 +254,60 @@ export function formatDatesInText(
   return ensureTimeDaSuffix(out, lang);
 }
 
+export function toLocalEventDate(date?: unknown, time?: unknown): Date | null {
+  const parts = parseYmd(date);
+  if (!parts) return null;
+  const clock = formatDisplayTime(time || "00:00", true);
+  const match = clock.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  const hours = match ? Number(match[1]) : 0;
+  const minutes = match ? Number(match[2]) : 0;
+  const seconds = match ? Number(match[3] || 0) : 0;
+  const value = new Date(parts.y, parts.m - 1, parts.d, hours, minutes, seconds);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
+export type CountdownParts = {
+  months: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+function addCalendarMonths(from: Date, months: number): Date {
+  const next = new Date(from.getTime());
+  const day = next.getDate();
+  next.setDate(1);
+  next.setMonth(next.getMonth() + months);
+  const last = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(day, last));
+  return next;
+}
+
+export function remainingUntil(target: Date, now = new Date()): CountdownParts {
+  if (target.getTime() <= now.getTime()) {
+    return { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+
+  let months =
+    (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+  let monthCursor = addCalendarMonths(now, months);
+  if (monthCursor.getTime() > target.getTime()) {
+    months -= 1;
+    monthCursor = addCalendarMonths(now, months);
+  }
+
+  let rem = Math.max(0, target.getTime() - monthCursor.getTime());
+  const days = Math.floor(rem / 86_400_000);
+  rem -= days * 86_400_000;
+  const hours = Math.floor(rem / 3_600_000);
+  rem -= hours * 3_600_000;
+  const minutes = Math.floor(rem / 60_000);
+  rem -= minutes * 60_000;
+  const seconds = Math.floor(rem / 1000);
+  return { months: Math.max(0, months), days, hours, minutes, seconds };
+}
+
 /** Parse API datetimes as UTC when timezone is missing (Django USE_TZ). */
 export function parseServerDate(value: unknown): Date | null {
   if (value == null || value === "") return null;

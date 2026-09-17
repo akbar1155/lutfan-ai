@@ -17,6 +17,7 @@ import {
   subtypeLabel,
   type PageEventSlug,
 } from "./eventFields";
+import VenueMapField from "./VenueMapField";
 import type { InvitationPagePayload } from "./types";
 
 type Props = {
@@ -94,6 +95,9 @@ export default function EventDetailsForm({ page, patch }: Props) {
       date: nextDate,
       time: nextTime,
       readyTextId: styleId,
+      personName: next === "birthday" ? page.personName : "",
+      childName: next === "aqiqa" || next === "sunnat" ? page.childName : "",
+      childGender: next === "aqiqa" ? page.childGender : "",
       ...catalogPatch(next, nextSubtypes, styleId),
     });
   };
@@ -173,7 +177,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ) : null}
 
       {keys.includes("family_signature") ? (
-        <label className="pb-field">
+        <label className="pb-field" data-pb-required="familySignature">
           <span>{t("field_family_signature")} *</span>
           <input
             value={page.familySignature || ""}
@@ -185,6 +189,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ) : null}
 
       {keys.includes("child_gender") ? (
+        <div data-pb-required="childGender">
         <UiSelect
           label={`${t("field_child_gender")} *`}
           value={page.childGender || ""}
@@ -194,10 +199,11 @@ export default function EventDetailsForm({ page, patch }: Props) {
           <option value="boy">{t("opt_boy")}</option>
           <option value="girl">{t("opt_girl")}</option>
         </UiSelect>
+        </div>
       ) : null}
 
       {keys.includes("child_name") ? (
-        <label className="pb-field">
+        <label className="pb-field" data-pb-required="childName">
           <span>{t("field_child_name")} *</span>
           <input
             value={page.childName || ""}
@@ -208,7 +214,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ) : null}
 
       {keys.includes("person_name") ? (
-        <label className="pb-field">
+        <label className="pb-field" data-pb-required="personName">
           <span>{t("field_person_name")} *</span>
           <input
             value={page.personName || ""}
@@ -221,34 +227,34 @@ export default function EventDetailsForm({ page, patch }: Props) {
 
       {eventSlug === "nikoh"
         ? subtypes.map((slug) => {
-            const slot = schedule[slug] || { date: "", time: "" };
-            return (
-              <div key={slug} className="pb-ceremony">
-                <strong>{subtypeLabel(slug, uiLang)}</strong>
-                <div className="pb-grid">
-                  <DateField
-                    label={t("field_event_date")}
-                    required
-                    minToday
-                    language={uiLang}
-                    value={slot.date}
-                    onChange={(value) => setSlot(slug, "date", value)}
-                  />
-                  <TimeField
-                    label={t("field_event_time")}
-                    required
-                    language={uiLang}
-                    value={slot.time}
-                    onChange={(value) => setSlot(slug, "time", value)}
-                  />
-                </div>
+          const slot = schedule[slug] || { date: "", time: "" };
+          return (
+            <div key={slug} className="pb-ceremony" data-pb-required={`slot-${slug}`}>
+              <strong>{subtypeLabel(slug, uiLang)}</strong>
+              <div className="pb-grid">
+                <DateField
+                  label={t("field_event_date")}
+                  required
+                  minToday
+                  language={uiLang}
+                  value={slot.date}
+                  onChange={(value) => setSlot(slug, "date", value)}
+                />
+                <TimeField
+                  label={t("field_event_time")}
+                  required
+                  language={uiLang}
+                  value={slot.time}
+                  onChange={(value) => setSlot(slug, "time", value)}
+                />
               </div>
-            );
-          })
+            </div>
+          );
+        })
         : null}
 
       {keys.includes("event_date") ? (
-        <div className="pb-grid">
+        <div className="pb-grid" data-pb-required="datetime">
           <DateField
             label={t("field_event_date")}
             required
@@ -268,7 +274,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ) : null}
 
       {keys.includes("venue_name") ? (
-        <label className="pb-field">
+        <label className="pb-field" data-pb-required="venueName">
           <span>{t("field_venue_name")} *</span>
           <input
             value={page.venueName || ""}
@@ -279,7 +285,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
       ) : null}
 
       {keys.includes("venue_address") ? (
-        <label className="pb-field">
+        <label className="pb-field" data-pb-required="address">
           <span>{t("field_venue_address")} *</span>
           <input
             value={page.address}
@@ -288,6 +294,14 @@ export default function EventDetailsForm({ page, patch }: Props) {
           />
         </label>
       ) : null}
+
+      <VenueMapField
+        mapLat={page.mapLat}
+        mapLng={page.mapLng}
+        address={page.address}
+        language={contentLang}
+        onChange={(point) => patch(point)}
+      />
 
       <div className="pb-field">
         <span>{t("readyTexts")}</span>
@@ -311,14 +325,14 @@ export default function EventDetailsForm({ page, patch }: Props) {
                     }),
                     ...(isCatalogTitle(page.title, eventSlug, t)
                       ? {
-                          title:
-                            pageBuilderHeader({
-                              eventSlug,
-                              language: contentLang,
-                              subtypeSlugs: subtypes,
-                              styleId: item.id,
-                            }) || t("defaultGreeting", { lng: contentLang }),
-                        }
+                        title:
+                          pageBuilderHeader({
+                            eventSlug,
+                            language: contentLang,
+                            subtypeSlugs: subtypes,
+                            styleId: item.id,
+                          }) || t("defaultGreeting", { lng: contentLang }),
+                      }
                       : {}),
                   })
                 }
@@ -342,7 +356,7 @@ export default function EventDetailsForm({ page, patch }: Props) {
         />
       </label>
 
-      <label className="pb-field">
+      <label className="pb-field" data-pb-required="mainText">
         <span>{t("block_body")}</span>
         <textarea
           value={page.mainText}

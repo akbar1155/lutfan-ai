@@ -30,6 +30,8 @@ export type InvitationPagePayload = {
   childGender: string;
   venueName: string;
   address: string;
+  mapLat?: number | null;
+  mapLng?: number | null;
   ceremonySchedule: Record<string, { date: string; time: string }>;
   displayLang: string;
   readyTextId: string;
@@ -83,6 +85,8 @@ export const EMPTY_PAGE: Omit<
   childGender: "",
   venueName: "",
   address: "",
+  mapLat: null,
+  mapLng: null,
   ceremonySchedule: {},
   displayLang: "uz-latn",
   readyTextId: "classic1",

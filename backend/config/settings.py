@@ -217,6 +217,7 @@ BACKUP_WORKDIR = env("BACKUP_WORKDIR", default="/tmp/lutfan-backups")
 BACKUP_LOCAL_DIR = env("BACKUP_LOCAL_DIR", default="/var/lutfan-backups")
 
 GOOGLE_AI_API_KEY = env("GOOGLE_AI_API_KEY", default="")
+YANDEX_MAPS_API_KEY = env("YANDEX_MAPS_API_KEY", default="")
 NANO_BANANA_MODEL = env("NANO_BANANA_MODEL", default="gemini-2.5-flash-image")
 
 AWS_S3_ENDPOINT_URL = env("S3_ENDPOINT", default="http://localhost:9000")

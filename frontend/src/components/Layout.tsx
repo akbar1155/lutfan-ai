@@ -27,7 +27,7 @@ export default function Layout() {
   const isBuilder = location.pathname.startsWith("/page-builder");
   const [menuOpen, setMenuOpen] = useState(false);
   const leavingWizard = useRef(false);
-
+  const logo = new URL("/src/assets/base-logo.jpeg", import.meta.url).href;
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
@@ -81,7 +81,7 @@ export default function Layout() {
         <div className="top-inner">
           <div className="top-brand-cluster">
             <Link to="/" className="brand">
-              {t("brand")}
+              <img src={logo} alt="" width={150} height={150} />
             </Link>
           </div>
 
@@ -166,7 +166,6 @@ export default function Layout() {
       <Outlet />
       {!isAdminRoute && !isBuilder && (
         <footer className="footer">
-          <span className="brand footer-brand">{t("brand")}</span>
           <Link to="/privacy-policy">{t("privacy")}</Link>
           <Link to="/terms">{t("terms")}</Link>
         </footer>

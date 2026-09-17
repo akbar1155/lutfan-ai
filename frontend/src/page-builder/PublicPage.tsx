@@ -127,6 +127,8 @@ export default function PublicInteractivePage() {
           time: page.time,
           venueName: page.venueName,
           address: page.address,
+          mapLat: page.mapLat,
+          mapLng: page.mapLng,
           familySignature: page.familySignature,
           eventSlug: page.eventSlug,
           childName: page.childName,

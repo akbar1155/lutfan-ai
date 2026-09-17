@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import PhoneAuthForm from "../auth/PhoneAuthForm";
 import { useAuth } from "../auth/AuthContext";
 import { copyTextToClipboard } from "../utils/share";
@@ -25,7 +25,6 @@ import {
   IconComputer,
   IconCopy,
   IconDensity,
-  IconDice,
   IconFlower,
   IconFrame,
   IconInfo,
@@ -47,7 +46,7 @@ import {
   IconUpload,
 } from "./icons";
 import EventDetailsForm from "./EventDetailsForm";
-import { inviteHeading, pageBuilderBody, pageBuilderHeader } from "./eventFields";
+import { eventLabel, inviteHeading, pageBuilderBody, pageBuilderHeader } from "./eventFields";
 import { DEFAULT_DESIGN, DEFAULT_MUSIC, type CatalogItem, type DesignConfig, type InvitationPagePayload, type MusicConfig } from "./types";
 import { normalizeUiLang } from "../i18n/lang";
 
@@ -115,11 +114,11 @@ function ChoiceGrid({
             style={
               variant === "color" && item.swatch
                 ? {
-                    background: item.swatch,
-                    color: dark ? "#f6efe4" : "#2c261e",
-                    borderColor: on ? item.accent : "transparent",
-                    boxShadow: on ? `0 0 0 2px ${item.accent}` : undefined,
-                  }
+                  background: item.swatch,
+                  color: dark ? "#f6efe4" : "#2c261e",
+                  borderColor: on ? item.accent : "transparent",
+                  boxShadow: on ? `0 0 0 2px ${item.accent}` : undefined,
+                }
                 : variant === "font"
                   ? { fontFamily: FONT_PREVIEW[item.id] }
                   : undefined
@@ -159,7 +158,7 @@ function Section({
   );
 }
 
-function toWrite(page: InvitationPagePayload, lang?: string): PageWrite {
+function toWrite(page: InvitationPagePayload): PageWrite {
   return {
     title: page.title,
     mainText: page.mainText,
@@ -171,15 +170,92 @@ function toWrite(page: InvitationPagePayload, lang?: string): PageWrite {
     childGender: page.childGender || "",
     venueName: page.venueName || "",
     address: page.address,
+    mapLat: page.mapLat ?? null,
+    mapLng: page.mapLng ?? null,
     eventSlug: page.eventSlug || "nikoh",
     subtypeSlugs: page.subtypeSlugs || [],
     ceremonySchedule: page.ceremonySchedule || {},
-    displayLang: page.displayLang || lang || "uz-latn",
+    displayLang: page.displayLang || "uz-latn",
     readyTextId: page.readyTextId || "classic1",
     designConfig: page.designConfig,
     musicConfig: page.musicConfig,
     designPrompt: page.designPrompt || "",
   };
+}
+
+function blankCreatePayload(lang: string): PageWrite {
+  const subtypeSlugs = ["nikoh_oqshomi"];
+  return {
+    eventSlug: "nikoh",
+    subtypeSlugs,
+    readyTextId: "classic1",
+    title: pageBuilderHeader({
+      eventSlug: "nikoh",
+      language: lang,
+      subtypeSlugs,
+      styleId: "classic1",
+    }),
+    mainText: pageBuilderBody({
+      eventSlug: "nikoh",
+      language: lang,
+      subtypeSlugs,
+      styleId: "classic1",
+    }),
+    displayLang: lang,
+    designConfig: DEFAULT_DESIGN,
+    musicConfig: DEFAULT_MUSIC,
+  };
+}
+
+function firstMissingSelector(page: InvitationPagePayload): string | null {
+  if (!(page.familySignature || "").trim()) return '[data-pb-required="familySignature"]';
+  const event = page.eventSlug || "nikoh";
+  if (event === "aqiqa" && !page.childGender) return '[data-pb-required="childGender"]';
+  if ((event === "aqiqa" || event === "sunnat") && !(page.childName || "").trim()) {
+    return '[data-pb-required="childName"]';
+  }
+  if (event === "birthday" && !(page.personName || "").trim()) {
+    return '[data-pb-required="personName"]';
+  }
+  if (event === "nikoh") {
+    for (const slug of page.subtypeSlugs || []) {
+      const slot = page.ceremonySchedule?.[slug];
+      if (!slot?.date || !slot?.time) return `[data-pb-required="slot-${slug}"]`;
+    }
+  } else if (!page.date || !page.time) {
+    return '[data-pb-required="datetime"]';
+  }
+  if (!(page.venueName || "").trim()) return '[data-pb-required="venueName"]';
+  if (!(page.address || "").trim()) return '[data-pb-required="address"]';
+  if (!(page.mainText || "").trim()) return '[data-pb-required="mainText"]';
+  return null;
+}
+
+function missingErrorKey(selector: string | null): string {
+  if (!selector) return "pbPublishFailed";
+  if (selector.includes("familySignature")) return "pbNeedFamily";
+  if (selector.includes("childGender")) return "pbNeedChildGender";
+  if (selector.includes("childName")) return "pbNeedChildName";
+  if (selector.includes("personName")) return "pbNeedPersonName";
+  if (selector.includes("slot-")) return "pbNeedSchedule";
+  if (selector.includes("datetime")) return "pbNeedDateTime";
+  if (selector.includes("venueName")) return "pbNeedVenue";
+  if (selector.includes("address")) return "pbNeedAddress";
+  if (selector.includes("mainText")) return "pbNeedBody";
+  return "pbPublishFailed";
+}
+
+function scrollSideTo(selector: string | null) {
+  const scroller = document.querySelector(".pb-side-scroll") as HTMLElement | null;
+  if (!scroller) return;
+  const el = selector ? scroller.querySelector<HTMLElement>(selector) : null;
+  if (!el) {
+    scroller.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  const field = el.getBoundingClientRect();
+  const box = scroller.getBoundingClientRect();
+  scroller.scrollBy({ top: field.top - box.top - 12, behavior: "smooth" });
 }
 
 function formatClock(seconds: number) {
@@ -198,6 +274,7 @@ export default function PageBuilderPage() {
   const { t, i18n } = useTranslation();
   const lang = normalizeUiLang(i18n.language);
   const [page, setPage] = useState<InvitationPagePayload | null>(null);
+  const [library, setLibrary] = useState<InvitationPagePayload[] | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -230,34 +307,19 @@ export default function PageBuilderPage() {
     let cancelled = false;
     (async () => {
       try {
+        setError("");
         if (routeId) {
           const existing = await pageBuilderApi.get(routeId);
-          if (!cancelled) setPage(existing);
+          if (!cancelled) {
+            setLibrary(null);
+            setPage(existing);
+          }
           return;
         }
-        const created = await pageBuilderApi.create({
-          eventSlug: "nikoh",
-          subtypeSlugs: ["nikoh_oqshomi"],
-          readyTextId: "classic1",
-          title: pageBuilderHeader({
-            eventSlug: "nikoh",
-            language: langRef.current,
-            subtypeSlugs: ["nikoh_oqshomi"],
-            styleId: "classic1",
-          }),
-          mainText: pageBuilderBody({
-            eventSlug: "nikoh",
-            language: langRef.current,
-            subtypeSlugs: ["nikoh_oqshomi"],
-            styleId: "classic1",
-          }),
-          displayLang: langRef.current,
-          designConfig: DEFAULT_DESIGN,
-          musicConfig: DEFAULT_MUSIC,
-        });
+        const items = await pageBuilderApi.list();
         if (!cancelled) {
-          setPage(created);
-          navigate(`/page-builder/${created.id}`, { replace: true });
+          setPage(null);
+          setLibrary(items);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : t("pbLoadFailed"));
@@ -266,26 +328,20 @@ export default function PageBuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [loading, user, routeId, navigate]);
-
-  useEffect(() => {
-    if (!page) return;
-    if (page.displayLang === lang) return;
-    patch({ displayLang: lang });
-  }, [lang, page, patch]);
+  }, [loading, user, routeId, t]);
 
   useEffect(() => {
     if (!page?.id) return;
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
-      void pageBuilderApi.save(page.id, toWrite(page, lang)).catch(() => {
+      void pageBuilderApi.save(page.id, toWrite(page)).catch(() => {
         /* draft autosave is best-effort */
       });
     }, 700);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [page, lang]);
+  }, [page]);
 
   useEffect(() => {
     return () => {
@@ -338,35 +394,91 @@ export default function PageBuilderPage() {
     if (!page) return;
     setBusy(true);
     setError("");
+    const missing = firstMissingSelector(page);
+    if (missing) {
+      setBusy(false);
+      setError(t(missingErrorKey(missing)));
+      scrollSideTo(missing);
+      return;
+    }
     try {
-      const next = await pageBuilderApi.publish(page.id, toWrite(page, lang));
+      const next = await pageBuilderApi.publish(page.id, toWrite(page));
       setPage(next);
       setNotice(`${t("pbLinkReady")}: ${window.location.origin}/p/${next.slug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("pbPublishFailed"));
+      scrollSideTo(firstMissingSelector(page));
     } finally {
       setBusy(false);
     }
   };
 
-  const runAi = async (mode: "prompt" | "style" | "surprise") => {
+  const unpublish = async () => {
     if (!page) return;
     setBusy(true);
     setError("");
     try {
-      const res =
-        mode === "surprise"
-          ? await pageBuilderApi.surprise({ id: page.id, current: page.designConfig })
-          : await pageBuilderApi.aiStyle({
-              id: page.id,
-              prompt: mode === "prompt" ? page.designPrompt : "",
-              current: page.designConfig,
-            });
+      const next = await pageBuilderApi.unpublish(page.id);
+      setPage(next);
+      setNotice(t("pbUnpublished"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("pbUnpublishFailed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removePage = async (id: string, goToLibrary = false) => {
+    if (!window.confirm(t("pbDeleteConfirm"))) return;
+    setBusy(true);
+    setError("");
+    try {
+      await pageBuilderApi.remove(id);
+      if (goToLibrary || routeId) {
+        navigate("/page-builder", { replace: true });
+      } else {
+        setLibrary((prev) => (prev || []).filter((item) => item.id !== id));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("pbDeleteFailed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createPage = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const created = await pageBuilderApi.create(blankCreatePayload(langRef.current));
+      navigate(`/page-builder/${created.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("pbLoadFailed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runAi = async (mode: "prompt" | "style") => {
+    if (!page) return;
+    const typed = (page.designPrompt || "").trim();
+    if (mode === "prompt" && !typed) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await pageBuilderApi.aiStyle({
+        id: page.id,
+        prompt: typed,
+        current: page.designConfig,
+        suggest: mode === "style",
+        lang,
+      });
+      if (mode === "style") {
+        if (res.designPrompt) patch({ designPrompt: res.designPrompt });
+        return;
+      }
       if (res.designConfig) {
-        patch({
-          designConfig: res.designConfig,
-          designPrompt: res.designPrompt ?? page.designPrompt,
-        });
+        patch({ designConfig: res.designConfig });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t("pbAiFailed"));
@@ -403,6 +515,64 @@ export default function PageBuilderPage() {
       </div>
     );
   }
+
+  const statusLabel = (status: string) =>
+    status === "published"
+      ? t("pbStatusPublished")
+      : status === "unpublished"
+        ? t("pbStatusHidden")
+        : t("status_draft");
+
+  if (!routeId) {
+    return (
+      <div className="pb-root pb-library-root">
+        <div className="pb-library">
+          <header className="pb-library-head">
+            <div>
+              <h1>{t("pbPagesTitle")}</h1>
+              <p>{t("pbSubtitle")}</p>
+            </div>
+            <button type="button" className="pb-btn primary" disabled={busy} onClick={() => void createPage()}>
+              {t("pbNewPage")}
+            </button>
+          </header>
+          {error ? <p className="pb-error">{error}</p> : null}
+          {library === null ? (
+            <p className="pb-library-empty">{t("pbPreparing")}</p>
+          ) : library.length === 0 ? (
+            <div className="pb-library-empty">
+              <strong>{t("pbNoPages")}</strong>
+              <p>{t("pbNoPagesHint")}</p>
+            </div>
+          ) : (
+            <div className="pb-library-grid">
+              {library.map((item) => (
+                <article key={item.id} className="pb-library-card">
+                  <Link to={`/page-builder/${item.id}`} className="pb-library-main">
+                    <span className={`pb-status is-${item.status}`}>{statusLabel(item.status)}</span>
+                    <strong>{item.title || eventLabel(item.eventSlug, lang)}</strong>
+                    <small>
+                      {eventLabel(item.eventSlug, lang)}
+                      {item.date ? ` · ${item.date}` : ""}
+                    </small>
+                  </Link>
+                  <button
+                    type="button"
+                    className="pb-btn danger"
+                    disabled={busy}
+                    onClick={() => void removePage(item.id)}
+                  >
+                    <IconTrash /> {t("pbDelete")}
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (!page) {
     return (
       <div className="pb-root pb-gate">
@@ -414,6 +584,7 @@ export default function PageBuilderPage() {
     );
   }
 
+  const contentLang = normalizeUiLang(page.displayLang || lang);
   const publicLink = `${window.location.origin}/p/${page.slug}`;
   const design: DesignConfig = page.designConfig || DEFAULT_DESIGN;
   const music: MusicConfig = page.musicConfig || DEFAULT_MUSIC;
@@ -496,20 +667,22 @@ export default function PageBuilderPage() {
           childName: page.childName,
           personName: page.personName,
           familySignature: page.familySignature,
-          lang,
+          lang: contentLang,
         }),
         mainText: page.mainText,
         date: page.date,
         time: page.time,
         venueName: page.venueName,
         address: page.address,
+        mapLat: page.mapLat,
+        mapLng: page.mapLng,
         familySignature: page.familySignature,
         eventSlug: page.eventSlug,
         childName: page.childName,
         personName: page.personName,
         schedule: page.ceremonySchedule,
         subtypeSlugs: page.subtypeSlugs,
-        language: lang,
+        language: contentLang,
       }}
       design={design}
       opened
@@ -522,15 +695,14 @@ export default function PageBuilderPage() {
         <aside className="pb-side">
           <header className="pb-brand">
             <div className="pb-brand-top">
-              <strong>{t("pbTitle")}</strong>
+              <Link className="pb-back" to="/page-builder">
+                {t("pbBackToPages")}
+              </Link>
               <span className={`pb-status is-${page.status}`}>
-                {page.status === "published"
-                  ? t("pbStatusPublished")
-                  : page.status === "unpublished"
-                    ? t("pbStatusHidden")
-                    : t("status_draft")}
+                {statusLabel(page.status)}
               </span>
             </div>
+            <strong>{t("pbTitle")}</strong>
             <p>{t("pbSubtitle")}</p>
           </header>
 
@@ -588,15 +760,17 @@ export default function PageBuilderPage() {
                   onChange={(e) => patch({ designPrompt: e.target.value })}
                 />
               </label>
-              <div className="pb-actions">
-                <button type="button" className="pb-btn" disabled={busy} onClick={() => void runAi("prompt")}>
-                  <IconSend /> {t("pbApplyPrompt")}
-                </button>
+              <div className="pb-actions pb-ai-bar">
                 <button type="button" className="pb-btn" disabled={busy} onClick={() => void runAi("style")}>
                   <IconSparkle /> {t("pbAiStyleBtn")}
                 </button>
-                <button type="button" className="pb-btn" disabled={busy} onClick={() => void runAi("surprise")}>
-                  <IconDice /> {t("pbSurprise")}
+                <button
+                  type="button"
+                  className="pb-btn"
+                  disabled={busy || !(page.designPrompt || "").trim()}
+                  onClick={() => void runAi("prompt")}
+                >
+                  <IconSend /> {t("pbApplyPrompt")}
                 </button>
               </div>
             </Section>
@@ -713,14 +887,29 @@ export default function PageBuilderPage() {
               ) : null}
             </Section>
 
-            {error ? <p className="pb-error">{error}</p> : null}
-            {notice ? <p className="pb-ok">{notice}</p> : null}
           </div>
 
           <footer className="pb-dock">
-            <button type="button" className="pb-btn primary" disabled={busy} onClick={() => void publish()}>
-              <IconSend /> {t("pbPublish")}
-            </button>
+            {error ? <p className="pb-error">{error}</p> : null}
+            {notice ? <p className="pb-ok">{notice}</p> : null}
+            <div className={`pb-dock-actions${page.status === "published" ? " has-more" : ""}`}>
+              <button type="button" className="pb-btn primary" disabled={busy} onClick={() => void publish()}>
+                <IconSend /> {t("pbPublish")}
+              </button>
+              {page.status === "published" ? (
+                <button type="button" className="pb-btn" disabled={busy} onClick={() => void unpublish()}>
+                  {t("pbUnpublish")}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="pb-btn danger"
+                disabled={busy}
+                onClick={() => void removePage(page.id, true)}
+              >
+                <IconTrash /> {t("pbDelete")}
+              </button>
+            </div>
             {page.status === "published" ? (
               <div className="pb-share">
                 <input readOnly value={publicLink} />
@@ -736,7 +925,7 @@ export default function PageBuilderPage() {
                   </button>
                   <a
                     className="pb-btn"
-                    href={`https://t.me/share/url?url=${encodeURIComponent(publicLink)}&text=${encodeURIComponent(page.title || SITE_COPY[lang]?.kicker || t("pbTitle"))}`}
+                    href={`https://t.me/share/url?url=${encodeURIComponent(publicLink)}&text=${encodeURIComponent(page.title || SITE_COPY[contentLang]?.kicker || t("pbTitle"))}`}
                     target="_blank"
                     rel="noreferrer"
                   >

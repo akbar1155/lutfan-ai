@@ -44,6 +44,8 @@ class InvitationPage(TimeStampedModel):
     child_gender = models.CharField(max_length=16, blank=True, default="")
     venue_name = models.CharField(max_length=100, blank=True, default="")
     address = models.CharField(max_length=240, blank=True, default="")
+    map_lat = models.FloatField(null=True, blank=True)
+    map_lng = models.FloatField(null=True, blank=True)
     ceremony_schedule = models.JSONField(default=dict, blank=True)
     display_lang = models.CharField(max_length=16, blank=True, default="uz-latn")
     design_config = models.JSONField(default=dict, blank=True)

@@ -34,8 +34,14 @@ type NikohBlock = {
 type ReadyTextsFile = {
   catalog: CatalogItem[];
   nikohTopics?: Record<string, EventTopic>;
-  nikohBySubtype?: Record<string, Record<string, Partial<Record<Lang, NikohBlock>>>>;
-  eventByStyle?: Record<string, Record<string, Partial<Record<Lang, NikohBlock>>>>;
+  nikohBySubtype?: Record<
+    string,
+    Record<string, Partial<Record<Lang, NikohBlock>>>
+  >;
+  eventByStyle?: Record<
+    string,
+    Record<string, Partial<Record<Lang, NikohBlock>>>
+  >;
   eventTopics: Record<string, EventTopic>;
   templates: Record<string, I18nText>;
 };
@@ -61,9 +67,9 @@ const FALLBACK_TOPIC: EventTopic = {
 };
 
 function normalizeLang(language: string): Lang {
-  return (["uz-latn", "uz-cyrl", "ru"].includes(language)
-    ? language
-    : "uz-latn") as Lang;
+  return (
+    ["uz-latn", "uz-cyrl", "ru"].includes(language) ? language : "uz-latn"
+  ) as Lang;
 }
 
 function cap(s: string): string {
@@ -236,7 +242,9 @@ export function mergeReadyTextTemplates(
   };
   return localTemplates.map((localTpl) => {
     const serverTpl =
-      take((item) => Boolean(item.styleId) && item.styleId === localTpl.styleId) ||
+      take(
+        (item) => Boolean(item.styleId) && item.styleId === localTpl.styleId,
+      ) ||
       take((item) => styleIdFromTitle(item.title) === localTpl.styleId) ||
       take((item) => normTitle(item.title) === normTitle(localTpl.title));
     const preview = String(serverTpl?.preview_text || "").trim();

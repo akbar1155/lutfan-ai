@@ -1,5 +1,10 @@
 import i18n from "../i18n";
-import { getAccessToken, getApiBase, getRefreshToken, setAuthTokens } from "../api/envTarget";
+import {
+  getAccessToken,
+  getApiBase,
+  getRefreshToken,
+  setAuthTokens,
+} from "../api/envTarget";
 import type { DesignConfig, InvitationPagePayload, MusicConfig } from "./types";
 
 type ApiError = {
@@ -31,8 +36,10 @@ function formatError(body: ApiError, fallback: string): string {
   const details = body.error?.details;
   if (details && typeof details === "object") {
     for (const value of Object.values(details)) {
-      if (Array.isArray(value) && value.length) return translateServerMessage(String(value[0]), fallback);
-      if (typeof value === "string" && value) return translateServerMessage(value, fallback);
+      if (Array.isArray(value) && value.length)
+        return translateServerMessage(String(value[0]), fallback);
+      if (typeof value === "string" && value)
+        return translateServerMessage(value, fallback);
     }
   }
   return translateServerMessage(body.error?.message || "", fallback);
@@ -57,7 +64,11 @@ async function refreshAccess(): Promise<boolean> {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  retried = false,
+): Promise<T> {
   const token = getAccessToken();
   const res = await fetch(`${getApiBase()}${path}`, {
     credentials: "include",
@@ -98,6 +109,8 @@ export type PageWrite = {
   childGender?: string;
   venueName?: string;
   address?: string;
+  mapLat?: number | null;
+  mapLng?: number | null;
   eventSlug?: string;
   subtypeSlugs?: string[];
   ceremonySchedule?: Record<string, { date: string; time: string }>;
@@ -108,12 +121,22 @@ export type PageWrite = {
   designPrompt?: string;
 };
 
+export type GeocodeHit = {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+};
+
 export const pageBuilderApi = {
   create(data: PageWrite = {}) {
     return request<InvitationPagePayload>("/pages", {
       method: "POST",
       body: JSON.stringify(data),
     });
+  },
+  list() {
+    return request<InvitationPagePayload[]>("/pages");
   },
   get(id: string) {
     return request<InvitationPagePayload>(`/pages/${id}`);
@@ -123,6 +146,9 @@ export const pageBuilderApi = {
       method: "PUT",
       body: JSON.stringify(data),
     });
+  },
+  remove(id: string) {
+    return request<void>(`/pages/${id}`, { method: "DELETE" });
   },
   publish(id: string, data: PageWrite) {
     return request<InvitationPagePayload>(`/pages/${id}/publish`, {
@@ -136,24 +162,40 @@ export const pageBuilderApi = {
       body: "{}",
     });
   },
-  aiStyle(payload: { prompt?: string; current?: DesignConfig; id?: string }) {
-    const path = payload.id ? `/pages/${payload.id}/ai-style` : "/pages/ai-style";
-    return request<{ designConfig: DesignConfig } & Partial<InvitationPagePayload>>(path, {
+  aiStyle(payload: {
+    prompt?: string;
+    current?: DesignConfig;
+    id?: string;
+    suggest?: boolean;
+    lang?: string;
+  }) {
+    const path = payload.id
+      ? `/pages/${payload.id}/ai-style`
+      : "/pages/ai-style";
+    return request<
+      { designConfig?: DesignConfig; designPrompt?: string } & Partial<InvitationPagePayload>
+    >(path, {
       method: "POST",
-      body: JSON.stringify({ prompt: payload.prompt || "", current: payload.current }),
-    });
-  },
-  surprise(payload: { current?: DesignConfig; id?: string }) {
-    const path = payload.id ? `/pages/${payload.id}/surprise` : "/pages/surprise";
-    return request<{ designConfig: DesignConfig } & Partial<InvitationPagePayload>>(path, {
-      method: "POST",
-      body: JSON.stringify({ current: payload.current }),
+      body: JSON.stringify({
+        prompt: payload.prompt || "",
+        current: payload.current,
+        suggest: Boolean(payload.suggest),
+        lang: payload.lang || "",
+      }),
     });
   },
   uploadMusic(id: string, file: File) {
     const body = new FormData();
     body.append("file", file);
-    return request<InvitationPagePayload>(`/pages/${id}/music`, { method: "POST", body });
+    return request<InvitationPagePayload>(`/pages/${id}/music`, {
+      method: "POST",
+      body,
+    });
+  },
+  geocode(query: string) {
+    return request<{ results: GeocodeHit[] }>(
+      `/pages/geocode?q=${encodeURIComponent(query)}`,
+    );
   },
   publicBySlug(slug: string) {
     return request<InvitationPagePayload>(`/public/pages/${slug}`);

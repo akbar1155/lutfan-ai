@@ -209,3 +209,90 @@ def pick_curated_combo(exclude: dict | None = None) -> dict[str, str]:
     combo = dict(random.choice(choices))
     combo["font"] = current["font"]
     return sanitize_design_config(combo)
+
+
+_PROMPT_LANG = {
+    "uz-latn": "Uzbek Latin",
+    "uz-cyrl": "Uzbek Cyrillic",
+    "ru": "Russian",
+}
+
+_FALLBACK_PROMPTS = {
+    "uz-latn": (
+        "Nafis, sharqona naqsh, oltin ramka, ochiq fil suyagi fon, atirgul.",
+        "Zumrad rang, o‘zbek milliy naqsh, lola, qo‘lda yasalgan qog‘oz.",
+        "Bordo hashamat, pion, pergament qog‘oz, boy bezak va shohona ramka.",
+        "Pushti gulli naqsh, ipak tekstura, atirgul, yumshoq ochilish.",
+        "To‘q ko‘k arabesk, yasemin, marmar fon, ikki qator ramka.",
+        "Oltin, nilufar, ingichka ramka, ochiq fon, kam bezak.",
+        "Bej, botanik yaproqlar, tekis qog‘oz, sodda ramka.",
+    ),
+    "uz-cyrl": (
+        "Нафис, шарқона нақш, олтин рамка, очиқ фил суяги фон, атиргул.",
+        "Зумрад ранг, ўзбек миллий нақш, лола, қўлда ясалган қоғоз.",
+        "Бордо ҳашамат, пион, пергамент қоғоз, бой безак ва шоҳона рамка.",
+        "Пушти гулли нақш, ипак текстура, атиргул, юмшоқ очилиш.",
+        "Тўқ кўк арабеск, ясемин, мармар фон, икки қатор рамка.",
+        "Олтин, нилуфар, ингичка рамка, очиқ фон, кам безак.",
+        "Беж, ботаник япроқлар, текис қоғоз, содда рамка.",
+    ),
+    "ru": (
+        "Изящный восточный орнамент, золотая рамка, светлый фон, роза.",
+        "Изумруд, узбекский узор, тюльпан, бумага ручной работы.",
+        "Бордо, пион, пергамент, богатый декор и царская рамка.",
+        "Розовый цветочный узор, шёлк, роза, мягкое появление.",
+        "Тёмно-синяя арабеска, жасмин, мрамор, двойная рамка.",
+        "Золото, лотос, тонкая рамка, светлый фон, мало декора.",
+        "Бежевый, ботанические листья, гладкая бумага, простая рамка.",
+    ),
+}
+
+
+def _clean_prompt_text(text: str) -> str:
+    cleaned = (text or "").strip().strip("\"'`“”«»")
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned[:500]
+
+
+def _gemini_style_prompt(current: dict[str, str], lang: str) -> str | None:
+    api_key = getattr(settings, "GOOGLE_AI_API_KEY", "") or ""
+    if not api_key:
+        return None
+    language = _PROMPT_LANG.get(lang, _PROMPT_LANG["uz-latn"])
+    instruction = (
+        f"Write ONE short visual-style request for a digital invitation in {language}. "
+        "One sentence, max 180 characters. Mention color, ornament, flower, paper or frame. "
+        "No HTML, CSS, JavaScript, labels, or quotation marks. Plain text only. "
+        f"Make it different from this current look: {json.dumps(current, ensure_ascii=False)}"
+    )
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=instruction,
+            config=types.GenerateContentConfig(temperature=0.9),
+        )
+        text = _clean_prompt_text(getattr(response, "text", None) or "")
+        return text or None
+    except Exception:
+        logger.exception("page_builder AI prompt suggestion failed")
+        return None
+
+
+def suggest_style_prompt(
+    current: dict | None = None,
+    lang: str = "uz-latn",
+    exclude: str = "",
+) -> str:
+    import random
+
+    key = lang if lang in _FALLBACK_PROMPTS else "uz-latn"
+    base = sanitize_design_config(current)
+    from_model = _gemini_style_prompt(base, key)
+    if from_model and _fold(from_model) != _fold(exclude):
+        return from_model
+    choices = [p for p in _FALLBACK_PROMPTS[key] if _fold(p) != _fold(exclude)]
+    return random.choice(choices or list(_FALLBACK_PROMPTS[key]))

@@ -203,3 +203,98 @@ class PageBuilderApiTests(TestCase):
         )
         resp = self.client.get(f"/api/v1/pages/{page.id}")
         self.assertEqual(resp.status_code, 404)
+
+    def test_ai_style_suggest_fills_prompt_without_changing_design(self):
+        from unittest.mock import patch
+
+        created = self.client.post("/api/v1/pages", {}, format="json")
+        self.assertEqual(created.status_code, 201, created.content)
+        page_id = created.json()["id"]
+        before = created.json()["designConfig"]
+        with patch(
+            "apps.page_builder.views.suggest_style_prompt",
+            return_value="Nafis, oltin ramka, atirgul.",
+        ):
+            res = self.client.post(
+                f"/api/v1/pages/{page_id}/ai-style",
+                {"suggest": True, "lang": "uz-latn", "current": before},
+                format="json",
+            )
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(res.json()["designPrompt"], "Nafis, oltin ramka, atirgul.")
+        saved = self.client.get(f"/api/v1/pages/{page_id}")
+        self.assertEqual(saved.json()["designConfig"], before)
+
+    def test_save_does_not_copy_venue_into_empty_address(self):
+        created = self.client.post(
+            "/api/v1/pages",
+            {"venueName": "Navruz hall", "address": ""},
+            format="json",
+        )
+        self.assertEqual(created.status_code, 201, created.content)
+        self.assertEqual(created.json()["venueName"], "Navruz hall")
+        self.assertEqual(created.json()["address"], "")
+
+    def test_owner_can_delete_page(self):
+        created = self.client.post("/api/v1/pages", {"title": "Draft"}, format="json")
+        page_id = created.json()["id"]
+        deleted = self.client.delete(f"/api/v1/pages/{page_id}")
+        self.assertEqual(deleted.status_code, 204)
+        missing = self.client.get(f"/api/v1/pages/{page_id}")
+        self.assertEqual(missing.status_code, 404)
+
+    def test_map_point_roundtrip_and_yandex_url(self):
+        from apps.page_builder.maps import parse_map_point
+
+        lat, lng = parse_map_point(
+            "https://yandex.uz/maps/?ll=69.279737%2C41.311151&z=16"
+        )
+        self.assertAlmostEqual(lat, 41.311151, places=5)
+        self.assertAlmostEqual(lng, 69.279737, places=5)
+        created = self.client.post(
+            "/api/v1/pages",
+            {"mapLat": 41.311151, "mapLng": 69.279737, "address": "Toshkent"},
+            format="json",
+        )
+        self.assertEqual(created.status_code, 201, created.content)
+        self.assertAlmostEqual(created.json()["mapLat"], 41.311151, places=5)
+        self.assertAlmostEqual(created.json()["mapLng"], 69.279737, places=5)
+        parsed = self.client.get("/api/v1/pages/geocode?q=41.311151, 69.279737")
+        self.assertEqual(parsed.status_code, 200, parsed.content)
+        self.assertEqual(len(parsed.json()["results"]), 1)
+
+
+class AdminInvitationsListTests(TestCase):
+    def setUp(self):
+        from apps.users.models import Role
+
+        self.admin = User.objects.create_user(
+            telegram_id=93001, first_name="Admin", role=Role.ADMIN
+        )
+        self.owner = User.objects.create_user(
+            telegram_id=93002, first_name="Guest"
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(self.admin)
+
+    def test_lists_interactive_pages_with_pagination(self):
+        for i in range(3):
+            InvitationPage.objects.create(
+                user=self.owner,
+                title=f"Page {i}",
+                main_text="Matn",
+                status=InvitationPageStatus.DRAFT,
+            )
+        all_rows = self.client.get("/api/v1/admin/invitations")
+        self.assertEqual(all_rows.status_code, 200, all_rows.content)
+        body = all_rows.json()
+        self.assertEqual(body["count"], 3)
+        self.assertEqual(len(body["results"]), 3)
+        self.assertTrue(all(row["kind"] == "interactive" for row in body["results"]))
+
+        page1 = self.client.get("/api/v1/admin/invitations?limit=2&page=1")
+        self.assertEqual(page1.json()["count"], 3)
+        self.assertEqual(len(page1.json()["results"]), 2)
+        page2 = self.client.get("/api/v1/admin/invitations?limit=2&page=2")
+        self.assertEqual(len(page2.json()["results"]), 1)
+        self.assertEqual(page2.json()["page"], 2)

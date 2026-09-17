@@ -4,6 +4,7 @@ from .views import (
     CatalogView,
     PageAiStyleView,
     PageDetailView,
+    PageGeocodeView,
     PageListCreateView,
     PageMusicUploadView,
     PagePublishView,
@@ -14,6 +15,7 @@ from .views import (
 
 urlpatterns = [
     path("pages/catalog", CatalogView.as_view()),
+    path("pages/geocode", PageGeocodeView.as_view()),
     path("pages", PageListCreateView.as_view()),
     path("pages/ai-style", PageAiStyleView.as_view()),
     path("pages/surprise", PageSurpriseView.as_view()),

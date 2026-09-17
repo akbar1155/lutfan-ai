@@ -150,6 +150,10 @@ type PickerChrome = {
   month: string;
   year: string;
   week: string;
+  prevMonth: string;
+  nextMonth: string;
+  prevYear: string;
+  nextYear: string;
 };
 
 function buildLocales(
@@ -174,6 +178,12 @@ function buildLocales(
       month: labels.month,
       year: labels.year,
       week: labels.week,
+      previousMonth: labels.prevMonth,
+      nextMonth: labels.nextMonth,
+      previousYear: labels.prevYear,
+      nextYear: labels.nextYear,
+      monthSelect: labels.month,
+      yearSelect: labels.year,
       shortWeekDays: calendar.shortWeekDays,
       shortMonths: calendar.shortMonths,
     },
@@ -235,6 +245,22 @@ function useLocalizedPicker(language?: string | null) {
       month: tLang("pickerMonth", lang === "ru" ? "Месяц" : lang === "uz-cyrl" ? "Ой" : "Oy"),
       year: tLang("pickerYear", lang === "ru" ? "Год" : lang === "uz-cyrl" ? "Йил" : "Yil"),
       week: tLang("pickerWeek", lang === "ru" ? "Неделя" : lang === "uz-cyrl" ? "Ҳафта" : "Hafta"),
+      prevMonth: tLang(
+        "pickerPrevMonth",
+        lang === "ru" ? "Предыдущий месяц" : lang === "uz-cyrl" ? "Олдинги ой" : "Oldingi oy",
+      ),
+      nextMonth: tLang(
+        "pickerNextMonth",
+        lang === "ru" ? "Следующий месяц" : lang === "uz-cyrl" ? "Кейинги ой" : "Keyingi oy",
+      ),
+      prevYear: tLang(
+        "pickerPrevYear",
+        lang === "ru" ? "Предыдущий год" : lang === "uz-cyrl" ? "Олдинги йил" : "Oldingi yil",
+      ),
+      nextYear: tLang(
+        "pickerNextYear",
+        lang === "ru" ? "Следующий год" : lang === "uz-cyrl" ? "Кейинги йил" : "Keyingi yil",
+      ),
       datePlaceholder: tLang(
         "pickerDatePlaceholder",
         lang === "ru" ? "дд.мм.гггг" : lang === "uz-cyrl" ? "кк.оо.йййй" : "kk.oo.yyyy",
@@ -277,7 +303,16 @@ type FieldProps = {
 };
 
 function scrollFieldIntoView(el: HTMLElement | null) {
-  el?.scrollIntoView({ block: "center", behavior: "smooth" });
+  if (!el) return;
+  const scroller = el.closest(".pb-side-scroll, .wizard") as HTMLElement | null;
+  if (scroller) {
+    const field = el.getBoundingClientRect();
+    const box = scroller.getBoundingClientRect();
+    const delta = field.top - box.top - (box.height / 2 - field.height / 2);
+    scroller.scrollBy({ top: delta, behavior: "smooth" });
+    return;
+  }
+  el.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 function popupLabelStyle(labels: { now: string; today: string }): CSSProperties {
@@ -329,13 +364,13 @@ export function DateField({
           placeholder={labels.datePlaceholder}
           placement="bottomLeft"
           getPopupContainer={() => document.body}
-          showNow
-          styles={{ popup: { root: popupLabelStyle(labels) } }}
+          destroyOnHidden
+          styles={{ popup: { root: { ...popupLabelStyle(labels), zIndex: 2000 } } }}
           disabledDate={
             minToday
               ? (current) =>
-                  !!current &&
-                  current.startOf("day").isBefore(dayjs().startOf("day"))
+                !!current &&
+                current.startOf("day").isBefore(dayjs().startOf("day"))
               : undefined
           }
           onOpenChange={(open) => {

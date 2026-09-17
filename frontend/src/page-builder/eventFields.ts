@@ -1,9 +1,17 @@
 import { eventDisplayName, pickTranslation, type UiLang } from "../i18n/lang";
 import type { CeremonySchedule } from "../utils/ceremonySchedule";
-import { buildLocalReadyTemplates, listReadyTextStyles } from "../utils/readyTexts";
+import {
+  buildLocalReadyTemplates,
+  listReadyTextStyles,
+} from "../utils/readyTexts";
 import { splitTemplateBlocks } from "../utils/textBlocks";
 
-export type PageEventSlug = "nikoh" | "aqiqa" | "sunnat" | "birthday" | "hudoyi";
+export type PageEventSlug =
+  | "nikoh"
+  | "aqiqa"
+  | "sunnat"
+  | "birthday"
+  | "hudoyi";
 
 export const PAGE_EVENT_SLUGS: PageEventSlug[] = [
   "nikoh",
@@ -13,7 +21,10 @@ export const PAGE_EVENT_SLUGS: PageEventSlug[] = [
   "hudoyi",
 ];
 
-export const NIKOH_SUBTYPES: Array<{ slug: string; names: Record<string, string> }> = [
+export const NIKOH_SUBTYPES: Array<{
+  slug: string;
+  names: Record<string, string>;
+}> = [
   {
     slug: "nikoh_oqshomi",
     names: {
@@ -48,7 +59,9 @@ export const NIKOH_SUBTYPES: Array<{ slug: string; names: Record<string, string>
   },
 ];
 
-export function isPageEvent(value: string | undefined | null): value is PageEventSlug {
+export function isPageEvent(
+  value: string | undefined | null,
+): value is PageEventSlug {
   return PAGE_EVENT_SLUGS.includes(String(value || "") as PageEventSlug);
 }
 
@@ -69,7 +82,10 @@ type CatalogOpts = {
   styleId?: string;
 };
 
-function pageBuilderBlocks(opts: CatalogOpts): { header: string; body: string } {
+function pageBuilderBlocks(opts: CatalogOpts): {
+  header: string;
+  body: string;
+} {
   const styleId = opts.styleId || DEFAULT_READY_STYLE;
   const templates = buildLocalReadyTemplates(
     () => "",
@@ -84,8 +100,27 @@ function pageBuilderBlocks(opts: CatalogOpts): { header: string; body: string } 
   return { header: blocks.header.trim(), body: blocks.body.trim() };
 }
 
+function joinNames(names: string[], lang: string): string {
+  if (names.length <= 1) return names[0] || "";
+  const and = lang === "ru" ? " и " : lang === "uz-cyrl" ? " ва " : " va ";
+  return `${names.slice(0, -1).join(", ")}${and}${names[names.length - 1]}`;
+}
+
+function ceremonyLine(slugs: string[] | undefined, lang: string): string {
+  if (!slugs || slugs.length < 2) return "";
+  const names = slugs.map((slug) => subtypeLabel(slug, lang));
+  const list = joinNames(names, lang);
+  if (lang === "ru") return `Церемонии: ${list}.`;
+  if (lang === "uz-cyrl") return `Маросимлар: ${list}.`;
+  return `Marosimlar: ${list}.`;
+}
+
 export function pageBuilderBody(opts: CatalogOpts): string {
-  return pageBuilderBlocks(opts).body;
+  const body = pageBuilderBlocks(opts).body;
+  const extra = opts.eventSlug === "nikoh" ? ceremonyLine(opts.subtypeSlugs, opts.language) : "";
+  if (!extra || !body) return extra || body;
+  if (body.includes(extra)) return body;
+  return `${body}\n\n${extra}`;
 }
 
 export function pageBuilderHeader(opts: CatalogOpts): string {
@@ -106,19 +141,26 @@ function catalogCopySets() {
   const headers = new Set<string>(DEFAULT_GREETINGS);
   const langs = ["uz-latn", "uz-cyrl", "ru"];
   const styleIds = READY_TEXT_STYLES.map((item) => item.id);
-  const nikohSets = NIKOH_SUBTYPES.map((row) => [row.slug]);
+  const nikohSlugs = NIKOH_SUBTYPES.map((row) => row.slug);
+  const nikohSets: string[][] = [];
+  for (let mask = 1; mask < 1 << nikohSlugs.length; mask += 1) {
+    nikohSets.push(nikohSlugs.filter((_, i) => (mask & (1 << i)) !== 0));
+  }
   for (const lang of langs) {
     for (const event of PAGE_EVENT_SLUGS) {
       const groups = event === "nikoh" ? nikohSets : [[]];
       for (const slugs of groups) {
         for (const styleId of styleIds) {
-          const { header, body } = pageBuilderBlocks({
+          const opts = {
             eventSlug: event,
             language: lang,
             subtypeSlugs: slugs,
             styleId,
-          });
+          };
+          const { header, body } = pageBuilderBlocks(opts);
           if (body) bodies.add(body);
+          const combined = pageBuilderBody(opts);
+          if (combined) bodies.add(combined);
           if (header) headers.add(header);
         }
       }
@@ -136,22 +178,18 @@ function catalogHeaderSet(): Set<string> {
   return catalogCopySets().headers;
 }
 
-export function isCatalogMainText(
-  text: string,
-  t?: Translate,
-): boolean {
+export function isCatalogMainText(text: string, t?: Translate): boolean {
   const trimmed = (text || "").trim();
   if (!trimmed) return true;
   if (catalogBodySet().has(trimmed)) return true;
   if (!t) return false;
   if (trimmed === String(t("defaultBody") || "").trim()) return true;
-  return PAGE_EVENT_SLUGS.some((slug) => trimmed === defaultMainText(slug, t).trim());
+  return PAGE_EVENT_SLUGS.some(
+    (slug) => trimmed === defaultMainText(slug, t).trim(),
+  );
 }
 
-export function isDefaultMainText(
-  text: string,
-  t: Translate,
-): boolean {
+export function isDefaultMainText(text: string, t: Translate): boolean {
   return isCatalogMainText(text, t);
 }
 
@@ -232,7 +270,13 @@ export function fieldsForEvent(eventSlug: string): EventFieldKey[] {
       "venue_address",
     ];
   }
-  return ["family_signature", "event_date", "event_time", "venue_name", "venue_address"];
+  return [
+    "family_signature",
+    "event_date",
+    "event_time",
+    "venue_name",
+    "venue_address",
+  ];
 }
 
 export function previewTitle(opts: {

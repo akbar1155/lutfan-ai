@@ -504,14 +504,26 @@ export const api = {
         body: JSON.stringify(body || {}),
       },
     ),
-  adminInvitations: (params?: { status?: string; event_slug?: string }) => {
+  adminInvitations: (params?: {
+    status?: string;
+    event_slug?: string;
+    kind?: string;
+    page?: number;
+    limit?: number;
+  }) => {
     const q = new URLSearchParams();
     if (params?.status) q.set("status", params.status);
     if (params?.event_slug) q.set("event_slug", params.event_slug);
+    if (params?.kind) q.set("kind", params.kind);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
     const qs = q.toString();
-    return request<Array<Record<string, unknown>>>(
-      `/admin/invitations${qs ? `?${qs}` : ""}`,
-    );
+    return request<{
+      count: number;
+      page: number;
+      limit: number;
+      results: Array<Record<string, unknown>>;
+    } | Array<Record<string, unknown>>>(`/admin/invitations${qs ? `?${qs}` : ""}`);
   },
   adminAiGenerations: (status?: string) =>
     request<Array<Record<string, unknown>>>(

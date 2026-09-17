@@ -39,6 +39,8 @@ class InvitationPageWriteSerializer(serializers.Serializer):
         max_length=100, required=False, allow_blank=True, source="venue_name"
     )
     address = serializers.CharField(max_length=240, required=False, allow_blank=True)
+    mapLat = serializers.FloatField(required=False, allow_null=True, source="map_lat")
+    mapLng = serializers.FloatField(required=False, allow_null=True, source="map_lng")
     eventSlug = serializers.CharField(
         max_length=32, required=False, allow_blank=True, source="event_slug"
     )
@@ -115,6 +117,8 @@ def serialize_page(page: InvitationPage, *, public: bool = False) -> dict:
         "childGender": page.child_gender,
         "venueName": page.venue_name,
         "address": page.address,
+        "mapLat": page.map_lat,
+        "mapLng": page.map_lng,
         "ceremonySchedule": normalize_schedule(page.ceremony_schedule),
         "displayLang": page.display_lang or "uz-latn",
         "designConfig": sanitize_design_config(page.design_config),
