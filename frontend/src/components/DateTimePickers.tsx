@@ -364,7 +364,7 @@ export function DateField({
           placeholder={labels.datePlaceholder}
           placement="bottomLeft"
           getPopupContainer={() => document.body}
-          destroyOnHidden
+          // destroyOnHidden
           styles={{ popup: { root: { ...popupLabelStyle(labels), zIndex: 2000 } } }}
           disabledDate={
             minToday

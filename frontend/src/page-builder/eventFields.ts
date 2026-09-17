@@ -78,7 +78,7 @@ export function defaultMainText(eventSlug: string, t: Translate): string {
 type CatalogOpts = {
   eventSlug: string;
   language: string;
-  subtypeSlugs?: string[] | null;
+  subtypeSlugs?: any;
   styleId?: string;
 };
 
@@ -117,7 +117,10 @@ function ceremonyLine(slugs: string[] | undefined, lang: string): string {
 
 export function pageBuilderBody(opts: CatalogOpts): string {
   const body = pageBuilderBlocks(opts).body;
-  const extra = opts.eventSlug === "nikoh" ? ceremonyLine(opts.subtypeSlugs, opts.language) : "";
+  const extra =
+    opts.eventSlug === "nikoh"
+      ? ceremonyLine(opts.subtypeSlugs, opts.language)
+      : "";
   if (!extra || !body) return extra || body;
   if (body.includes(extra)) return body;
   return `${body}\n\n${extra}`;
