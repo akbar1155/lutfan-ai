@@ -13,12 +13,14 @@
     "antd": "^6.5.2",
     "dayjs": "^1.11.21",
     "i18next": "^26.3.6",
+    "leaflet": "^1.9.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.9",
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

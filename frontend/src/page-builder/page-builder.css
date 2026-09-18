@@ -328,6 +328,29 @@ html:has(.pb-root) #root {
   color: #6b5d4a;
 }
 
+.pb-map-container {
+  position: relative;
+  height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(70, 54, 32, 0.12);
+}
+
+.pb-map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.pb-map-search-overlay {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 500;
+  display: grid;
+  gap: 0.3rem;
+}
+
 .pb-map-search {
   display: flex;
   gap: 0.4rem;
@@ -338,9 +361,12 @@ html:has(.pb-root) #root {
   min-width: 0;
   border: 1px solid rgba(70, 54, 32, 0.16);
   background: #fffdf8;
-  border-radius: 10px;
-  padding: 0.62rem 0.7rem;
+  box-shadow: 0 2px 8px rgba(43, 32, 12, 0.14);
+  border-radius: 9px;
+  padding: 0.3rem 0.55rem;
   font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.3;
   color: inherit;
   outline: none;
 }
@@ -350,12 +376,67 @@ html:has(.pb-root) #root {
   box-shadow: 0 0 0 3px rgba(184, 149, 74, 0.18);
 }
 
+.pb-map-search-btn {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid rgba(70, 54, 32, 0.16);
+  border-radius: 9px;
+  background: #26140a;
+  color: #fffdf8;
+  box-shadow: 0 2px 8px rgba(43, 32, 12, 0.14);
+  cursor: pointer;
+}
+
+.pb-map-search-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pb-map-search-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pb-map-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-self: start;
+  border: none;
+  background: none;
+  padding: 0.2rem 0.1rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: #9a3b2f;
+  cursor: pointer;
+}
+
+.pb-map-clear svg {
+  width: 14px;
+  height: 14px;
+}
+
+.leaflet-control-zoom {
+  box-shadow: 0 2px 8px rgba(43, 32, 12, 0.14) !important;
+}
+
+.leaflet-control-attribution {
+  font-size: 0.62rem !important;
+  background: rgba(255, 253, 248, 0.75) !important;
+  padding: 0 4px !important;
+}
+
 .pb-map-hits {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: 0.28rem;
+  max-height: 140px;
+  overflow-y: auto;
 }
 
 .pb-map-hits button {
@@ -363,6 +444,7 @@ html:has(.pb-root) #root {
   text-align: left;
   border: 1px solid rgba(70, 54, 32, 0.12);
   background: #fffdf8;
+  box-shadow: 0 2px 8px rgba(43, 32, 12, 0.14);
   border-radius: 10px;
   padding: 0.5rem 0.65rem;
   cursor: pointer;
@@ -379,19 +461,6 @@ html:has(.pb-root) #root {
   margin-top: 0.12rem;
   font-size: 0.7rem;
   color: #7c6d59;
-}
-
-.pb-map-preview {
-  height: 168px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(70, 54, 32, 0.12);
-}
-
-.pb-map-preview iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
 }
 
 .pb-grid {

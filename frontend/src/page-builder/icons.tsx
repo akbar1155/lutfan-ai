@@ -246,3 +246,12 @@ export function IconUpload() {
     </Svg>
   );
 }
+
+export function IconSearch() {
+  return (
+    <Svg>
+      <circle cx="10.5" cy="10.5" r="6" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M15.2 15.2 19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </Svg>
+  );
+}
