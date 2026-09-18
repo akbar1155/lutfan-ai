@@ -8,6 +8,7 @@ venv/
 .mypy_cache/
 .ruff_cache/
 *.sqlite3
+*.sqlite3.bak*
 htmlcov/
 .coverage
 
@@ -38,6 +39,10 @@ staticfiles/
 *.log
 logs/
 .tmp/
+
+# Database backups/dumps (never commit — see docs/DATABASE-BACKUP.md)
+*.dump
+*.dump.enc
 
 # Docker volumes (if bind-mounted)
 .minio-data/
