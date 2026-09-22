@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://lutfanai.uz/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/" />
+  </url>
+
+  <!-- Gallery Page -->
+  <url>
+    <loc>https://lutfanai.uz/gallery</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/gallery" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/gallery" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/gallery" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/gallery" />
+  </url>
+
+  <!-- How It Works Page -->
+  <url>
+    <loc>https://lutfanai.uz/how-it-works</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/how-it-works" />
+  </url>
+
+  <!-- FAQ Page -->
+  <url>
+    <loc>https://lutfanai.uz/faq</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/faq" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/faq" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/faq" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/faq" />
+  </url>
+
+  <!-- Privacy Policy Page -->
+  <url>
+    <loc>https://lutfanai.uz/privacy-policy</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/privacy-policy" />
+  </url>
+
+  <!-- Terms Page -->
+  <url>
+    <loc>https://lutfanai.uz/terms</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="uz-Latn" href="https://lutfanai.uz/terms" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://lutfanai.uz/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lutfanai.uz/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lutfanai.uz/terms" />
+  </url>
+
+</urlset>

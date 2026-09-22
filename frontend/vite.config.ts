@@ -4,7 +4,8 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    // PORT is assigned by the preview harness; plain `npm run dev` keeps 5173.
+    port: Number(process.env.PORT) || 5173,
     // Allow ngrok / cloudflare / jprq public tunnels
     allowedHosts: true,
     proxy: {

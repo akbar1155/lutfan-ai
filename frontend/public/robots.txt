@@ -1,0 +1,31 @@
+# Lutfan AI - robots.txt
+# https://lutfanai.uz/robots.txt
+
+User-agent: *
+
+# Allow all public pages
+Allow: /
+Allow: /gallery
+Allow: /how-it-works
+Allow: /faq
+Allow: /privacy-policy
+Allow: /terms
+
+# Disallow private/internal pages
+Disallow: /account
+Disallow: /admin
+Disallow: /create
+Disallow: /payment
+Disallow: /page-builder
+
+# Disallow API endpoints
+Disallow: /api/
+Disallow: /media/
+Disallow: /prod-api/
+
+# Allow shared invitation pages
+Allow: /i/*
+Allow: /p/*
+
+# Sitemap
+Sitemap: https://lutfanai.uz/sitemap.xml

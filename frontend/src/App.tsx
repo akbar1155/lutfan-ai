@@ -16,6 +16,7 @@ import {
   TextPage,
 } from "./pages/CreateWizard";
 import HomePage from "./pages/HomePage";
+import PaymentPage from "./pages/PaymentPage";
 import {
   FaqPage,
   GalleryPage,
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="/i/:id" element={<PublicInvitationPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/account/settings" element={<Navigate to="/account" replace />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/create" element={<CreateEventPage />} />
             <Route path="/create/:id/details" element={<DetailsPage />} />

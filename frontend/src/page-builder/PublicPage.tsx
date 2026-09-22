@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import { SEO } from "../components/SEO";
 import { pageBuilderApi } from "./api";
 import { SITE_COPY, presetMusicUrl, siteLayoutFromFont } from "./config";
 import { inviteHeading } from "./eventFields";
@@ -98,8 +99,18 @@ export default function PublicInteractivePage() {
     page.title ||
     copy.kicker;
 
+  const seoTitle = `${coverTitle} — Lutfan AI`;
+  const seoDescription = page.mainText || `${coverTitle}. ${copy.kicker}`;
+
   return (
-    <div
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        path={`/p/${slug}`}
+        type="article"
+      />
+      <div
       className={`ip-public${opened ? " is-opened" : ""}`}
       data-font={design.font}
       data-color={design.primaryColor}
@@ -159,6 +170,7 @@ export default function PublicInteractivePage() {
           )}
         </button>
       ) : null}
-    </div>
+      </div>
+    </>
   );
 }
