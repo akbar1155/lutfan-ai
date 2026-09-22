@@ -6,15 +6,20 @@ import { EventIcon } from "../components/EventIcons";
 import { EmptyState, PageLoader } from "../components/UiStates";
 import SmartImage from "../components/SmartImage";
 import { eventDisplayName, normalizeUiLang, pickTranslation } from "../i18n/lang";
+import { SEO } from "../components/SEO";
+import { getSEOConfig } from "../utils/seo";
 
 export function HowItWorksPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const seoConfig = getSEOConfig('howItWorks', i18n.language || 'uz-latn');
   return (
-    <main className="page narrow">
-      <header className="page-head">
-        <h1>{t("how")}</h1>
-        <p className="hint">{t("howIntro")}</p>
-      </header>
+    <>
+      <SEO {...seoConfig} path="/how-it-works" />
+      <main className="page narrow">
+        <header className="page-head">
+          <h1>{t("how")}</h1>
+          <p className="hint">{t("howIntro")}</p>
+        </header>
       <ol className="steps how-steps">
         <li>
           <strong>{t("howStep1Title")}</strong>
@@ -34,18 +39,22 @@ export function HowItWorksPage() {
           {t("cta")}
         </Link>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 
 export function FaqPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const seoConfig = getSEOConfig('faq', i18n.language || 'uz-latn');
   return (
-    <main className="page narrow">
-      <header className="page-head">
-        <h1>{t("faq")}</h1>
-        <p className="hint">{t("faqIntro")}</p>
-      </header>
+    <>
+      <SEO {...seoConfig} path="/faq" />
+      <main className="page narrow">
+        <header className="page-head">
+          <h1>{t("faq")}</h1>
+          <p className="hint">{t("faqIntro")}</p>
+        </header>
       <div className="faq-list">
         <details>
           <summary>{t("faqQ1")}</summary>
@@ -60,7 +69,8 @@ export function FaqPage() {
           <p>{t("faqA3")}</p>
         </details>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 
@@ -68,6 +78,7 @@ export function GalleryPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const lang = normalizeUiLang(i18n.language);
+  const seoConfig = getSEOConfig('gallery', i18n.language || 'uz-latn');
   const [events, setEvents] = useState<EventConfig[]>([]);
   const [templates, setTemplates] = useState<JpgTemplate[]>([]);
   const [filter, setFilter] = useState<string>("all");
@@ -105,11 +116,13 @@ export function GalleryPage() {
   }, [templates, filter]);
 
   return (
-    <main className="page">
-      <header className="page-head">
-        <h1>{t("gallery")}</h1>
-        <p className="hint">{t("galleryIntro")}</p>
-      </header>
+    <>
+      <SEO {...seoConfig} path="/gallery" />
+      <main className="page">
+        <header className="page-head">
+          <h1>{t("gallery")}</h1>
+          <p className="hint">{t("galleryIntro")}</p>
+        </header>
       {!loading && events.length > 0 && (
         <div className="choice-row gallery-filters" role="tablist" aria-label={t("gallery")}>
           <button
@@ -164,17 +177,21 @@ export function GalleryPage() {
           actionLabel={t("cta")}
         />
       )}
-    </main>
+      </main>
+    </>
   );
 }
 
 export function PrivacyPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const seoConfig = getSEOConfig('privacy', i18n.language || 'uz-latn');
   return (
-    <main className="page narrow">
-      <header className="page-head">
-        <h1>{t("privacyTitle")}</h1>
-      </header>
+    <>
+      <SEO {...seoConfig} path="/privacy-policy" />
+      <main className="page narrow">
+        <header className="page-head">
+          <h1>{t("privacyTitle")}</h1>
+        </header>
       <div className="prose">
         {t("privacyBody")
           .split("\n\n")
@@ -185,17 +202,21 @@ export function PrivacyPage() {
       <Link className="text-link" to="/">
         {t("backHome")}
       </Link>
-    </main>
+      </main>
+    </>
   );
 }
 
 export function TermsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const seoConfig = getSEOConfig('terms', i18n.language || 'uz-latn');
   return (
-    <main className="page narrow">
-      <header className="page-head">
-        <h1>{t("termsTitle")}</h1>
-      </header>
+    <>
+      <SEO {...seoConfig} path="/terms" />
+      <main className="page narrow">
+        <header className="page-head">
+          <h1>{t("termsTitle")}</h1>
+        </header>
       <div className="prose">
         {t("termsBody")
           .split("\n\n")
@@ -206,7 +227,8 @@ export function TermsPage() {
       <Link className="text-link" to="/">
         {t("backHome")}
       </Link>
-    </main>
+      </main>
+    </>
   );
 }
 
@@ -224,12 +246,23 @@ export function PublicInvitationPage() {
       .catch((err: Error) => setError(err.message || t("publicInviteMissing")));
   }, [id, t]);
 
+  const seoTitle = `${t("brand")} — ${t("tagline")}`;
+  const seoDescription = t("tagline");
+
   return (
-    <main className="page narrow public-invite">
-      <header className="page-head">
-        <h1>{t("brand")}</h1>
-        <p className="hint">{t("tagline")}</p>
-      </header>
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        path={`/i/${id}`}
+        type="article"
+        image={imageUrl || undefined}
+      />
+      <main className="page narrow public-invite">
+        <header className="page-head">
+          <h1>{t("brand")}</h1>
+          <p className="hint">{t("tagline")}</p>
+        </header>
       {error ? (
         <EmptyState
           title={t("publicInviteMissing")}
@@ -249,6 +282,7 @@ export function PublicInvitationPage() {
           {t("publicInviteCta")}
         </Link>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
