@@ -64,6 +64,8 @@ class Invitation(TimeStampedModel, SoftDeleteModel):
     expires_at = models.DateTimeField()
     last_job_id = models.CharField(max_length=64, blank=True, null=True)
     last_error = models.TextField(blank=True, null=True)
+    is_paid = models.BooleanField(default=False)
+    paid_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [

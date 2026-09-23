@@ -1,5 +1,8 @@
-import { useState, useRef } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { api } from "../api/client";
 import { PAYMENT_APPS, PAYMENT_CARD_NUMBER } from "../constants/paymentApps";
 import { PaymeIcon, ClickIcon, PaynetIcon, UzumIcon, XaznaIcon } from "../components/PaymentIcons";
 
@@ -7,6 +10,45 @@ type PaymentStatus = "idle" | "submitting" | "pending" | "error";
 
 export default function PaymentPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const invitationId = searchParams.get("invitation");
+  const [autoCheckFailed, setAutoCheckFailed] = useState(false);
+
+  // Payme redirected the user back here after checkout (see the `c=` return
+  // URL built in payments/services.py::build_checkout_link). Poll the
+  // invitation until PerformTransaction has landed, then resume generation.
+  useEffect(() => {
+    if (!invitationId) return;
+    let cancelled = false;
+    let timer: number | undefined;
+
+    const poll = async () => {
+      try {
+        const info = await api.getPaymentInfo(invitationId);
+        if (cancelled) return;
+        if (info.is_paid) {
+          navigate(`/create/${invitationId}/generating`, {
+            replace: true,
+            state: { pendingGenerate: true },
+          });
+          return;
+        }
+        timer = window.setTimeout(poll, 3000);
+      } catch {
+        if (!cancelled) {
+          setAutoCheckFailed(true);
+          timer = window.setTimeout(poll, 5000);
+        }
+      }
+    };
+    void poll();
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [invitationId, navigate]);
+
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<PaymentStatus>("idle");
@@ -119,6 +161,25 @@ export default function PaymentPage() {
         return null;
     }
   };
+
+  if (invitationId) {
+    return (
+      <div className="page narrow">
+        <div className="payment-pending">
+          <div className="payment-pending-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="var(--accent)" strokeWidth="2" fill="none" />
+              <path d="M12 6v6l4 2" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <h1>{t("paymentCheckingTitle")}</h1>
+          <p className="payment-pending-message">
+            {autoCheckFailed ? t("paymentCheckingRetry") : t("paymentCheckingMessage")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (status === "pending") {
     return (

@@ -222,6 +222,18 @@ class InvitationGenerateView(APIView):
 
                 raise ValidationError("Please select an event type.")
 
+        if not invitation.is_paid:
+            return Response(
+                {
+                    "error": {
+                        "code": "PAYMENT_REQUIRED",
+                        "message": "This invitation must be paid before generation.",
+                        "details": {"invitation_id": str(invitation.id)},
+                    }
+                },
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         check_generation_rate_limit(str(request.user.id))
         text_only = bool(
             request.data.get("text_only")

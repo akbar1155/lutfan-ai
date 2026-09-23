@@ -17,6 +17,18 @@ type ApiError = {
   };
 };
 
+export class ApiRequestError extends Error {
+  code?: string;
+  details?: Record<string, unknown>;
+
+  constructor(message: string, code?: string, details?: Record<string, unknown>) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.code = code;
+    this.details = details;
+  }
+}
+
 function formatApiError(body: ApiError, fallback: string): string {
   const details = body.error?.details;
   if (details && typeof details === "object") {
@@ -108,13 +120,17 @@ async function request<T>(
       }
     }
     let message = `Request failed: ${res.status}`;
+    let code: string | undefined;
+    let details: Record<string, unknown> | undefined;
     try {
       const body = (await res.json()) as ApiError;
       message = formatApiError(body, message);
+      code = body.error?.code;
+      details = body.error?.details;
     } catch {
       /* ignore */
     }
-    throw new Error(message);
+    throw new ApiRequestError(message, code, details);
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
@@ -226,6 +242,8 @@ export type Invitation = {
   additional_formats?: Record<string, string>;
   event_date?: string;
   last_error?: string;
+  is_paid?: boolean;
+  paid_at?: string;
   expires_at: string;
   created_at: string;
   updated_at?: string;
@@ -332,6 +350,14 @@ export const api = {
       body: JSON.stringify(body),
     }),
   getInvitation: (id: string) => request<Invitation>(`/invitations/${id}`),
+  getPaymentInfo: (id: string) =>
+    request<{
+      invitation_id: string;
+      is_paid: boolean;
+      amount_tiyin: number;
+      amount_uzs: number;
+      checkout_url: string;
+    }>(`/invitations/${id}/payment`),
   patchInvitation: (id: string, body: Record<string, unknown>) =>
     request<Invitation>(`/invitations/${id}`, {
       method: "PATCH",

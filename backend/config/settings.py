@@ -16,6 +16,8 @@ env = environ.Env(
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:5173"]),
     RATE_LIMIT_GENERATIONS_PER_HOUR=(int, 20),
     RATE_LIMIT_GENERATIONS_PER_DAY=(int, 50),
+    INVITATION_PRICE_UZS=(int, 20000),
+    PAYME_TEST_MODE=(bool, True),
 )
 
 environ.Env.read_env(ROOT_DIR / ".env")
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
     "apps.ai_engine",
     "apps.backup",
     "apps.page_builder",
+    "apps.payments",
 ]
 
 MIDDLEWARE = [
@@ -232,5 +235,18 @@ BACKEND_BASE_URL = env("BACKEND_BASE_URL", default="")
 APP_BASE_URL = env("APP_BASE_URL", default="http://localhost:5173")
 RATE_LIMIT_GENERATIONS_PER_HOUR = env("RATE_LIMIT_GENERATIONS_PER_HOUR")
 RATE_LIMIT_GENERATIONS_PER_DAY = env("RATE_LIMIT_GENERATIONS_PER_DAY")
+
+# Payme (Paycom) Merchant API - https://developer.help.paycom.uz
+# PAYME_KEY holds whichever key is currently active for this cashier: the
+# TEST_KEY while testing in the sandbox (test.paycom.uz), swapped for the
+# real production key once Payme approves the integration.
+PAYME_MERCHANT_ID = env("PAYME_MERCHANT_ID", default="")
+PAYME_KEY = env("PAYME_KEY", default="")
+INVITATION_PRICE_UZS = env("INVITATION_PRICE_UZS")
+# Independent from DJANGO_DEBUG: on the live lutfanai.uz server DEBUG=False
+# even while Payme integration is still being tested with a TEST_KEY, so the
+# checkout host (test.paycom.uz vs checkout.paycom.uz) needs its own switch.
+# Flip this to False only once Payme swaps you to the real production key.
+PAYME_TEST_MODE = env("PAYME_TEST_MODE")
 
 LOG_LEVEL = env("LOG_LEVEL", default="info").upper()

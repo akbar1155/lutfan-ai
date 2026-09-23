@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   api,
+  ApiRequestError,
   type EventConfig,
   type Invitation,
   type JpgTemplate,
@@ -1910,7 +1911,20 @@ export function GeneratingPage() {
         }
         navigate(invitationContinuePath(inv), { replace: true });
       })
-      .catch((err: Error) => fail(err.message || t("generateFailed")));
+      .catch((err: Error) => {
+        if (cancelled) return;
+        if (err instanceof ApiRequestError && err.code === "PAYMENT_REQUIRED") {
+          setMessage(t("paymentRedirecting"));
+          void api
+            .getPaymentInfo(id)
+            .then((info) => {
+              if (!cancelled) window.location.href = info.checkout_url;
+            })
+            .catch((e: Error) => fail(e.message || t("generateFailed")));
+          return;
+        }
+        fail(err.message || t("generateFailed"));
+      });
     return () => {
       cancelled = true;
     };

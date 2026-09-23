@@ -50,6 +50,8 @@ class InvitationSerializer(serializers.ModelSerializer):
             "expires_at",
             "last_job_id",
             "last_error",
+            "is_paid",
+            "paid_at",
             "created_at",
             "updated_at",
         )
@@ -63,6 +65,8 @@ class InvitationSerializer(serializers.ModelSerializer):
             "expires_at",
             "last_job_id",
             "last_error",
+            "is_paid",
+            "paid_at",
             "created_at",
             "updated_at",
         )
