@@ -1,5 +1,6 @@
 import base64
 import uuid
+from urllib.parse import quote
 
 from django.conf import settings
 
@@ -82,4 +83,10 @@ def build_checkout_link(invitation: Invitation, *, lang: str = "uz", sandbox: bo
         f"c={return_url}"
     )
     encoded = base64.b64encode(raw.encode("utf-8")).decode("ascii")
-    return f"https://{host}/{encoded}"
+    # base64 can contain "/" and "+" (our raw string embeds a full
+    # https://...  return URL, which reliably produces them); left
+    # unescaped they split the path into extra segments and Payme's
+    # own frontend router 404s with "Cannot match any routes". Percent-
+    # encode the token so it is one safe path segment; Payme decodes it
+    # server-side before base64-decoding, per their GET-method spec.
+    return f"https://{host}/{quote(encoded, safe='')}"
