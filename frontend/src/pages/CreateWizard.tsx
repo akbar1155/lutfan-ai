@@ -1565,6 +1565,13 @@ export function StyleTemplatesPage() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    amount_uzs: number;
+    payme_url: string;
+    click_url: string;
+  } | null>(null);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || authLoading) {
@@ -1635,17 +1642,36 @@ export function StyleTemplatesPage() {
                 onClick={() => {
                   setBusyId(tpl.id);
                   setError(null);
+                  setPendingTemplateId(tpl.id);
+
+                  // Check payment before generating
                   void api
-                    .patchInvitation(invitation.id, {
-                      generation_path: "template",
-                      template_id: tpl.id,
+                    .getPaymentInfo(invitation.id)
+                    .then((info) => {
+                      if (info.is_paid) {
+                        // Already paid, proceed to generation
+                        return api
+                          .patchInvitation(invitation.id, {
+                            generation_path: "template",
+                            template_id: tpl.id,
+                          })
+                          .then(() =>
+                            navigate(`/create/${invitation.id}/generating`, {
+                              replace: true,
+                              state: { pendingGenerate: true },
+                            }),
+                          );
+                      } else {
+                        // Not paid, show payment modal
+                        setPaymentInfo({
+                          amount_uzs: info.amount_uzs,
+                          payme_url: info.payme_url,
+                          click_url: info.click_url,
+                        });
+                        setShowPaymentModal(true);
+                        setBusyId(null);
+                      }
                     })
-                    .then(() =>
-                      navigate(`/create/${invitation.id}/generating`, {
-                        replace: true,
-                        state: { pendingGenerate: true },
-                      }),
-                    )
                     .catch((err: Error) => {
                       setError(err.message);
                       setBusyId(null);
@@ -1687,6 +1713,25 @@ export function StyleTemplatesPage() {
           {t("back")}
         </Link>
       </div>
+
+      <PaymentMethodModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSelect={(method) => {
+          if (!paymentInfo) return;
+          // Save pending state and navigate to payment
+          sessionStorage.setItem(
+            `pending_generation_${invitation.id}`,
+            JSON.stringify({
+              generation_path: "template",
+              template_id: pendingTemplateId,
+            }),
+          );
+          const paymentUrl = method === "payme" ? paymentInfo.payme_url : paymentInfo.click_url;
+          window.location.href = paymentUrl;
+        }}
+        amount={paymentInfo?.amount_uzs || 0}
+      />
     </WizardChrome>
   );
 }
@@ -1708,6 +1753,12 @@ export function StyleAiPage() {
   const [presetId, setPresetId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    amount_uzs: number;
+    payme_url: string;
+    click_url: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!id || authLoading) return;
@@ -1812,19 +1863,37 @@ export function StyleAiPage() {
               }
               setBusy(true);
               setError(null);
+
+              // Check payment before generating
               void api
-                .patchInvitation(invitation.id, {
-                  generation_path: "ai_from_scratch",
-                  selected_mood_tags: selected,
-                  custom_style_note: note.trim(),
-                  ai_preset_id: presetId || null,
+                .getPaymentInfo(invitation.id)
+                .then((info) => {
+                  if (info.is_paid) {
+                    // Already paid, proceed to generation
+                    return api
+                      .patchInvitation(invitation.id, {
+                        generation_path: "ai_from_scratch",
+                        selected_mood_tags: selected,
+                        custom_style_note: note.trim(),
+                        ai_preset_id: presetId || null,
+                      })
+                      .then(() =>
+                        navigate(`/create/${invitation.id}/generating`, {
+                          replace: true,
+                          state: { pendingGenerate: true },
+                        }),
+                      );
+                  } else {
+                    // Not paid, show payment modal
+                    setPaymentInfo({
+                      amount_uzs: info.amount_uzs,
+                      payme_url: info.payme_url,
+                      click_url: info.click_url,
+                    });
+                    setShowPaymentModal(true);
+                    setBusy(false);
+                  }
                 })
-                .then(() =>
-                  navigate(`/create/${invitation.id}/generating`, {
-                    replace: true,
-                    state: { pendingGenerate: true },
-                  }),
-                )
                 .catch((err: Error) => {
                   setError(err.message);
                   setBusy(false);
@@ -1835,6 +1904,27 @@ export function StyleAiPage() {
           </button>
         </div>
       </div>
+
+      <PaymentMethodModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSelect={(method) => {
+          if (!paymentInfo) return;
+          // Save pending state and navigate to payment
+          sessionStorage.setItem(
+            `pending_generation_${invitation.id}`,
+            JSON.stringify({
+              generation_path: "ai_from_scratch",
+              selected_mood_tags: selected,
+              custom_style_note: note.trim(),
+              ai_preset_id: presetId || null,
+            }),
+          );
+          const paymentUrl = method === "payme" ? paymentInfo.payme_url : paymentInfo.click_url;
+          window.location.href = paymentUrl;
+        }}
+        amount={paymentInfo?.amount_uzs || 0}
+      />
     </WizardChrome>
   );
 }
@@ -1870,6 +1960,19 @@ export function GeneratingPage() {
     let cancelled = false;
     const state = pendingRef.current;
 
+    // Check for pending generation state from payment return
+    const pendingKey = `pending_generation_${id}`;
+    const pendingStateStr = sessionStorage.getItem(pendingKey);
+    let pendingState: Record<string, unknown> | null = null;
+    if (pendingStateStr) {
+      try {
+        pendingState = JSON.parse(pendingStateStr);
+        sessionStorage.removeItem(pendingKey); // Clear after reading
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+
     const fail = (msg: string) => {
       if (cancelled) return;
       setFailed(true);
@@ -1887,6 +1990,16 @@ export function GeneratingPage() {
       .getInvitation(id)
       .then((inv) => {
         if (cancelled) return;
+
+        // If we have pending state from payment return, apply it first
+        if (pendingState) {
+          return api
+            .patchInvitation(id, pendingState)
+            .then(() => api.generate(id, { textOnly: Boolean(pendingState.regenerate) }))
+            .then(() => {
+              if (!cancelled) setPolling(true);
+            });
+        }
         if (state?.pendingFormat) {
           return api.generateFormat(id, state.pendingFormat).then(() => {
             if (!cancelled) setPolling(true);
@@ -2029,6 +2142,12 @@ export function ResultPage() {
     address: "",
     footer: "",
   });
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    amount_uzs: number;
+    payme_url: string;
+    click_url: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!id || authLoading) return;
@@ -2080,28 +2199,46 @@ export function ResultPage() {
   const regenerate = () => {
     setBusy(true);
     setError(null);
+
+    // Check payment before regenerating
     void api
-      .patchInvitation(invitation.id, {
-        event_data: {
-          ...(invitation.event_data || {}),
-          final_text_blocks: {
-            header: normalizeUzbekSpelling(blocks.header, invitation.language),
-            body: normalizeUzbekSpelling(blocks.body, invitation.language),
-            date_time:
-              invitation.event_slug === "hayit"
-                ? ""
-                : normalizeUzbekSpelling(blocks.date_time, invitation.language),
-            address: normalizeUzbekSpelling(blocks.address, invitation.language),
-            footer: normalizeUzbekSpelling(blocks.footer, invitation.language),
-          },
-        },
+      .getPaymentInfo(invitation.id)
+      .then((info) => {
+        if (info.is_paid) {
+          // Already paid, proceed to regeneration
+          return api
+            .patchInvitation(invitation.id, {
+              event_data: {
+                ...(invitation.event_data || {}),
+                final_text_blocks: {
+                  header: normalizeUzbekSpelling(blocks.header, invitation.language),
+                  body: normalizeUzbekSpelling(blocks.body, invitation.language),
+                  date_time:
+                    invitation.event_slug === "hayit"
+                      ? ""
+                      : normalizeUzbekSpelling(blocks.date_time, invitation.language),
+                  address: normalizeUzbekSpelling(blocks.address, invitation.language),
+                  footer: normalizeUzbekSpelling(blocks.footer, invitation.language),
+                },
+              },
+            })
+            .then(() =>
+              navigate(`/create/${invitation.id}/generating`, {
+                replace: true,
+                state: { pendingGenerate: true, textOnly: true },
+              }),
+            );
+        } else {
+          // Not paid, show payment modal
+          setPaymentInfo({
+            amount_uzs: info.amount_uzs,
+            payme_url: info.payme_url,
+            click_url: info.click_url,
+          });
+          setShowPaymentModal(true);
+          setBusy(false);
+        }
       })
-      .then(() =>
-        navigate(`/create/${invitation.id}/generating`, {
-          replace: true,
-          state: { pendingGenerate: true, textOnly: true },
-        }),
-      )
       .catch((err: Error) => {
         setError(err.message);
         setBusy(false);
@@ -2273,6 +2410,37 @@ export function ResultPage() {
           </div>
         </div>
       )}
+
+      <PaymentMethodModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSelect={(method) => {
+          if (!paymentInfo) return;
+          // Save pending state and navigate to payment
+          sessionStorage.setItem(
+            `pending_generation_${invitation.id}`,
+            JSON.stringify({
+              regenerate: true,
+              event_data: {
+                ...(invitation.event_data || {}),
+                final_text_blocks: {
+                  header: normalizeUzbekSpelling(blocks.header, invitation.language),
+                  body: normalizeUzbekSpelling(blocks.body, invitation.language),
+                  date_time:
+                    invitation.event_slug === "hayit"
+                      ? ""
+                      : normalizeUzbekSpelling(blocks.date_time, invitation.language),
+                  address: normalizeUzbekSpelling(blocks.address, invitation.language),
+                  footer: normalizeUzbekSpelling(blocks.footer, invitation.language),
+                },
+              },
+            }),
+          );
+          const paymentUrl = method === "payme" ? paymentInfo.payme_url : paymentInfo.click_url;
+          window.location.href = paymentUrl;
+        }}
+        amount={paymentInfo?.amount_uzs || 0}
+      />
     </WizardChrome>
   );
 }
