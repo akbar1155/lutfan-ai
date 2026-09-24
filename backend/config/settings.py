@@ -16,7 +16,7 @@ env = environ.Env(
     CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:5173"]),
     RATE_LIMIT_GENERATIONS_PER_HOUR=(int, 20),
     RATE_LIMIT_GENERATIONS_PER_DAY=(int, 50),
-    INVITATION_PRICE_UZS=(int, 20000),
+    INVITATION_PRICE_UZS=(int, 11900),
     PAYME_TEST_MODE=(bool, True),
 )
 

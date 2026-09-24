@@ -357,6 +357,8 @@ export const api = {
       amount_tiyin: number;
       amount_uzs: number;
       checkout_url: string;
+      payme_url: string;
+      click_url: string;
     }>(`/invitations/${id}/payment`),
   patchInvitation: (id: string, body: Record<string, unknown>) =>
     request<Invitation>(`/invitations/${id}`, {

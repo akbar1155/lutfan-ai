@@ -90,3 +90,32 @@ def build_checkout_link(invitation: Invitation, *, lang: str = "uz", sandbox: bo
     # encode the token so it is one safe path segment; Payme decodes it
     # server-side before base64-decoding, per their GET-method spec.
     return f"https://{host}/{quote(encoded, safe='')}"
+
+
+def build_click_checkout_link(invitation: Invitation, *, lang: str = "uz") -> str:
+    """
+    Build a Click.uz checkout link for this invitation.
+    See docs.click.uz for Click payment button integration.
+    """
+    service_id = getattr(settings, "CLICK_SERVICE_ID", "")
+    merchant_id = getattr(settings, "CLICK_MERCHANT_ID", "")
+
+    if not service_id or not merchant_id:
+        # Fallback to Payme if Click not configured
+        return build_checkout_link(invitation, lang=lang)
+
+    return_url = f"{settings.APP_BASE_URL.rstrip('/')}/payment?invitation={invitation.id}"
+    amount = get_price_tiyin() / 100  # Click uses so'm, not tiyin
+
+    # Click checkout URL format
+    # https://my.click.uz/services/pay?service_id=XXX&merchant_id=XXX&amount=XXX&transaction_param=XXX&return_url=XXX
+    params = {
+        "service_id": service_id,
+        "merchant_id": merchant_id,
+        "amount": f"{amount:.2f}",
+        "transaction_param": str(invitation.id),
+        "return_url": return_url,
+    }
+
+    query = "&".join(f"{k}={quote(str(v))}" for k, v in params.items())
+    return f"https://my.click.uz/services/pay?{query}"

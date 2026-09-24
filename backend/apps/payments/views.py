@@ -19,6 +19,7 @@ from .services import (
     ACCOUNT_FIELD,
     TRANSACTION_TIMEOUT_MS,
     build_checkout_link,
+    build_click_checkout_link,
     check_amount,
     get_invitation_for_account,
     get_price_tiyin,
@@ -296,8 +297,8 @@ class PaymeMerchantAPIView(APIView):
 
 class InvitationPaymentLinkView(APIView):
     """
-    Returns the price and a ready-to-open Payme checkout link for one
-    invitation, so the frontend doesn't have to build the base64 link itself.
+    Returns the price and checkout links for both Payme and Click payment
+    methods for one invitation.
     """
 
     permission_classes = [IsAuthenticated]
@@ -313,6 +314,9 @@ class InvitationPaymentLinkView(APIView):
                 "is_paid": invitation.is_paid,
                 "amount_tiyin": get_price_tiyin(),
                 "amount_uzs": get_price_tiyin() // 100,
+                "payme_url": build_checkout_link(invitation, lang=lang),
+                "click_url": build_click_checkout_link(invitation, lang=lang),
+                # Deprecated: use payme_url instead
                 "checkout_url": build_checkout_link(invitation, lang=lang),
             }
         )

@@ -75,6 +75,7 @@ import {
   IconTemplate,
 } from "../components/ActionIcons";
 import SmartImage from "../components/SmartImage";
+import PaymentMethodModal, { type PaymentMethod } from "../components/PaymentMethodModal";
 
 type FieldDef = {
   key: string;
@@ -1847,6 +1848,12 @@ export function GeneratingPage() {
   const [message, setMessage] = useState(t("generating"));
   const [failed, setFailed] = useState(false);
   const [polling, setPolling] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    payme_url: string;
+    click_url: string;
+    amount_uzs: number;
+  } | null>(null);
   const pendingRef = useRef(
     location.state as
       | {
@@ -1914,11 +1921,14 @@ export function GeneratingPage() {
       .catch((err: Error) => {
         if (cancelled) return;
         if (err instanceof ApiRequestError && err.code === "PAYMENT_REQUIRED") {
-          setMessage(t("paymentRedirecting"));
+          setMessage(t("paymentRequired"));
           void api
             .getPaymentInfo(id)
             .then((info) => {
-              if (!cancelled) window.location.href = info.checkout_url;
+              if (!cancelled) {
+                setPaymentInfo(info);
+                setShowPaymentModal(true);
+              }
             })
             .catch((e: Error) => fail(e.message || t("generateFailed")));
           return;
@@ -1973,6 +1983,12 @@ export function GeneratingPage() {
     };
   }, [id, navigate, t, failed, polling]);
 
+  const handlePaymentMethodSelect = (method: PaymentMethod) => {
+    if (!paymentInfo) return;
+    const url = method === "payme" ? paymentInfo.payme_url : paymentInfo.click_url;
+    window.location.href = url;
+  };
+
   return (
     <WizardChrome step={5} title="">
       <GeneratingScene failed={failed} message={failed ? message : undefined} />
@@ -1982,6 +1998,14 @@ export function GeneratingPage() {
             {t("tryAgain")}
           </Link>
         </div>
+      )}
+      {paymentInfo && (
+        <PaymentMethodModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSelect={handlePaymentMethodSelect}
+          amount={paymentInfo.amount_uzs}
+        />
       )}
     </WizardChrome>
   );
