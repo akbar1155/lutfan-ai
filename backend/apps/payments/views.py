@@ -185,7 +185,11 @@ class PaymeMerchantAPIView(APIView):
             state__in=[PaymeTransaction.State.CREATED, PaymeTransaction.State.COMPLETED],
         ).exists()
         if other_active:
-            raise PaymeError(PaymeError.ERROR_COULD_NOT_PERFORM, "Order already has a transaction")
+            raise PaymeError(
+                PaymeError.ERROR_INVALID_ACCOUNT,
+                "Order already has a transaction",
+                data={"class": "Account", "field": ACCOUNT_FIELD},
+            )
 
         create_time = _now_ms()
         txn = PaymeTransaction.objects.create(
