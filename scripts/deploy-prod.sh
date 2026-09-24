@@ -44,6 +44,9 @@ path.write_text("\n".join(out) + "\n", encoding="utf-8")
 print("Ensured production generation rate limits: 20/hour, 50/day")
 PY
 
+# Copy .env.production to .env for Docker Compose variable substitution
+cp .env.production .env
+
 docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml ps
 
