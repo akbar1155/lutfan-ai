@@ -56,9 +56,29 @@ export default function PaymentPage() {
   const [copied, setCopied] = useState(false);
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    amount_uzs: number;
+    checkout_url: string;
+  } | null>(null);
 
-  // Placeholder amount - in real implementation this would come from props/context/API
-  const paymentAmount = "25 000";
+  // Fetch payment info when not in return/polling mode
+  useEffect(() => {
+    if (invitationId) return; // Skip if in polling mode
+
+    const fetchPaymentInfo = async () => {
+      try {
+        // In real scenario, get invitation ID from context or URL params
+        // For now, this page is mainly used for Payme return polling
+        const info = await api.getPaymentInfo("placeholder-id");
+        setPaymentInfo(info);
+      } catch (err) {
+        console.error("Failed to fetch payment info:", err);
+      }
+    };
+    void fetchPaymentInfo();
+  }, [invitationId]);
+
+  const paymentAmount = paymentInfo?.amount_uzs.toLocaleString("ru-RU") || "11 900";
 
   const handleCopyCardNumber = async () => {
     try {
@@ -136,6 +156,12 @@ export default function PaymentPage() {
   const handlePaymentAppClick = (appId: string) => {
     // Toggle selection
     setSelectedApp(appId === selectedApp ? null : appId);
+
+    // Special handling for Payme - use backend checkout URL
+    if (appId === "payme" && paymentInfo?.checkout_url) {
+      window.location.href = paymentInfo.checkout_url;
+      return;
+    }
 
     const app = PAYMENT_APPS.find((a) => a.id === appId);
     if (!app) return;

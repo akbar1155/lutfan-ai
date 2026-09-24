@@ -17,6 +17,12 @@ const PERSONAL_LINKS = {
 
 export const PAYMENT_APPS: PaymentApp[] = [
   {
+    id: "payme",
+    name: "Payme",
+    getUrl: () => `https://checkout.paycom.uz`,
+    // Payme checkout URL should come from backend API
+  },
+  {
     id: "uzum",
     name: "Uzum",
     getUrl: () => PERSONAL_LINKS.uzum,
