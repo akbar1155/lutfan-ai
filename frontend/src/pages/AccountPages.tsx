@@ -168,11 +168,6 @@ export function AccountPage() {
     <main className="page account-page">
       <div className="row-between">
         <h1>{t("account")}</h1>
-        <div className="row-actions">
-          <Link className="cta" to="/create">
-            {t("cta")}
-          </Link>
-        </div>
       </div>
 
       {!loading && items.length ? (
