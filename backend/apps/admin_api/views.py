@@ -1386,11 +1386,19 @@ class AdminPaymentTransactionsView(APIView):
 
         for txn in qs[offset:offset + limit]:
             user_phone = None
-            user_name = None
+            user_display = "N/A"
             if txn.invitation and txn.invitation.user:
-                user_phone = txn.invitation.user.phone_number
-                # Get user's full name if available from their invitations
-                user_name = getattr(txn.invitation.user, 'full_name', None) or txn.invitation.user.phone_number
+                user = txn.invitation.user
+                user_phone = user.phone
+                # Build user display name from first_name, last_name, or phone
+                if user.first_name and user.last_name:
+                    user_display = f"{user.first_name} {user.last_name}"
+                elif user.first_name:
+                    user_display = user.first_name
+                elif user.phone:
+                    user_display = user.phone
+                else:
+                    user_display = str(user.id)[:8]
 
             transactions.append({
                 "id": str(txn.pk),
@@ -1398,7 +1406,7 @@ class AdminPaymentTransactionsView(APIView):
                 "invitation_id": str(txn.invitation_id) if txn.invitation_id else None,
                 "user_id": str(txn.invitation.user_id) if txn.invitation else None,
                 "user_phone": user_phone,
-                "user_display": user_name or user_phone or "N/A",
+                "user_display": user_display,
                 "payment_method": "Payme",
                 "amount_uzs": txn.amount // 100,
                 "amount_tiyin": txn.amount,
