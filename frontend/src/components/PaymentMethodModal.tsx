@@ -39,11 +39,15 @@ export default function PaymentMethodModal({
           </svg>
         </button>
 
-        <h2 className="payment-method-title">{t("selectPaymentMethod")}</h2>
-        <p className="payment-info-message">{t("paymentRequiredInfo")}</p>
-        <p className="payment-method-amount">
-          {t("amount")}: <strong>{amount.toLocaleString("ru-RU")} {t("currency")}</strong>
-        </p>
+        <div className="payment-modal-header">
+          <h2 className="payment-method-title">{t("selectPaymentMethod")}</h2>
+          <p className="payment-info-message">{t("paymentRequiredInfo")}</p>
+        </div>
+
+        <div className="payment-amount-box">
+          <span className="payment-amount-label">{t("amount")}</span>
+          <span className="payment-amount-value">{amount.toLocaleString("ru-RU")} {t("currency")}</span>
+        </div>
 
         <div className="payment-methods-grid">
           <button
