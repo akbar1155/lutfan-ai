@@ -7853,6 +7853,14 @@ button.admin-users-invite-thumb {
   letter-spacing: -0.02em;
 }
 
+.payment-success-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
 .payment-pending-message {
   font-size: 1.05rem;
   color: var(--muted);

@@ -209,7 +209,7 @@ export default function PaymentPage() {
                 <path d="M8 12l2.5 2.5 5.5-5.5" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h1>{t("paymentSuccessTitle")}</h1>
+            <p className="payment-success-title">{t("paymentSuccessTitle")}</p>
             <p className="payment-pending-message">
               {t("paymentSuccessMessage")}
             </p>
