@@ -40,6 +40,7 @@ export default function PaymentMethodModal({
         </button>
 
         <h2 className="payment-method-title">{t("selectPaymentMethod")}</h2>
+        <p className="payment-info-message">{t("paymentRequiredInfo")}</p>
         <p className="payment-method-amount">
           {t("amount")}: <strong>{amount.toLocaleString("ru-RU")} {t("currency")}</strong>
         </p>

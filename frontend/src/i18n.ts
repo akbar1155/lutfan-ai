@@ -1372,6 +1372,7 @@ const resources = {
       paymentPendingMessage: "Admin tasdiqlgandan keyin xizmat faollashadi. Biroz kuting.",
       paymentRedirecting: "To'lov sahifasiga yo'naltirilmoqda...",
       paymentRequired: "To'lov talab qilinadi",
+      paymentRequiredInfo: "Taklif yaratish uchun avval to'lov qilishingiz kerak",
       selectPaymentMethod: "To'lov usulini tanlang",
       amount: "Miqdori",
       currency: "so'm",

@@ -8097,6 +8097,14 @@ button.admin-users-invite-thumb {
   letter-spacing: -0.02em;
 }
 
+.payment-info-message {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
 .payment-method-amount {
   font-size: 1.0625rem;
   color: #666;
