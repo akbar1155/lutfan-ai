@@ -1599,8 +1599,8 @@ export default function AdminPage() {
                   ["payment_method", t("paymentMethod")],
                   ["amount_uzs", t("amount")],
                   ["state_display", t("status")],
-                  ["paycom_transaction_id", "Transaction ID"],
-                  ["invitation_id", "Invitation"],
+                  ["paycom_transaction_id", t("transactionId")],
+                  ["invitation_id", t("invitationId")],
                   ["created_at", t("adminColCreated")],
                 ]}
               />
