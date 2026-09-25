@@ -41,7 +41,6 @@ export default function PaymentMethodModal({
 
         <div className="payment-modal-header">
           <h2 className="payment-method-title">{t("selectPaymentMethod")}</h2>
-          <p className="payment-info-message">{t("paymentRequiredInfo")}</p>
         </div>
 
         <div className="payment-amount-box">

@@ -1373,7 +1373,7 @@ const resources = {
       paymentRedirecting: "To'lov sahifasiga yo'naltirilmoqda...",
       paymentRequired: "To'lov talab qilinadi",
       paymentRequiredInfo: "Taklifnoma yaratish uchun avval to'lov qilishingiz kerak",
-      selectPaymentMethod: "To'lov usulini tanlang",
+      selectPaymentMethod: "Yaratish uchun avval to'lov qiling",
       amount: "Miqdori",
       currency: "so'm",
       paymeDescription: "Oson va tez to'lov",
