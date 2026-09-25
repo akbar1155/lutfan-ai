@@ -43,10 +43,9 @@ export default function PaymentMethodModal({
           <h2 className="payment-method-title">{t("selectPaymentMethod")}</h2>
         </div>
 
-        <div className="payment-amount-box">
-          <span className="payment-amount-label">{t("amount")}</span>
-          <span className="payment-amount-value">{amount.toLocaleString("ru-RU")} {t("currency")}</span>
-        </div>
+        <p className="payment-method-amount">
+          {t("amount")}: <strong>{amount.toLocaleString("ru-RU")} {t("currency")}</strong>
+        </p>
 
         <div className="payment-methods-grid">
           <button
