@@ -1355,3 +1355,112 @@ class AdminAnalyticsExportView(APIView):
             )
         _admin_log(request, "analytics_exported", "daily_metrics")
         return response
+
+
+class AdminPaymentTransactionsView(APIView):
+    """List and filter Payme transactions"""
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        from apps.payments.models import PaymeTransaction
+
+        qs = PaymeTransaction.objects.select_related("invitation", "invitation__user").order_by("-created_at")
+
+        # Filter by state
+        state_filter = request.query_params.get("state")
+        if state_filter:
+            qs = qs.filter(state=int(state_filter))
+
+        # Filter by invitation ID
+        invitation_id = request.query_params.get("invitation_id")
+        if invitation_id:
+            qs = qs.filter(invitation_id=invitation_id)
+
+        # Pagination
+        page = int(request.query_params.get("page", 1))
+        limit = min(int(request.query_params.get("limit", 50)), 200)
+        offset = (page - 1) * limit
+
+        total = qs.count()
+        transactions = []
+
+        for txn in qs[offset:offset + limit]:
+            transactions.append({
+                "id": str(txn.pk),
+                "paycom_transaction_id": txn.paycom_transaction_id,
+                "invitation_id": str(txn.invitation_id) if txn.invitation_id else None,
+                "user_id": str(txn.invitation.user_id) if txn.invitation else None,
+                "amount_uzs": txn.amount // 100,
+                "amount_tiyin": txn.amount,
+                "state": txn.state,
+                "state_display": txn.get_state_display(),
+                "reason": txn.reason,
+                "created_at": txn.created_at.isoformat(),
+                "create_time": txn.create_time,
+                "perform_time": txn.perform_time,
+                "cancel_time": txn.cancel_time,
+            })
+
+        return Response({
+            "transactions": transactions,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit,
+        })
+
+
+class AdminPricingConfigView(APIView):
+    """Get and update pricing configuration"""
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        from apps.content.models import PricingConfig
+
+        config = PricingConfig.get_current()
+        return Response({
+            "id": config.pk,
+            "invitation_price_uzs": config.invitation_price_uzs,
+            "is_active": config.is_active,
+            "updated_at": config.updated_at.isoformat(),
+        })
+
+    def patch(self, request):
+        from apps.content.models import PricingConfig
+
+        config = PricingConfig.get_current()
+
+        price = request.data.get("invitation_price_uzs")
+        if price is not None:
+            try:
+                price = int(price)
+                if price < 0:
+                    return Response(
+                        {"error": {"code": "VALIDATION_ERROR", "message": "Price must be non-negative"}},
+                        status=400,
+                    )
+                config.invitation_price_uzs = price
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": {"code": "VALIDATION_ERROR", "message": "Invalid price value"}},
+                    status=400,
+                )
+
+        if "is_active" in request.data:
+            config.is_active = bool(request.data["is_active"])
+
+        config.save()
+        _admin_log(
+            request,
+            "pricing_config_updated",
+            "pricing",
+            config.pk,
+            {"invitation_price_uzs": config.invitation_price_uzs, "is_active": config.is_active},
+        )
+
+        return Response({
+            "ok": True,
+            "invitation_price_uzs": config.invitation_price_uzs,
+            "is_active": config.is_active,
+            "updated_at": config.updated_at.isoformat(),
+        })

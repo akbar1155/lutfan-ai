@@ -53,7 +53,9 @@ type Tab =
   | "presets"
   | "limits"
   | "generations"
-  | "logs";
+  | "logs"
+  | "payments"
+  | "pricing";
 
 const NAV: Array<{
   titleKey: string;
@@ -85,6 +87,13 @@ const NAV: Array<{
       { id: "logs", labelKey: "adminNavLogs" },
     ],
   },
+  {
+    titleKey: "adminGroupPayments",
+    items: [
+      { id: "payments", labelKey: "adminNavPayments" },
+      { id: "pricing", labelKey: "adminNavPricing" },
+    ],
+  },
 ];
 
 const TAB_META: Record<Tab, { titleKey: string; descKey: string }> = {
@@ -99,6 +108,8 @@ const TAB_META: Record<Tab, { titleKey: string; descKey: string }> = {
   limits: { titleKey: "adminNavLimits", descKey: "adminDescLimits" },
   generations: { titleKey: "adminNavGenerations", descKey: "adminDescGenerations" },
   logs: { titleKey: "adminNavLogs", descKey: "adminDescLogs" },
+  payments: { titleKey: "adminNavPayments", descKey: "adminDescPayments" },
+  pricing: { titleKey: "adminNavPricing", descKey: "adminDescPricing" },
 };
 
 function extractVars(text: string) {
@@ -291,6 +302,9 @@ export default function AdminPage() {
   const [limitsHour, setLimitsHour] = useState("20");
   const [limitsDay, setLimitsDay] = useState("50");
   const [limitsSavedAt, setLimitsSavedAt] = useState<string | null>(null);
+  const [payments, setPayments] = useState<Array<Record<string, unknown>>>([]);
+  const [pricingAmount, setPricingAmount] = useState("11900");
+  const [pricingSavedAt, setPricingSavedAt] = useState<string | null>(null);
   const [apiTarget, setApiTargetState] = useState<ApiTarget>(() => getApiTarget());
 
   useEffect(() => {
@@ -374,6 +388,15 @@ export default function AdminPage() {
       }
       if (tab === "generations") setGenerations(await api.adminAiGenerations(genStatus || undefined));
       if (tab === "logs") setLogs(await api.adminSystemLogs());
+      if (tab === "payments") {
+        const result = await api.adminPaymentTransactions();
+        setPayments(result.transactions || []);
+      }
+      if (tab === "pricing") {
+        const config = await api.adminPricingConfig();
+        setPricingAmount(String(config.invitation_price_uzs));
+        setPricingSavedAt(config.updated_at ? String(config.updated_at) : null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Admin load failed");
     } finally {
@@ -1564,6 +1587,73 @@ export default function AdminPage() {
                 ["created_at", t("adminColCreated")],
               ]}
             />
+          )}
+
+          {tab === "payments" && (
+            <section className="admin-section">
+              <SimpleTable
+                empty={t("adminEmpty")}
+                rows={payments}
+                columns={[
+                  ["paycom_transaction_id", "Transaction ID"],
+                  ["invitation_id", "Invitation"],
+                  ["amount_uzs", t("amount")],
+                  ["state_display", t("status")],
+                  ["created_at", t("adminColCreated")],
+                ]}
+              />
+            </section>
+          )}
+
+          {tab === "pricing" && (
+            <section className="admin-section">
+              <form
+                className="admin-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const price = Number(pricingAmount);
+                  if (!Number.isFinite(price) || price < 0 || !Number.isInteger(price)) {
+                    setError("Invalid price");
+                    return;
+                  }
+                  void run("pricing", async () => {
+                    const res = await api.adminPatchPricingConfig({
+                      invitation_price_uzs: price,
+                    });
+                    setPricingAmount(String(res.invitation_price_uzs));
+                    setPricingSavedAt(res.updated_at ? String(res.updated_at) : null);
+                  });
+                }}
+              >
+                <p className="hint">{t("adminPricingHint")}</p>
+                <div className="admin-form-grid">
+                  <Field label={t("adminPricingInvitationPrice")}>
+                    <input
+                      type="number"
+                      min={0}
+                      step={100}
+                      required
+                      value={pricingAmount}
+                      onChange={(e) => setPricingAmount(e.target.value)}
+                    />
+                  </Field>
+                </div>
+                {pricingSavedAt ? (
+                  <p className="hint">
+                    {t("adminPricingUpdated")}: {formatDate(pricingSavedAt)}
+                  </p>
+                ) : null}
+                <div className="admin-actions">
+                  <button
+                    type="submit"
+                    className="admin-btn primary"
+                    disabled={!!actionBusy}
+                  >
+                    {actionBusy === "pricing" ? t("loading") : t("adminSave")}
+                  </button>
+                </div>
+              </form>
+            </section>
           )}
 
           {previewImage && (

@@ -570,5 +570,24 @@ export const api = {
       "/admin/generation-limits",
       { method: "PATCH", body: JSON.stringify(body) },
     ),
+  adminPaymentTransactions: (params?: { state?: number; invitation_id?: string; page?: number; limit?: number }) =>
+    request<{
+      transactions: Array<Record<string, unknown>>;
+      total: number;
+      page: number;
+      limit: number;
+      pages: number;
+    }>(
+      `/admin/payment-transactions${params ? `?${new URLSearchParams(Object.entries(params).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, String(v)]))}` : ""}`,
+    ),
+  adminPricingConfig: () =>
+    request<{ id: number; invitation_price_uzs: number; is_active: boolean; updated_at?: string }>(
+      "/admin/pricing-config",
+    ),
+  adminPatchPricingConfig: (body: { invitation_price_uzs?: number; is_active?: boolean }) =>
+    request<{ ok: boolean; invitation_price_uzs: number; is_active: boolean; updated_at?: string }>(
+      "/admin/pricing-config",
+      { method: "PATCH", body: JSON.stringify(body) },
+    ),
   adminAnalyticsExportUrl: () => `${getApiBase()}/admin/analytics/export`,
 };
