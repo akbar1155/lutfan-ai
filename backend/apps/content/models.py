@@ -132,3 +132,29 @@ class AIPromptPreset(TimeStampedModel):
     example_output_url = models.URLField(max_length=512, blank=True, null=True)
     version = models.IntegerField(default=1)
     is_active = models.BooleanField(default=True)
+
+
+class PricingConfig(TimeStampedModel):
+    """Singleton model for pricing configuration"""
+    invitation_price_uzs = models.IntegerField(
+        default=11900,
+        help_text="Price for creating one invitation (in UZS)"
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Pricing Configuration"
+        verbose_name_plural = "Pricing Configuration"
+
+    def __str__(self):
+        return f"Invitation Price: {self.invitation_price_uzs:,} UZS"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_current(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj

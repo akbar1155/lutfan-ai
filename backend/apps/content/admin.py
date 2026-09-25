@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AIPromptPreset, EventConfig, MoodTag, Template, TextTemplate
+from .models import AIPromptPreset, EventConfig, MoodTag, PricingConfig, Template, TextTemplate
 
 
 @admin.register(EventConfig)
@@ -45,3 +45,22 @@ class AIPromptPresetAdmin(admin.ModelAdmin):
     list_display = ("name", "event", "version", "is_active")
     list_filter = ("is_active", "event")
     search_fields = ("name", "base_prompt", "negative_prompt")
+
+
+@admin.register(PricingConfig)
+class PricingConfigAdmin(admin.ModelAdmin):
+    list_display = ("invitation_price_uzs", "is_active", "updated_at")
+    fieldsets = (
+        ("Pricing", {
+            "fields": ("invitation_price_uzs", "is_active"),
+            "description": "Configure invitation pricing. Changes take effect immediately."
+        }),
+    )
+
+    def has_add_permission(self, request):
+        # Only allow one instance
+        return not PricingConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # Don't allow deletion
+        return False

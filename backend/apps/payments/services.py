@@ -17,8 +17,17 @@ ACCOUNT_FIELD = "order_id"
 
 
 def get_price_tiyin() -> int:
-    """Fixed price per invitation, in tiyin (1 so'm = 100 tiyin)."""
-    return int(settings.INVITATION_PRICE_UZS) * 100
+    """
+    Get current invitation price in tiyin (1 so'm = 100 tiyin).
+    Reads from PricingConfig model if available, otherwise falls back to settings.
+    """
+    try:
+        from apps.content.models import PricingConfig
+        price_uzs = PricingConfig.get_current().invitation_price_uzs
+    except Exception:
+        # Fallback to settings if model not available or migration not run yet
+        price_uzs = int(settings.INVITATION_PRICE_UZS)
+    return price_uzs * 100
 
 
 def get_invitation_for_account(account: dict) -> Invitation:
