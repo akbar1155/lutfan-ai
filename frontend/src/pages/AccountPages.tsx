@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api, type EventConfig, type Invitation } from "../api/client";
-import { pageBuilderApi } from "../page-builder/api";
-import type { InvitationPagePayload } from "../page-builder/types";
 import { useAuth } from "../auth/AuthContext";
 import PhoneAuthForm from "../auth/PhoneAuthForm";
 import { loginHintKey, showDevLogin } from "../auth/flags";
@@ -79,7 +77,6 @@ export function AccountPage() {
   const { t, i18n } = useTranslation();
   const { user, loginDev, loading: authLoading } = useAuth();
   const [items, setItems] = useState<Invitation[]>([]);
-  const [pages, setPages] = useState<InvitationPagePayload[]>([]);
   const [events, setEvents] = useState<EventConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -88,7 +85,6 @@ export function AccountPage() {
   useEffect(() => {
     if (!user) {
       setItems([]);
-      setPages([]);
       setEvents([]);
       return;
     }
@@ -96,17 +92,14 @@ export function AccountPage() {
     void Promise.all([
       api.myInvitations(),
       api.events(),
-      pageBuilderApi.list().catch(() => [] as InvitationPagePayload[]),
     ])
-      .then(([invites, eventList, interactive]) => {
+      .then(([invites, eventList]) => {
         setItems(invites);
         setEvents(eventList);
-        setPages(interactive);
         setPage(1);
       })
       .catch(() => {
         setItems([]);
-        setPages([]);
         setEvents([]);
       })
       .finally(() => setLoading(false));
@@ -179,76 +172,8 @@ export function AccountPage() {
           <Link className="cta" to="/create">
             {t("cta")}
           </Link>
-          <Link className="ghost" to="/page-builder">
-            {t("pbNewPage")}
-          </Link>
         </div>
       </div>
-
-      {!loading && pages.length ? (
-        <section className="account-interactive" aria-label={t("accountInteractive")}>
-          <div className="row-between">
-            <h2>{t("accountInteractive")}</h2>
-            <Link className="ghost" to="/page-builder">
-              {t("pbPagesTitle")}
-            </Link>
-          </div>
-          <div className="list account-list">
-            {pages.map((item) => (
-              <Link
-                key={item.id}
-                to={`/page-builder/${item.id}`}
-                className="account-invite-card"
-              >
-                <div className="account-invite-thumb empty" aria-hidden>
-                  <EventIcon slug={item.eventSlug} size={24} />
-                </div>
-                <div className="account-invite-main">
-                  <div className="account-invite-top">
-                    <strong className="account-invite-title">
-                      <EventIcon slug={item.eventSlug} size={18} />
-                      {item.title || eventDisplayName(item.eventSlug, lang)}
-                    </strong>
-                    <div className="account-invite-chips">
-                      <span
-                        className={`account-invite-badge tone-${
-                          item.status === "published"
-                            ? "ok"
-                            : item.status === "unpublished"
-                              ? "warn"
-                              : "muted"
-                        }`}
-                      >
-                        {item.status === "published"
-                          ? t("pbStatusPublished")
-                          : item.status === "unpublished"
-                            ? t("pbStatusHidden")
-                            : t("status_draft")}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="account-invite-meta-list">
-                    <MetaRow icon={<IconTag />}>
-                      {eventDisplayName(item.eventSlug, lang)}
-                    </MetaRow>
-                    {item.date ? (
-                      <MetaRow icon={<IconCalendar />}>{item.date}</MetaRow>
-                    ) : null}
-                    {item.venueName || item.address ? (
-                      <MetaRow icon={<IconPin />}>
-                        {[item.venueName, item.address].filter(Boolean).join(", ")}
-                      </MetaRow>
-                    ) : null}
-                    <MetaRow icon={<IconClock />}>
-                      {formatDisplayDateTimeStamp(item.updatedAt || item.createdAt)}
-                    </MetaRow>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       {!loading && items.length ? (
         <div className="account-stats" aria-label={t("accountStats")}>
