@@ -334,14 +334,14 @@ export function AccountPage() {
             ) : null}
           </footer>
         </>
-      ) : !pages.length ? (
+      ) : (
         <EmptyState
           title={t("accountEmpty")}
           body={t("accountEmptyHint")}
           actionTo="/create"
           actionLabel={t("cta")}
         />
-      ) : null}
+      )}
     </main>
   );
 }
