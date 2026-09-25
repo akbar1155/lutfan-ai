@@ -1375,7 +1375,7 @@ const resources = {
       selectPaymentMethod: "To'lov usulini tanlang",
       amount: "Miqdori",
       currency: "so'm",
-      paymeDescription: "Kartaning ikkala tomonini suratga olmasdan to'lang",
+      paymeDescription: "Oson va tez to'lov",
       clickDescription: "Tez va xavfsiz to'lov",
       close: "Yopish",
       paymentCheckingTitle: "To'lovingiz tekshirilmoqda",
