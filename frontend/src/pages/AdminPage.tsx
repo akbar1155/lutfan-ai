@@ -1598,7 +1598,7 @@ export default function AdminPage() {
                   ["user_display", t("user")],
                   ["payment_method", t("paymentMethod")],
                   ["amount_uzs", t("amount")],
-                  ["state_display", t("status")],
+                  ["status", t("status")],
                   ["paycom_transaction_id", t("transactionId")],
                   ["invitation_id", t("invitationId")],
                   ["created_at", t("adminColCreated")],
@@ -1767,9 +1767,13 @@ function SimpleTable({
                               row[key] === "ready" ||
                               row[key] === "published" ||
                               row[key] === "success" ||
-                              row[key] === "succeeded"
+                              row[key] === "succeeded" ||
+                              row[key] === "Completed"
                                 ? "ok"
-                                : row[key] === false || row[key] === "failed"
+                                : row[key] === false ||
+                                  row[key] === "failed" ||
+                                  row[key] === "Cancelled" ||
+                                  row[key] === "Cancelled after complete"
                                   ? "danger"
                                   : "muted"
                             }
