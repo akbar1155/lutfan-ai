@@ -1,0 +1,22 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/rosh/Desktop/lutfan_ai/backend && export DATABASE_URL=\"sqlite:///$(pwd)/db.sqlite3\" && exec /Users/rosh/Desktop/lutfan_ai/.venv/bin/python manage.py runserver \"0.0.0.0:${PORT:-8000}\""
+      ],
+      "port": 8000,
+      "autoPort": true
+    }
+  ]
+}

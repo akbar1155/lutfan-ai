@@ -1595,10 +1595,12 @@ export default function AdminPage() {
                 empty={t("adminEmpty")}
                 rows={payments}
                 columns={[
-                  ["paycom_transaction_id", "Transaction ID"],
-                  ["invitation_id", "Invitation"],
+                  ["user_display", t("user")],
+                  ["payment_method", t("paymentMethod")],
                   ["amount_uzs", t("amount")],
                   ["state_display", t("status")],
+                  ["paycom_transaction_id", "Transaction ID"],
+                  ["invitation_id", "Invitation"],
                   ["created_at", t("adminColCreated")],
                 ]}
               />

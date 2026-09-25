@@ -1385,11 +1385,21 @@ class AdminPaymentTransactionsView(APIView):
         transactions = []
 
         for txn in qs[offset:offset + limit]:
+            user_phone = None
+            user_name = None
+            if txn.invitation and txn.invitation.user:
+                user_phone = txn.invitation.user.phone_number
+                # Get user's full name if available from their invitations
+                user_name = getattr(txn.invitation.user, 'full_name', None) or txn.invitation.user.phone_number
+
             transactions.append({
                 "id": str(txn.pk),
                 "paycom_transaction_id": txn.paycom_transaction_id,
                 "invitation_id": str(txn.invitation_id) if txn.invitation_id else None,
                 "user_id": str(txn.invitation.user_id) if txn.invitation else None,
+                "user_phone": user_phone,
+                "user_display": user_name or user_phone or "N/A",
+                "payment_method": "Payme",
                 "amount_uzs": txn.amount // 100,
                 "amount_tiyin": txn.amount,
                 "state": txn.state,
