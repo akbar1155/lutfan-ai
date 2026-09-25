@@ -8,16 +8,19 @@ import { PaymeIcon, ClickIcon, PaynetIcon, UzumIcon, XaznaIcon } from "../compon
 
 type PaymentStatus = "idle" | "submitting" | "pending" | "error";
 
+type PaymentCheckStatus = "checking" | "paid" | "unpaid";
+
 export default function PaymentPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const invitationId = searchParams.get("invitation");
   const [autoCheckFailed, setAutoCheckFailed] = useState(false);
+  const [paymentCheckStatus, setPaymentCheckStatus] = useState<PaymentCheckStatus>("checking");
 
   // Payme redirected the user back here after checkout (see the `c=` return
   // URL built in payments/services.py::build_checkout_link). Poll the
-  // invitation until PerformTransaction has landed, then resume generation.
+  // invitation until PerformTransaction has landed, then show success UI.
   useEffect(() => {
     if (!invitationId) return;
     let cancelled = false;
@@ -28,16 +31,15 @@ export default function PaymentPage() {
         const info = await api.getPaymentInfo(invitationId);
         if (cancelled) return;
         if (info.is_paid) {
-          navigate(`/create/${invitationId}/generating`, {
-            replace: true,
-            state: { pendingGenerate: true },
-          });
+          setPaymentCheckStatus("paid");
           return;
         }
+        setPaymentCheckStatus("unpaid");
         timer = window.setTimeout(poll, 3000);
       } catch {
         if (!cancelled) {
           setAutoCheckFailed(true);
+          setPaymentCheckStatus("unpaid");
           timer = window.setTimeout(poll, 5000);
         }
       }
@@ -47,7 +49,15 @@ export default function PaymentPage() {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [invitationId, navigate]);
+  }, [invitationId]);
+
+  const handleContinue = () => {
+    if (!invitationId) return;
+    navigate(`/create/${invitationId}/generating`, {
+      replace: true,
+      state: { pendingGenerate: true },
+    });
+  };
 
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -189,6 +199,32 @@ export default function PaymentPage() {
   };
 
   if (invitationId) {
+    if (paymentCheckStatus === "paid") {
+      return (
+        <div className="page narrow">
+          <div className="payment-pending">
+            <div className="payment-pending-icon payment-success-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="var(--accent)" strokeWidth="2" fill="none" />
+                <path d="M8 12l2.5 2.5 5.5-5.5" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h1>{t("paymentSuccessTitle")}</h1>
+            <p className="payment-pending-message">
+              {t("paymentSuccessMessage")}
+            </p>
+            <button
+              type="button"
+              className="payment-submit-btn"
+              onClick={handleContinue}
+            >
+              {t("paymentContinue")}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="page narrow">
         <div className="payment-pending">
