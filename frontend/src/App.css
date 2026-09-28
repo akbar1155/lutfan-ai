@@ -4286,7 +4286,7 @@ details p {
 
 .admin-table-wrap {
   overflow: auto;
-  max-height: calc(100vh - 220px);
+  max-height: calc(100vh - clamp(180px, 25vh, 220px));
   border-radius: var(--admin-radius, 8px);
   border: 1px solid var(--admin-border, #e4e4e7);
   background: #fff;
@@ -4302,7 +4302,7 @@ details p {
 
 .admin-table th,
 .admin-table td {
-  padding: 8px 12px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
   text-align: left;
   border-bottom: 1px solid #f4f4f5;
   vertical-align: middle;
@@ -6658,6 +6658,16 @@ button.admin-users-invite-thumb {
   .admin-users-table .hide-tablet {
     display: none;
   }
+
+  .admin-users-table-wrap {
+    max-height: calc(100vh - 280px);
+  }
+
+  .admin-table th:last-child,
+  .admin-table td:last-child {
+    position: static;
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -6671,7 +6681,8 @@ button.admin-users-invite-thumb {
 
   .admin-users-toolbar {
     flex-wrap: wrap;
-    padding: 10px;
+    padding: clamp(8px, 2vw, 10px);
+    gap: 8px;
   }
 
   .admin-users-summary-main {
@@ -6688,6 +6699,36 @@ button.admin-users-invite-thumb {
 
   .admin-users-filter-group {
     margin-left: auto;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .admin-users-drawer {
+    max-height: min(92vh, 720px);
+    width: min(480px, calc(100% - 20px));
+  }
+
+  .admin-users-drawer-head {
+    padding: 14px 16px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-users-drawer {
+    width: calc(100% - 16px);
+    max-height: 94vh;
+  }
+
+  .admin-users-drawer-head {
+    padding: 12px 14px 8px;
+  }
+
+  .admin-users-tabs {
+    padding: 0 8px;
+  }
+
+  .admin-users-drawer-body {
+    padding: 12px 14px 16px;
   }
 }
 
@@ -6704,6 +6745,16 @@ button.admin-users-invite-thumb {
   .admin-users-page-nav {
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .admin-users-filter-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-users-drawer-identity .admin-users-avatar {
+    width: 38px;
+    height: 38px;
   }
 }
 
@@ -6731,7 +6782,7 @@ button.admin-users-invite-thumb {
 .admin-dash-hero {
   display: grid;
   gap: 6px;
-  padding: 16px 18px;
+  padding: clamp(12px, 3vw, 18px) clamp(14px, 3.5vw, 18px);
   border-radius: var(--admin-radius);
   min-height: 108px;
   border: 1px solid var(--dash-card-border);
@@ -6747,7 +6798,7 @@ button.admin-users-invite-thumb {
 }
 
 .admin-dash-hero strong {
-  font-size: 32px;
+  font-size: clamp(24px, 5vw, 32px);
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -6791,7 +6842,7 @@ button.admin-users-invite-thumb {
 .admin-dash-mini {
   display: grid;
   gap: 6px;
-  padding: 12px 14px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 14px);
   border-radius: var(--admin-radius);
   border: 1px solid var(--dash-card-border);
   background: var(--dash-card);
@@ -7028,7 +7079,7 @@ button.admin-users-invite-thumb {
 }
 
 .admin-dash-chart-card {
-  padding: 14px 14px 10px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 10px);
   border-radius: var(--admin-radius);
   border: 1px solid var(--dash-card-border);
   background: var(--dash-card);
@@ -7313,22 +7364,54 @@ button.admin-users-invite-thumb {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .admin-dash-hero-row {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .admin-dash-mini-metrics {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
-  .admin-dash-hero strong {
-    font-size: 28px;
+  .admin-dash-catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-dash-chart-card {
+    padding: 12px 12px 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-dash-mini-metrics {
+    grid-template-columns: 1fr;
   }
 
   .admin-dash-donut-wrap {
     grid-template-columns: 1fr;
     justify-items: center;
+  }
+
+  .admin-dash-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dash-hero {
+    min-height: 96px;
+  }
+
+  .admin-dash-catalog-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .admin-dash-export {
+    width: 100%;
   }
 }
 
