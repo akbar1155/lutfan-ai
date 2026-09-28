@@ -77,48 +77,27 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
   const [error, setError] = useState<string | null>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePhoneChange = (rawValue: string) => {
-    const newLocal = uzLocalDigits(rawValue);
-    const oldLocal = phoneLocal;
-    setPhoneLocal(newLocal);
+  const PREFIX_LENGTH = 5; // "+998 " is always present
 
-    // Restore cursor position after format change
+  const enforcePrefix = () => {
+    const input = phoneInputRef.current;
+    if (!input) return;
+
     setTimeout(() => {
-      const input = phoneInputRef.current;
-      if (!input) return;
+      const cursorPos = input.selectionStart ?? 0;
+      const cursorEnd = input.selectionEnd ?? 0;
 
-      const formatted = formatUzPhoneMask(newLocal);
-      const prefixLength = 5; // "+998 "
-
-      // If user deleted digits, place cursor at end of input
-      if (newLocal.length < oldLocal.length) {
-        const newPos = formatted.length;
-        input.setSelectionRange(newPos, newPos);
-      } else if (newLocal.length > oldLocal.length) {
-        // If user added digits, place cursor at end
-        const newPos = formatted.length;
-        input.setSelectionRange(newPos, newPos);
-      } else {
-        // Ensure cursor is not in the prefix
-        const currentPos = input.selectionStart ?? 0;
-        if (currentPos < prefixLength) {
-          input.setSelectionRange(prefixLength, prefixLength);
-        }
+      // If cursor or selection is in the prefix area, move it after the prefix
+      if (cursorPos < PREFIX_LENGTH || cursorEnd < PREFIX_LENGTH) {
+        input.setSelectionRange(PREFIX_LENGTH, Math.max(PREFIX_LENGTH, cursorEnd));
       }
     }, 0);
   };
 
-  const handlePhoneClick = () => {
-    const input = phoneInputRef.current;
-    if (!input) return;
-
-    const prefixLength = 5; // "+998 "
-    setTimeout(() => {
-      const cursorPos = input.selectionStart ?? 0;
-      if (cursorPos < prefixLength) {
-        input.setSelectionRange(prefixLength, prefixLength);
-      }
-    }, 0);
+  const handlePhoneChange = (rawValue: string) => {
+    const newLocal = uzLocalDigits(rawValue);
+    setPhoneLocal(newLocal);
+    enforcePrefix();
   };
 
   const handlePhoneKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -129,20 +108,17 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
     const cursorEnd = input.selectionEnd ?? 0;
     const hasSelection = cursorPos !== cursorEnd;
 
-    // Prefix "+998 " is 5 characters
-    const prefixLength = 5;
-
     // Backspace or Delete
     if (e.key === "Backspace" || e.key === "Delete") {
       if (e.key === "Backspace") {
         // Prevent deleting the prefix
-        if (!hasSelection && cursorPos <= prefixLength) {
+        if (!hasSelection && cursorPos <= PREFIX_LENGTH) {
           e.preventDefault();
           return;
         }
       } else if (e.key === "Delete") {
         // Prevent deleting into the prefix
-        if (!hasSelection && cursorPos < prefixLength) {
+        if (!hasSelection && cursorPos < PREFIX_LENGTH) {
           e.preventDefault();
           return;
         }
@@ -151,11 +127,10 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
 
     // Arrow keys and Home - prevent moving cursor into prefix
     if (e.key === "ArrowLeft" || e.key === "Home") {
-      if (!hasSelection && cursorPos <= prefixLength) {
+      if (!hasSelection && cursorPos <= PREFIX_LENGTH) {
         e.preventDefault();
-        // Set cursor at the start of editable area
         setTimeout(() => {
-          input.setSelectionRange(prefixLength, prefixLength);
+          input.setSelectionRange(PREFIX_LENGTH, PREFIX_LENGTH);
         }, 0);
       }
     }
@@ -246,7 +221,9 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
           placeholder={UZ_PHONE_PLACEHOLDER}
           value={formatUzPhoneMask(phoneLocal)}
           onChange={(e) => handlePhoneChange(e.target.value)}
-          onClick={handlePhoneClick}
+          onClick={enforcePrefix}
+          onFocus={enforcePrefix}
+          onSelect={enforcePrefix}
           onKeyDown={handlePhoneKeyDown}
           required
           maxLength={19}

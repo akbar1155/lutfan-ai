@@ -15,9 +15,13 @@ export function uzLocalDigits(raw: string): string {
 /** Progressive display: +998 (90) 123-45-67 */
 export function formatUzPhoneMask(local9: string): string {
   const d = uzLocalDigits(local9);
-  if (!d) return "";
 
-  let out = "+998 (";
+  // Always show +998 prefix
+  let out = "+998 ";
+
+  if (!d) return out;
+
+  out += "(";
   out += d.slice(0, Math.min(2, d.length));
   if (d.length < 2) return out;
 
