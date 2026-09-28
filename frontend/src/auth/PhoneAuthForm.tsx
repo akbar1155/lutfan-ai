@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { IconEye, IconEyeOff } from "../components/ActionIcons";
 import {
@@ -75,6 +75,91 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhoneChange = (rawValue: string) => {
+    const newLocal = uzLocalDigits(rawValue);
+    const oldLocal = phoneLocal;
+    setPhoneLocal(newLocal);
+
+    // Restore cursor position after format change
+    setTimeout(() => {
+      const input = phoneInputRef.current;
+      if (!input) return;
+
+      const formatted = formatUzPhoneMask(newLocal);
+      const prefixLength = 5; // "+998 "
+
+      // If user deleted digits, place cursor at end of input
+      if (newLocal.length < oldLocal.length) {
+        const newPos = formatted.length;
+        input.setSelectionRange(newPos, newPos);
+      } else if (newLocal.length > oldLocal.length) {
+        // If user added digits, place cursor at end
+        const newPos = formatted.length;
+        input.setSelectionRange(newPos, newPos);
+      } else {
+        // Ensure cursor is not in the prefix
+        const currentPos = input.selectionStart ?? 0;
+        if (currentPos < prefixLength) {
+          input.setSelectionRange(prefixLength, prefixLength);
+        }
+      }
+    }, 0);
+  };
+
+  const handlePhoneClick = () => {
+    const input = phoneInputRef.current;
+    if (!input) return;
+
+    const prefixLength = 5; // "+998 "
+    setTimeout(() => {
+      const cursorPos = input.selectionStart ?? 0;
+      if (cursorPos < prefixLength) {
+        input.setSelectionRange(prefixLength, prefixLength);
+      }
+    }, 0);
+  };
+
+  const handlePhoneKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    const input = phoneInputRef.current;
+    if (!input) return;
+
+    const cursorPos = input.selectionStart ?? 0;
+    const cursorEnd = input.selectionEnd ?? 0;
+    const hasSelection = cursorPos !== cursorEnd;
+
+    // Prefix "+998 " is 5 characters
+    const prefixLength = 5;
+
+    // Backspace or Delete
+    if (e.key === "Backspace" || e.key === "Delete") {
+      if (e.key === "Backspace") {
+        // Prevent deleting the prefix
+        if (!hasSelection && cursorPos <= prefixLength) {
+          e.preventDefault();
+          return;
+        }
+      } else if (e.key === "Delete") {
+        // Prevent deleting into the prefix
+        if (!hasSelection && cursorPos < prefixLength) {
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+
+    // Arrow keys and Home - prevent moving cursor into prefix
+    if (e.key === "ArrowLeft" || e.key === "Home") {
+      if (!hasSelection && cursorPos <= prefixLength) {
+        e.preventDefault();
+        // Set cursor at the start of editable area
+        setTimeout(() => {
+          input.setSelectionRange(prefixLength, prefixLength);
+        }, 0);
+      }
+    }
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -152,6 +237,7 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
       <label className="field">
         <span>{t("authPhone")}</span>
         <input
+          ref={phoneInputRef}
           className="phone-mask-input"
           name="phone"
           type="tel"
@@ -159,7 +245,9 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
           autoComplete="tel"
           placeholder={UZ_PHONE_PLACEHOLDER}
           value={formatUzPhoneMask(phoneLocal)}
-          onChange={(e) => setPhoneLocal(uzLocalDigits(e.target.value))}
+          onChange={(e) => handlePhoneChange(e.target.value)}
+          onClick={handlePhoneClick}
+          onKeyDown={handlePhoneKeyDown}
           required
           maxLength={19}
           aria-label={t("authPhone")}
