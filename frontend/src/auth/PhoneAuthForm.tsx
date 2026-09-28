@@ -108,21 +108,36 @@ export default function PhoneAuthForm({ onSuccess }: Props) {
     const cursorEnd = input.selectionEnd ?? 0;
     const hasSelection = cursorPos !== cursorEnd;
 
-    // Backspace or Delete
-    if (e.key === "Backspace" || e.key === "Delete") {
-      if (e.key === "Backspace") {
-        // Prevent deleting the prefix
-        if (!hasSelection && cursorPos <= PREFIX_LENGTH) {
-          e.preventDefault();
-          return;
-        }
-      } else if (e.key === "Delete") {
-        // Prevent deleting into the prefix
-        if (!hasSelection && cursorPos < PREFIX_LENGTH) {
-          e.preventDefault();
-          return;
-        }
+    // Backspace - delete last digit from phoneLocal
+    if (e.key === "Backspace") {
+      e.preventDefault();
+
+      if (hasSelection) {
+        // If there's a selection, just clear the digits
+        setPhoneLocal("");
+        return;
       }
+
+      // Delete the last digit
+      if (phoneLocal.length > 0) {
+        setPhoneLocal(phoneLocal.slice(0, -1));
+      }
+      return;
+    }
+
+    // Delete key - same as backspace for this input
+    if (e.key === "Delete") {
+      e.preventDefault();
+
+      if (hasSelection) {
+        setPhoneLocal("");
+        return;
+      }
+
+      if (phoneLocal.length > 0) {
+        setPhoneLocal(phoneLocal.slice(0, -1));
+      }
+      return;
     }
 
     // Arrow keys and Home - prevent moving cursor into prefix
