@@ -892,7 +892,7 @@ export function DataPage() {
     <WizardChrome
       step={3}
       title={t("data")}
-      hint={multiCeremony ? t("ceremonyScheduleHint") : t("dataHint")}
+      hint={multiCeremony ? t("ceremonyScheduleHint") : undefined}
       error={error}
     >
       <form className="form-stack" noValidate onSubmit={submit}>
