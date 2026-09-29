@@ -374,7 +374,40 @@ export function DateField({
               : undefined
           }
           onOpenChange={(open) => {
-            if (open) scrollFieldIntoView(wrapRef.current);
+            if (open) {
+              scrollFieldIntoView(wrapRef.current);
+
+              // Fix popup position after scroll and render
+              requestAnimationFrame(() => {
+                const popups = document.querySelectorAll('.app-picker-dropdown');
+                const popup = Array.from(popups).find(el => {
+                  const style = window.getComputedStyle(el);
+                  return style.display !== 'none' && style.visibility !== 'hidden';
+                }) as HTMLElement | undefined;
+
+                if (!popup) return;
+
+                const rect = popup.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const margin = 10;
+
+                // If popup overflows viewport top
+                if (rect.top < margin) {
+                  const overflow = margin - rect.top;
+                  const currentTop = parseFloat(popup.style.top || '0');
+                  popup.style.top = `${currentTop + overflow}px`;
+                }
+
+                // If popup overflows viewport bottom, limit height
+                if (rect.bottom > viewportHeight - margin) {
+                  const availableHeight = viewportHeight - rect.top - margin;
+                  if (availableHeight > 200) {
+                    popup.style.maxHeight = `${availableHeight}px`;
+                    popup.style.overflowY = 'auto';
+                  }
+                }
+              });
+            }
           }}
           onChange={(d: Dayjs | null) => {
             onChange(d ? d.format(ISO_DATE) : "");
