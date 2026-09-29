@@ -212,8 +212,8 @@ const appTheme = {
   },
   components: {
     DatePicker: {
-      cellHeight: 28,
-      cellWidth: 32,
+      cellHeight: 32,
+      cellWidth: 36,
     },
   },
 };
